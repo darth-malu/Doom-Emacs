@@ -1,0 +1,30 @@
+#+title: Theme
+
+* Themes
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-ephemeral)
+#+end_src
+
+* favs
+** dark
+- solarized-dark
+- one
+- horizon - nice red accents and purple
+- dracula
+- solarized-dark-high-contrast
+- ayu-mirage
+- snazzy
+- moonlight
+- material - nice purple dotts and cursor
+- monokai-octagon
+
+** light
+- doom-solarized-light
+- earl grey
+** really light white light
+- doom-winter-is-coming-light
+- ayu light
+- one light
+** pastel
+- ephemeral
+- nord-aurora

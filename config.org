@@ -1,0 +1,572 @@
+#+title: my config
+#+author: justin malu
+#+startup: inlineimages content indent
+
+* lexical bind
+#+begin_src emacs-lisp
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+#+end_src
+
+* name
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets. It is optional.
+
+
+#+begin_src emacs-lisp
+(setq user-full-name "Justin Malu"
+      user-mail-address "justinmalu@gmail.com")
+#+end_src
+
+
+* ultra-scroll
+#+begin_src emacs-lisp
+(use-package ultra-scroll
+  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+#+end_src
+
+* centaur tabs
+
+* keybinds
+#+begin_src emacs-lisp
+;; (keymap-global-set "M-;" 'basic-save-buffer)
+(keymap-global-set "M-;" 'save-buffer)
+#+end_src
+
+* default workspace behaviour fix
+#+begin_src emacs-lisp
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override
+   `(+workspace-current-name))
+)
+#+end_src
+
+* language specific
+#+begin_src emacs-lisp :tangle no
+(setq python-indent-level 4)
+#+end_src
+** TODO find out if it works
+* fonts
+** TODO variable font and symbols
+** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
+#+begin_src emacs-lisp
+(setq
+doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
+#+end_src
+** jetbrains mono
+
+#+begin_src emacs-lisp
+(setq
+ ;; org-ellipsis " ▾ "
+ doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'semibold ))
+#+end_src
+
+** mononoki
+kinda nice and kawaii
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
+#+end_src
+
+** iosevka
+*** comfy
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
+#+end_src
+*** term
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
+#+end_src
+
+** zed mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
+#+end_src
+
+** martian mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
+#+end_src
+
+** caskaydia
+*** code
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
+#+end_src
+*** mono
+kinda nice
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
+#+end_src
+
+** lilex
+nice l and i
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
+#+end_src
+
+** fira
+nice defaults
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+** shure
+boxy nice stuff 😃
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+** lekton
+nice little font actually :)
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
+#+end_src
+
+** space mono
+use with rofi as well...clean cut font but kinda thin and no semibold
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
+#+end_src
+
+** Monofur
+kawaii - but does not look nice for ide maybe for ui?
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
+#+end_src
+
+** SauceCode Pro
+#+begin_src emacs-lisp :tangle no
+(setq
+ ;; org-ellipsis " ▾ "
+ doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
+#+end_src
+
+** Geist
+sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
+#+end_src
+
+** monaspace
+one family, 5 fonts, 3 variable axes
+
+
+|------+---------+--------------------|
+| abbr | name    | font (actual)      |
+|------+---------+--------------------|
+| Ne   | Neon    | Neo-grotesque sans |
+| Ar   | Argon   | Humanist sans      |
+| Xe   | Xenon   | Slab serif         |
+| Ra   | Radon   | Handwriting        |
+| Kr   | Kyrpton | Mechanical sans    |
+|------+---------+--------------------|
+
+#+begin_src emacs-lisp :tangle no
+;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
+(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
+#+end_src
+
+* sync text in buffer to text on disk
+** Reverting a Buffer:
+The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
+- You've made changes in Emacs but want to discard them and return to the saved version.
+- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
+
+** Auto Revert Mode:
+Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
+- Viewing log files that are constantly being updated.
+- Keeping your Emacs buffer synchronized with files modified by other applications.
+
+#+begin_src emacs-lisp
+(global-auto-revert-mode t)
+#+end_src
+
+* select and type
+#+begin_src emacs-lisp
+(delete-selection-mode 1)
+#+end_src
+
+* weird emacs indent?
+** TODO test further
+#+begin_src emacs-lisp
+(electric-indent-mode -1)
+#+end_src
+
+* relative line numbers
+This determines the style of line numbers in effect. If set to `nil', line numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'relative)
+#+end_src
+
+* ORG
+** zaiste
+#+begin_src emacs-lisp :tangle no
+(after! org
+  (set-face-attribute 'org-link nil
+                      :weight 'normal
+                      :background nil)
+  (set-face-attribute 'org-code nil
+                      :foreground "#a9a1e1"
+                      :background nil)
+  (set-face-attribute 'org-date nil
+                      :foreground "#5B6268"
+                      :background nil)
+  (set-face-attribute 'org-level-1 nil
+                      :foreground "steelblue2"
+                      :background nil
+                      :height 1.2
+                      :weight 'normal)
+  (set-face-attribute 'org-level-2 nil
+                      :foreground "slategray2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-3 nil
+                      :foreground "SkyBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-4 nil
+                      :foreground "DodgerBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-5 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-level-6 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-document-title nil
+                      :foreground "SlateGray1"
+                      :background nil
+                      :height 1.75
+                      :weight 'bold)
+#+end_src
+
+*** fancy priorities
+   Message: Invalid read syntax
+    Details: (")" 38 54)
+#+begin_src emacs-lisp
+(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
+#+end_src
+
+*** extra
+#+begin_src emacs-lisp :tangle no
+(add-hook! 'org-mode-hook (company-mode -1))
+(add-hook! 'org-capture-mode-hook (company-mode -1))
+#+end_src
+
+** emphasis markers
+#+begin_src emacs-lisp
+(setq org-hide-emphasis-markers t)
+#+end_src
+
+** multi-state workflow
+=C-c C-t= to change state
+- The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
+
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER")))
+#+end_src
+
+*** parallel to-do
+#+begin_src emacs-lisp 
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "|" "DONE(d)")
+        (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
+#+end_src
+
+*** change only in current file
+add anywhere in the file then =C-c C-c= with the cursor on the line
++TODO: TODO(t) | DONE(d)
++TODO: REPORT(r) BUG(b) KNOWNCAUSE(k) | FIXED(f)
++TODO: | CANCELED(c)
+
+** priorities
+=C-c ,= ( org priority )
+
+** tags :juju:
+- if a heading has a tag subheadings inherit the tag
+  - if multiple levels...inherit all from the top-level parent
+  - can use metadata to specify globally
+- use =M-Tab= for completion after colon
+  
++FILETAGS: :Peter:Boss:Secret:
+
+*** set tags
+see also: [[\[\[https://orgmode.org/orgguide.html#Setting-tags-1\]\]][org guide - settings tags]]
+
+|---------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------|
+| =C-c C-q= | org-set-tags-command | Enter new tags for the current headline. Org mode either offers completion or a special single-key interface for setting tags, see below. |
+| =C-c C-c= | org-set-tags-comand  | When point is in a headline, this does the same as C-c C-q.                                                                               |
+|---------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------|
+    
+
+** done on task complete
+[[https://orgmode.org/orgguide.html#Properties]]
+*** with timestamp
+#+begin_src emacs-lisp
+(setq org-log-done 'time)
+#+end_src
+
+*** with note prompted to user
+#+begin_src emacs-lisp :tangle no
+(setq org-log-done 'note)
+#+end_src
+
+** org directory & org roam & org capture
+#+begin_src emacs-lisp
+(setq org-directory "~/org/")
+#+end_src
+
+# default location for capture mode?
+#+begin_src emacs-lisp
+(setq org-agenda-files (list "inbox.org"))
+#+end_src
+then we can setup a specific capture template for inbox:
+
+#+begin_src emacs-lisp
+(setq org-capture-templates
+       `(("i" "Inbox" entry  (file "inbox.org")
+        ,(concat "* TODO %?\n"
+                 "/Entered on/ %U"))))
+#+end_src
+
+*** capture 
+Capture lets you quickly store notes with no workflow interruption
+
+#+begin_src emacs-lisp
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+#+end_src
+
+| command              | keymap          | does                                                                       |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
+| org-capture-finalize | =C-c C-c=         |                                                                            |
+| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
+| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+
+**** capture templates
+You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
+
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree "~/org/journal.org")
+         "* %?\nEntered on %U\n  %i\n  %a")))
+#+end_src
+If you then press t from the capture menu, Org will prepare the template for you like this:
+
+During expansion of the template, special %-escapes10 allow dynamic insertion of content. Here is a small selection of the possibilities, consult the manual for more.
+
+‘%a’	annotation, normally the link created with org-store-link
+‘%i’	initial content, the region when capture is called with C-u
+‘%t’, ‘%T’	timestamp, date only, or date and time
+‘%u’, ‘%U’	like above, but inactive timestamps
+‘%?’	after completing the template, position point here
+
+
+[[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
+*** TODO journal??
+*** roam
+#+begin_src emacs-lisp
+(setq org-roam-directory "~/org-roam")
+#+end_src
+
+** disable line numbers in org mode
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
+#+end_src
+
+** disable vi EOB tildes in org mode
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook (lambda () (vi-tilde-fringe-mode 0)))
+#+end_src
+
+** disable version control colors in org mode
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook (lambda () (diff-hl-mode 0)))
+#+end_src
+
+** worg tricks
+*** Colorize clocking tasks with a block
+[[https://orgmode.org/worg/org-hacks.html][org hacks -worg]]
+#+begin_src emacs-lisp
+;; work with org-agenda dispatcher [c] "Today Clocked Tasks" to view today's clocked tasks.
+(defun org-agenda-log-mode-colorize-block ()
+  "Set different line spacing based on clock time duration."
+  (save-excursion
+    (let* ((colors (cl-case (alist-get 'background-mode (frame-parameters))
+                                 ('light
+                                  (list "#F6B1C3" "#FFFF9D" "#BEEB9F" "#ADD5F7"))
+                                 ('dark
+                                  (list "#aa557f" "DarkGreen" "DarkSlateGray" "DarkSlateBlue"))))
+           pos
+           duration)
+      (nconc colors colors)
+      (goto-char (point-min))
+      (while (setq pos (next-single-property-change (point) 'duration))
+        (goto-char pos)
+        (when (and (not (equal pos (point-at-eol)))
+                   (setq duration (org-get-at-bol 'duration)))
+          ;; larger duration bar height
+          (let ((line-height (if (< duration 15) 1.0 (+ 0.5 (/ duration 30))))
+                (ov (make-overlay (point-at-bol) (1+ (point-at-eol)))))
+            (overlay-put ov 'face `(:background ,(car colors) :foreground "black"))
+            (setq colors (cdr colors))
+            (overlay-put ov 'line-height line-height)
+            (overlay-put ov 'line-spacing (1- line-height))))))))
+
+(add-hook 'org-agenda-finalize-hook #'org-agenda-log-mode-colorize-block)
+#+end_src
+
+*** Go back to the previous top-level heading
+**** TODO test further
+#+begin_src emacs-lisp :tangle no
+(defun org-back-to-top-level-heading ()
+  "Go back to the current top level heading."
+  (interactive)
+  (or (re-search-backward "^\* " nil t)
+      (goto-char (point-min))))
+#+end_src
+
+* initial buffer
+** TODO make this change with dashboard
+** TODO make this restore previous workpace instead
+ #+begin_src emacs-lisp :tangle no
+(setq initial-buffer-choice "~/.doom.d/config.org") ;
+ #+end_src
+
+* custom start mode
+#+begin_src emacs-lisp :tangle no
+(define-minor-mode start-mode
+  "Provide functions for custom start page"
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+                (evil-define-key 'normal start-mode-map
+                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
+                map))
+;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
+(provide 'start-mode)
+#+end_src
+
+* scroll off
+SCHEDULED: <2025-03-10 Mon 21:00>
+#+begin_src emacs-lisp
+(setq scroll-margin 18) ; Adjust the number as needed
+#+end_src
+
+- This variable controls how Emacs scrolls when the cursor moves off the screen.  
+- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
+- Setting it to 101 is a common practice, because it is a value higher than most screen heights.
+
+#+begin_src emacs-lisp
+(setq scroll-conservatively 101) ; TODO test usefulness
+#+end_src
+
+* mod hook
+#+begin_src emacs-lisp :tangle no
+(add-hook 'python-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c r") 'python-shell-send-region)))
+#+end_src
+
+* package config
+** based pyright
+#+begin_src emacs-lisp
+(setq lsp-pyright-langserver-command "basedpyright")
+#+end_src
+
+** nil lsp
+nil: An incremental analysis assistant for writing in Nix.
+
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :ensure t)
+
+(use-package lsp-nix
+  :ensure lsp-mode
+  :after (lsp-mode)
+  :demand t
+  :custom
+  (lsp-nix-nil-formatter ["nixfmt"]))
+
+(use-package nix-mode
+  :hook (nix-mode . lsp-deferred)
+  :ensure t)
+#+end_src
+
+*** TODO fixes
+- kinda slow
+- disabled for now noly use :lang nix
+** nixd
+#+begin_src emacs-lisp :tangle no
+(use-package nix-mode
+:after lsp-mode
+:ensure t
+:hook
+(nix-mode . lsp-deferred) ;; So that envrc mode will work
+:custom
+(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
+:config
+(setq lsp-nix-nixd-server-path "nixd"
+      lsp-nix-nixd-formatting-command [ "nixfmt" ]
+      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
+
+(add-hook! 'nix-mode-hook
+         ;; enable autocompletion with company
+         (setq company-idle-delay 0.1))
+#+end_src
+** obsidian
+#+begin_src emacs-lisp
+
+(use-package obsidian
+  :config
+  (global-obsidian-mode t)
+  (obsidian-backlinks-mode t)
+  :custom
+  ;; location of obsidian vault
+  (obsidian-directory "~/OBSIDIAN")
+  ;; Default location for new notes from `obsidian-capture'
+  (obsidian-inbox-directory "Inbox")
+  ;; Useful if you're going to be using wiki links
+  (markdown-enable-wiki-links t)
+
+  ;; These bindings are only suggestions; it's okay to use other bindings
+  :bind (:map obsidian-mode-map
+              ;; Create note
+              ("C-c C-n" . obsidian-capture)
+              ;; If you prefer you can use `obsidian-insert-wikilink'
+              ("C-c C-l" . obsidian-insert-link)
+              ;; Open file pointed to by link at point
+              ("C-c C-o" . obsidian-follow-link-at-point)
+              ;; Open a different note from vault
+              ("C-c C-p" . obsidian-jump)
+              ;; Follow a backlink for the current file
+              ("C-c C-b" . obsidian-backlink-jump)))
+#+end_src
+
+* dont tangle
+#+begin_src emacs-lisp :tangle no
+(message "Don't tangle me")
+#+end_src
+
+* hide #+begin_src end_src blocks
+** FIX does not work well...with doom? better way?
+see plugin options
+#+begin_src emacs-lisp :tangle no
+(let ((background-color (face-attribute 'default :background)))
+  (set-face-attribute 'org-block-begin-line nil
+                      :foreground background-color
+                      :background background-color))
+#+end_src
