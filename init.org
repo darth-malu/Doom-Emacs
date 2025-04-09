@@ -1,4 +1,5 @@
 #+title: init stuffs
+#+auto_tangle: t
 
 * init.el
 This file controls what Doom modules are enabled and what order they load in. Remember to run 'doom sync' after modifying it!
@@ -49,7 +50,6 @@ The search engine for life and love
        vertico           ; the search engine of the future
 #+end_src
 ** ui
-*** emoji
 +unicode +ascii +github
 #+begin_src emacs-lisp :tangle init.el
 :ui
@@ -79,6 +79,8 @@ The search engine for life and love
 ** editor
 - =file-templates= - This module adds file templates for blank files, powered by yasnippet.
 - =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
+- The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
+- in visual mode =#= =*= search for the selection instead of just the word under cursor
 
 #+begin_src emacs-lisp :tangle init.el
 :editor
@@ -335,6 +337,7 @@ Note that if you change Java version you may need to remove the LSP server and i
        ;;zig               ; C, but simpler
 
 #+end_src
+
 ** email
 #+begin_src emacs-lisp :tangle init.el
 
@@ -348,9 +351,9 @@ Note that if you change Java version you may need to remove the LSP server and i
 #+begin_src emacs-lisp :tangle init.el
 :app
        calendar
-       twitter ; TODO never works?
+       ;; twitter ; TODO never works?
        ;;emms
-       everywhere        ; *leave* Emacs!? You must be joking
+       ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader
 #+end_src

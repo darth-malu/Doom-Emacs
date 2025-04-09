@@ -19,7 +19,7 @@ clients, file templates and snippets. It is optional.
 
 
 * ultra-scroll
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package ultra-scroll
   ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
   :init
@@ -62,7 +62,6 @@ doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; 
 
 #+begin_src emacs-lisp
 (setq
- ;; org-ellipsis " ▾ "
  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'semibold ))
 #+end_src
 
@@ -142,7 +141,6 @@ kawaii - but does not look nice for ide maybe for ui?
 ** SauceCode Pro
 #+begin_src emacs-lisp :tangle no
 (setq
- ;; org-ellipsis " ▾ "
  doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
 #+end_src
 
@@ -205,68 +203,33 @@ This determines the style of line numbers in effect. If set to `nil', line numbe
 #+end_src
 
 * ORG
-** zaiste
-#+begin_src emacs-lisp :tangle no
-(after! org
-  (set-face-attribute 'org-link nil
-                      :weight 'normal
-                      :background nil)
-  (set-face-attribute 'org-code nil
-                      :foreground "#a9a1e1"
-                      :background nil)
-  (set-face-attribute 'org-date nil
-                      :foreground "#5B6268"
-                      :background nil)
-  (set-face-attribute 'org-level-1 nil
-                      :foreground "steelblue2"
-                      :background nil
-                      :height 1.2
-                      :weight 'normal)
-  (set-face-attribute 'org-level-2 nil
-                      :foreground "slategray2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-3 nil
-                      :foreground "SkyBlue2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-4 nil
-                      :foreground "DodgerBlue2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-5 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-level-6 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-document-title nil
-                      :foreground "SlateGray1"
-                      :background nil
-                      :height 1.75
-                      :weight 'bold)
-#+end_src
+** auto tangle
+[[github:yilkalargaw/org-auto-tangle]]
 
-*** fancy priorities
-   Message: Invalid read syntax
-    Details: (")" 38 54)
 #+begin_src emacs-lisp
-(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
+(use-package org-auto-tangle
+  :load-path "site-lisp/org-auto-tangle/"    ;; this line is necessary only if you cloned the repo in your site-lisp directory
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 
-*** extra
-#+begin_src emacs-lisp :tangle no
-(add-hook! 'org-mode-hook (company-mode -1))
-(add-hook! 'org-capture-mode-hook (company-mode -1))
+*** Babel Auto Tangle Safelist
+Add a list of files to the safelist to autotangle with noweb evaluation
+
+#+begin_src emacs-lisp
+(setq org-auto-tangle-babel-safelist '(
+                                     "~/system.org"
+                                     "~/test.org"
+                                     ))
 #+end_src
+
 
 ** emphasis markers
 #+begin_src emacs-lisp
 (setq org-hide-emphasis-markers t)
 #+end_src
 
-** multi-state workflow
+** TODO multi-state workflow
 =C-c C-t= to change state
 - The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
 
@@ -276,7 +239,7 @@ This determines the style of line numbers in effect. If set to `nil', line numbe
 #+end_src
 
 *** parallel to-do
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no
 (setq org-todo-keywords
       '((sequence "TODO(t)" "|" "DONE(d)")
         (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
@@ -399,7 +362,7 @@ During expansion of the template, special %-escapes10 allow dynamic insertion of
 ** worg tricks
 *** Colorize clocking tasks with a block
 [[https://orgmode.org/worg/org-hacks.html][org hacks -worg]]
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 ;; work with org-agenda dispatcher [c] "Today Clocked Tasks" to view today's clocked tasks.
 (defun org-agenda-log-mode-colorize-block ()
   "Set different line spacing based on clock time duration."
@@ -436,6 +399,61 @@ During expansion of the template, special %-escapes10 allow dynamic insertion of
   (interactive)
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
+#+end_src
+** zaiste
+#+begin_src emacs-lisp :tangle no
+(after! org
+  (set-face-attribute 'org-link nil
+                      :weight 'normal
+                      :background nil)
+  (set-face-attribute 'org-code nil
+                      :foreground "#a9a1e1"
+                      :background nil)
+  (set-face-attribute 'org-date nil
+                      :foreground "#5B6268"
+                      :background nil)
+  (set-face-attribute 'org-level-1 nil
+                      :foreground "steelblue2"
+                      :background nil
+                      :height 1.2
+                      :weight 'normal)
+  (set-face-attribute 'org-level-2 nil
+                      :foreground "slategray2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-3 nil
+                      :foreground "SkyBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-4 nil
+                      :foreground "DodgerBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-5 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-level-6 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-document-title nil
+                      :foreground "SlateGray1"
+                      :background nil
+                      :height 1.75
+                      :weight 'bold)
+#+end_src
+
+*** fancy priorities
+   Message: Invalid read syntax
+    Details: (")" 38 54)
+#+begin_src emacs-lisp
+(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
+#+end_src
+
+*** extra
+#+begin_src emacs-lisp :tangle no
+(add-hook! 'org-mode-hook (company-mode -1))
+(add-hook! 'org-capture-mode-hook (company-mode -1))
 #+end_src
 
 * initial buffer
@@ -526,6 +544,39 @@ nil: An incremental analysis assistant for writing in Nix.
 (add-hook! 'nix-mode-hook
          ;; enable autocompletion with company
          (setq company-idle-delay 0.1))
+#+end_src
+** emacs lsp booster
+#+begin_src emacs-lisp :tangle no
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
 ** obsidian
 #+begin_src emacs-lisp

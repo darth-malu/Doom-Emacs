@@ -1,21 +1,31 @@
 #+title: packages
+#+auto_tangle: t
 
 * file contents :toc:
+- [[#start--lexical-intro][start -lexical intro]]
 - [[#my-pkgs][my pkgs]]
 - [[#defaults][defaults]]
   - [[#install-pkg][install pkg]]
   - [[#disable-doom-pkgs][disable doom pkgs]]
   - [[#override-pkgs][override pkgs]]
 
-* my pkgs
+* start -lexical intro
+
+
 #+begin_src emacs-lisp :tangle packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
+#+end_src
 
+
+* my pkgs
+#+begin_src emacs-lisp :tangle packages.el
 ;; (package! org-modern) ; TODO test if this necessary/workss
 ;; (package! prettier)
 (package! obsidian)
 (package! tldr)
+(package! org-auto-tangle)
+(package! grip-mode) ;; needs to be in nixpkgs
 ;; (package! nixfmt) ; TODO test if this is what is making me slow
 ;; (package! ob-hide-markers) ;TODO test if this is wooorking using work around for now
 #+end_src
