@@ -8,9 +8,9 @@
 #+end_src
 
 * name
+
 Some functionality uses this to identify you, e.g. GPG configuration, email
 clients, file templates and snippets. It is optional.
-
 
 #+begin_src emacs-lisp
 (setq user-full-name "Justin Malu"
@@ -52,105 +52,107 @@ clients, file templates and snippets. It is optional.
 ** TODO find out if it works
 * fonts
 ** TODO variable font and symbols
-** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
-#+begin_src emacs-lisp
+** tangier
+*** nerd fonts
+**** jetbrains mono
+#+begin_src emacs-lisp :tangle no
 (setq
-doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
-doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
-#+end_src
-** jetbrains mono
-
-#+begin_src emacs-lisp
-(setq
- doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'semibold ))
+ ;; org-ellipsis " ▾ "
+ doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 20 :weight 'semibold ))
 #+end_src
 
-** mononoki
+** carthage
+*** nerd fonts
+**** jetbrains mono
+#+begin_src emacs-lisp
+(setq
+ doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'semibold ))
+#+end_src
+**** mononoki
 kinda nice and kawaii
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
 #+end_src
-
-** iosevka
-*** comfy
+**** iosevka
+***** comfy
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
 #+end_src
-*** term
+***** term
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
 #+end_src
 
-** zed mono
+**** zed mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
 #+end_src
 
-** martian mono
+**** martian mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
 #+end_src
 
-** caskaydia
-*** code
+**** caskaydia
+***** code
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
 #+end_src
-*** mono
+***** mono
 kinda nice
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
 #+end_src
 
-** lilex
+**** lilex
 nice l and i
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
 #+end_src
 
-** fira
+**** fira
 nice defaults
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-** shure
+**** shure
 boxy nice stuff 😃
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-** lekton
+**** lekton
 nice little font actually :)
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
 #+end_src
 
-** space mono
+**** space mono
 use with rofi as well...clean cut font but kinda thin and no semibold
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
 #+end_src
 
-** Monofur
+**** Monofur
 kawaii - but does not look nice for ide maybe for ui?
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
 #+end_src
 
-** SauceCode Pro
+**** SauceCode Pro
 #+begin_src emacs-lisp :tangle no
 (setq
  doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
 #+end_src
 
-** Geist
+**** Geist
 sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
 #+end_src
 
-** monaspace
+**** monaspace
 one family, 5 fonts, 3 variable axes
 
 
@@ -169,6 +171,12 @@ one family, 5 fonts, 3 variable axes
 (setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
 #+end_src
 
+** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
+#+begin_src emacs-lisp
+(setq
+doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
+#+end_src
 * sync text in buffer to text on disk
 ** Reverting a Buffer:
 The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
