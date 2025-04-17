@@ -56,6 +56,7 @@ clients, file templates and snippets. It is optional.
 #+end_src
 
 * default workspace behaviour fix
+** TODO see if its fixed
 #+begin_src emacs-lisp
 (after! persp-mode
   (setq persp-emacsclient-init-frame-behaviour-override
@@ -211,7 +212,8 @@ Emacs also provides "auto-revert-mode," which automates this process. When enabl
 #+end_src
 
 * select and type
-#+begin_src emacs-lisp
+** TODO see if works/needed
+#+begin_src emacs-lisp :tangle no
 (delete-selection-mode 1)
 #+end_src
 
@@ -226,6 +228,13 @@ This determines the style of line numbers in effect. If set to `nil', line numbe
 (setq display-line-numbers-type t)
 #+begin_src emacs-lisp
 (setq display-line-numbers-type 'relative)
+#+end_src
+* modeline
+works !!...height tooo small thought :height 0.9
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(mode-line :family "VictorMono Nerd Font" :size 16 )
+  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
 #+end_src
 
 * ORG
@@ -334,6 +343,7 @@ Capture lets you quickly store notes with no workflow interruption
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 #+end_src
 
+|----------------------+-----------------+----------------------------------------------------------------------------|
 | command              | keymap          | does                                                                       |
 |----------------------+-----------------+----------------------------------------------------------------------------|
 | org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
@@ -341,7 +351,6 @@ Capture lets you quickly store notes with no workflow interruption
 | org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
 | org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
 |----------------------+-----------------+----------------------------------------------------------------------------|
-
 **** capture templates
 You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
 
@@ -516,7 +525,7 @@ SCHEDULED: <2025-03-10 Mon 21:00>
 (setq scroll-conservatively 101) ; TODO test usefulness
 #+end_src
 
-* mod hook
+* mode hook
 #+begin_src emacs-lisp :tangle no
 (add-hook 'python-mode-hook
           (lambda ()
@@ -572,7 +581,7 @@ nil: An incremental analysis assistant for writing in Nix.
          (setq company-idle-delay 0.1))
 #+end_src
 ** emacs lsp booster
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
   (or

@@ -50,7 +50,6 @@ The search engine for life and love
        vertico           ; the search engine of the future
 #+end_src
 ** ui
-+unicode +ascii +github
 #+begin_src emacs-lisp :tangle init.el
 :ui
        deft              ; notational velocity for Emacs
@@ -60,22 +59,37 @@ The search engine for life and love
        (emoji +unicode)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
-       ligatures         ; ligatures and symbols to make your code pretty again
+       (ligatures +extra)         ; ligatures and symbols to make your code pretty again
        ;; minimap           ; show a map of the code on the side
-       modeline          ; snazzy, Atom-inspired modeline, plus API
-       ;;nav-flash         ; blink cursor line after big motions
+       ;; ( modeline +light)          ; snazzy, Atom-inspired modeline, plus API
+       modeline
+       nav-flash         ; blink cursor line after big motions
        ;; neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on ; TODO read further
        (popup +defaults)   ; tame sudden yet inevitable temporary windows
        tabs              ; a tab bar for Emacs
-       treemacs          ; a project drawer, like neotree but cooler TODO test further
+       (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
        unicode           ; extended unicode support for various languages
        (vc-gutter +pretty) ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
-       window-select     ; visually switch windows
+       (window-select +numbers)     ; visually switch windows
+       window-select
        workspaces        ; tab emulation, persistence & separate workspaces
        ;;zen               ; distraction-free coding or writing
 #+end_src
+*** docs
+**** deft - major mode
+**** ligatures
+**** emoji
++unicode +ascii +github
+**** popup
+[[doom-module:ui/popup]]
++extra
+Enable extra symbol substitutions in certain modes, for example lambda in lisps are replaced with λ
+modeline can be disabled in popups
+**** treemacs
+***** TODO treemacs-git-mode
++lsp .
 ** editor
 - =file-templates= - This module adds file templates for blank files, powered by yasnippet.
 - =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
@@ -128,39 +142,43 @@ This module provides syntax checking and error highlighting, powered by flycheck
 #+end_src
 
 ** tools
-*** eval
-This modules adds inline code evaluation support to Emacs and a universal interface for opening and interacting with REPLs.
 
-*flags*
-+overlay
-- Display evaluation results in an overlay at point rather than the minibuffer. That is, unless the results are too big (<5 lines), in which case it falls back to the minibuffer/popup buffer.
 #+begin_src emacs-lisp :tangle init.el
 :tools
        ;;ansible
        ;;biblio            ; Writes a PhD for you (citation needed)
        ;;collab            ; buffers with friends
-       ;;debugger          ; FIXME stepping through code, to help you add bugs
+       ;; ( debugger +lsp)          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        ;;docker
        editorconfig      ; let someone else argue about tabs vs spaces TODO test this
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls) TODO test this
        (lookup +dictionary +offline)              ; navigate your code and its documentation
-       lsp               ; M-x vscode
-       magit             ; a git porcelain for Emacs
+       (lsp +peek)               ; M-x vscode
+       (magit +forge)             ; a git porcelain for Emacs
+       ;; magit
        make              ; run make tasks from Emacs
-       pass              ; password manager for nerds
+       ;; pass              ; password manager for nerds
        pdf               ; pdf enhancements
        rgb ; TODO test if works
        ;;prodigy           ; FIXME managing external services & code builders
        ;;terraform         ; infrastructure as code
-       tmux              ; an API for interacting with tmux
+       ;; tmux              ; an API for interacting with tmux
        tree-sitter       ; syntax and parsing, sitting in a tree...
+       taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
        ;; upload            ; map local to remote projects via ssh/ftp
-
 #+end_src
 
-*** lookup
+*** docs
+**** eval
+This modules adds inline code evaluation support to Emacs and a universal interface for opening and interacting with REPLs.
+
+*flags*
++overlay
+- Display evaluation results in an overlay at point rather than the minibuffer. That is, unless the results are too big (<5 lines), in which case it falls back to the minibuffer/popup buffer.
+
+**** lookup
 Flags: +dictionary +docsets +offline
 
 Navigate your labyrinthine code and docs
@@ -172,11 +190,11 @@ Search online providers like devdocs.io, stackoverflow, google, duckduckgo, or y
 Integration with Dash.app docsets.
 Support for online (and offline) dictionaries and thesauruses.
 
-*** lsp
+**** lsp
 - +eglot (use instead of default lsp-mode ) - minimal
 - +peek (use lsp-ui-peek)
 
-*** pdf
+**** pdf
 This module improves support for reading and interacting with PDF files in Emacs.
 
 It uses pdf-tools, which is a replacement for the built-in doc-view-mode for PDF files. The key difference being pages are not pre-rendered, but instead rendered on-demand and stored in memory; a much faster approach, especially for larger PDFs.
@@ -263,7 +281,7 @@ This module adds Emacs support for CSV and XML files.
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML
        (java +lsp)       ; the poster child for carpal tunnel syndrome
-       ( javascript +lsp )        ; all(hope(abandon(ye(who(enter(here))))))
+       (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
        latex             ; writing papers in Emacs has never been so fun
        (lua +lsp)               ; one-based indices? one-based indices
        (markdown +grip)          ; writing docs for people to ignore
@@ -272,7 +290,7 @@ This module adds Emacs support for CSV and XML files.
        (org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty)
        (python +lsp +pyright)            ; beautiful is better than ugly
        web               ; the tubes
-       ( sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
        yaml              ; JSON, but readable
 #+end_src
 **** java lsp
@@ -352,7 +370,7 @@ Note that if you change Java version you may need to remove the LSP server and i
 :app
        calendar
        ;; twitter ; TODO never works?
-       ;;emms
+       emms
        ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader

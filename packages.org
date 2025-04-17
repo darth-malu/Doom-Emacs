@@ -1,5 +1,6 @@
 #+title: packages
 #+auto_tangle: t
+#+startup: content indent
 
 * file contents :toc:
 - [[#start--lexical-intro][start -lexical intro]]
@@ -25,6 +26,8 @@
 (package! obsidian)
 (package! tldr)
 (package! org-auto-tangle)
+(package! spotify)
+(package! emms-player-spotify)
 (package! grip-mode) ;; needs to be in nixpkgs
 ;; (package! nixfmt) ; TODO test if this is what is making me slow
 ;; (package! ob-hide-markers) ;TODO test if this is wooorking using work around for now
