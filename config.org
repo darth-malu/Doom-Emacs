@@ -29,6 +29,24 @@ clients, file templates and snippets. It is optional.
   (ultra-scroll-mode 1))
 #+end_src
 
+* tags alist
+#+begin_src emacs-lisp
+(setq org-tag-alist
+      '(;;Places
+        ("@home" . ?H)
+        ("@school" . ?S)
+        ("@babe" . ?B)
+
+        ;;devices
+        ("@carthage" . ?C)
+        ("@tangier" . ?T)
+
+        ;;activites
+        ("@work" . ?W)
+        ("@pyrple" . ?P)
+        ("@emacs" . ?E)
+        ("@nix" . ?N)))
+#+end_src
 * centaur tabs
 
 * keybinds

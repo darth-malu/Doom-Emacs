@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: osConfig
-# key: <osC
+# key: -osC
 # --
 
 if osConfig.networking.hostName == "${1:carthage}"
