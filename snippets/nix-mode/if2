@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: osConfig
+# key: -if
+# --
+
+if osConfig.networking.hostName == "${1:tangier}" then $2 else $0
