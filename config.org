@@ -47,7 +47,79 @@ clients, file templates and snippets. It is optional.
         ("@emacs" . ?E)
         ("@nix" . ?N)))
 #+end_src
+* Drag stuff
+minor mode for emacs. when drag-stuff-define-keys t
+#+begin_src emacs-lisp
+(use-package drag-stuff
+  :init
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys)
+)
+#+end_src
+* all the icons
+#+begin_src emacs-lisp :tangle no
+(use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
 * centaur tabs
+
+* dired
+#+begin_src emacs-lisp :tangle no
+(use-package dired-open
+  :config
+  (setq dired-open-extensions '(("gif" . "sxiv")
+                                ("jpg" . "sxiv")
+                                ("png" . "sxiv")
+                                ("mkv" . "mpv")
+                                ("mp4" . "mpv"))))
+
+(use-package peep-dired
+  :after dired
+  :hook (evil-normalize-keymaps . peep-dired-hook)
+  :config
+    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
+    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
+    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
+)
+#+end_src
+
+
+* BACKUP
+By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+#+end_src
+
+* Dashboard
+** FIXME does not work
+#+begin_src emacs-lisp :tangle no
+(use-package dashboard
+  :ensure t
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-banner-logo-title "Glorious lisp interpreter")
+  ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+  (setq dashboard-startup-banner "~/Shibuya/assets/emacs/emacs-dash.png")  ;; use custom image as banner
+  (setq dashboard-center-content t) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 5)
+                          (agenda . 5 )
+                          (bookmarks . 3)
+                          (projects . 3)))
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+				      (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
+#+end_src
+
 
 * keybinds
 #+begin_src emacs-lisp
@@ -85,7 +157,7 @@ clients, file templates and snippets. It is optional.
 **** jetbrains mono
 #+begin_src emacs-lisp
 (setq
- doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'semibold ))
+ doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium ))
 #+end_src
 **** mononoki
 kinda nice and kawaii
@@ -211,16 +283,31 @@ Emacs also provides "auto-revert-mode," which automates this process. When enabl
 (global-auto-revert-mode t)
 #+end_src
 
-* select and type
-** TODO see if works/needed
+* sane defaults
+** select and type
+*** TODO see if works/needed
 #+begin_src emacs-lisp :tangle no
 (delete-selection-mode 1)
 #+end_src
-
-* weird emacs indent?
-** TODO test further
+** weird emacs indent?
+Turn off the weird indenting that Emacs does by default.
+*** TODO test further
 #+begin_src emacs-lisp
 (electric-indent-mode -1)
+#+end_src
+** sane
+#+begin_src emacs-lisp :tangle no
+(electric-pair-mode 1) ;; turns on automatic parens pairing
+#+end_src
+* git time machine
+#+begin_src emacs-lisp
+(use-package git-timemachine
+  :after git-timemachine
+  :hook (evil-normalize-keymaps . git-timemachine-hook)
+  :config
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-j") 'git-timemachine-show-previous-revision)
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
+)
 #+end_src
 
 * relative line numbers
@@ -237,7 +324,66 @@ works !!...height tooo small thought :height 0.9
   '(mode-line-inactive :family "Iosevka Comfy" :size 17))
 #+end_src
 
+** dt nerd fonts modeline
+#+begin_src emacs-lisp :tangle no
+(use-package nerd-icons
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
+#+end_src
+* highlight TODO
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :hook ((org-mode . hl-todo-mode)
+         (prog-mode . hl-todo-mode))
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        `(("TODO"       warning bold)
+          ("FIXME"      error bold)
+          ("HACK"       font-lock-constant-face bold)
+          ("REVIEW"     font-lock-keyword-face bold)
+          ("NOTE"       success bold)
+          ("DEPRECATED" font-lock-doc-face bold))))
+#+end_src
+* MINIBUFFER ESCAPE
+
+By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+
+* Org-Tempo
+Org-tempo is not a separate package but a module within org that can be enabled.  Org-tempo allows for ‘<s’ followed by TAB to expand to a begin_src tag.  Other expansions available include:
+
+
+| Typing the below + TAB | Expands to …                            |
+|------------------------+-----------------------------------------|
+| <a                     | ’#+BEGIN_EXPORT ascii’ … ‘#+END_EXPORT  |
+| <c                     | ’#+BEGIN_CENTER’ … ‘#+END_CENTER’       |
+| <C                     | ’#+BEGIN_COMMENT’ … ‘#+END_COMMENT’     |
+| <e                     | ’#+BEGIN_EXAMPLE’ … ‘#+END_EXAMPLE’     |
+| <E                     | ’#+BEGIN_EXPORT’ … ‘#+END_EXPORT’       |
+| <h                     | ’#+BEGIN_EXPORT html’ … ‘#+END_EXPORT’  |
+| <l                     | ’#+BEGIN_EXPORT latex’ … ‘#+END_EXPORT’ |
+| <q                     | ’#+BEGIN_QUOTE’ … ‘#+END_QUOTE’         |
+| <s                     | ’#+BEGIN_SRC’ … ‘#+END_SRC’             |
+| <v                     | ’#+BEGIN_VERSE’ … ‘#+END_VERSE’         |
+|------------------------+-----------------------------------------|
+
+# (require 'org-tempo)
+
+* Preserve Indentation On Org-Babel-Tangle
+#+begin_src emacs-lisp
+(setq org-src-preserve-indentation t)
+#+end_src
+
 * ORG
+
 ** auto tangle
 [[github:yilkalargaw/org-auto-tangle]]
 
@@ -259,12 +405,23 @@ Add a list of files to the safelist to autotangle with noweb evaluation
                                      ))
 #+end_src
 
-
 ** emphasis markers
 #+begin_src emacs-lisp
 (setq org-hide-emphasis-markers t)
 #+end_src
+** bullets mode
+#TODO TEST FURTHER
+#FIXME not working so far
+icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
 
+org-bullets-face-name
+#+begin_src emacs-lisp :tangle no
+(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+*** variables to look out for
+| org-bullets-face-name |
 ** TODO multi-state workflow
 =C-c C-t= to change state
 - The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
@@ -542,7 +699,7 @@ SCHEDULED: <2025-03-10 Mon 21:00>
 ** nil lsp
 nil: An incremental analysis assistant for writing in Nix.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package lsp-mode
   :ensure t)
 
