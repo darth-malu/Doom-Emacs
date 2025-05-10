@@ -292,7 +292,7 @@ Emacs also provides "auto-revert-mode," which automates this process. When enabl
 ** weird emacs indent?
 Turn off the weird indenting that Emacs does by default.
 *** TODO test further
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (electric-indent-mode -1)
 #+end_src
 ** sane
@@ -404,6 +404,16 @@ Add a list of files to the safelist to autotangle with noweb evaluation
                                      "~/test.org"
                                      ))
 #+end_src
+** convert md to org
+*** FIXME not working
+#+begin_src emacs-lisp :tangle no
+(defun markdown-convert-buffer-to-org ()
+"Convert the current buffer's content from markdown to orgmode format and save it with the current buffer's file name but with .org extension."
+(interactive)
+(shell-command-on-region (point-min) (point-max)
+                            (format "pandoc -f markdown -t org -o %s"
+                                    (concat (file-name-sans-extension (buffer-file-name)) ".org"))))
+#+end_src
 
 ** emphasis markers
 #+begin_src emacs-lisp
@@ -463,7 +473,6 @@ see also: [[\[\[https://orgmode.org/orgguide.html#Setting-tags-1\]\]][org guide 
 | =C-c C-c= | org-set-tags-comand  | When point is in a headline, this does the same as C-c C-q.                                                                               |
 |---------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------|
     
-
 ** done on task complete
 [[https://orgmode.org/orgguide.html#Properties]]
 *** with timestamp
@@ -481,19 +490,33 @@ see also: [[\[\[https://orgmode.org/orgguide.html#Setting-tags-1\]\]][org guide 
 (setq org-directory "~/org/")
 #+end_src
 
+
+*** templates
+**** thoughtbot guy
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+      `(("t"    ;hotkey
+         "Todo list item"  ; name
+         entry ;type
+         ;heading type and title
+         (file+headline org-default-notes-file "Tasks")
+         "* TODO %?\n %i\n %a" ;template
+         )))
+#+end_src
+
+**** source??
 # default location for capture mode?
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (setq org-agenda-files (list "inbox.org"))
 #+end_src
 then we can setup a specific capture template for inbox:
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (setq org-capture-templates
        `(("i" "Inbox" entry  (file "inbox.org")
         ,(concat "* TODO %?\n"
                  "/Entered on/ %U"))))
 #+end_src
-
 *** capture 
 Capture lets you quickly store notes with no workflow interruption
 
