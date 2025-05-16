@@ -985,98 +985,91 @@ clients, file templates and snippets. It is optional.
 - var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
 - var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
 ***** nerd font experiement
-****** in use
-******* jetbrains mono
-#+begin_src emacs-lisp :tangle no
-(setq
- doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium ))
-#+end_src
-****** dormant
-******* mononoki
+****** mononoki
 kinda nice and kawaii
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
 #+end_src
-******* iosevka
-******** comfy
+****** iosevka
+******* comfy
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
 #+end_src
-******** term
+******* term
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
 #+end_src
 
-******* zed mono
+****** zed mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
 #+end_src
 
-******* martian mono
+****** martian mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
 #+end_src
 
-******* caskaydia
-******** code
+****** caskaydia
+******* code
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
 #+end_src
-******** mono
+******* mono
 kinda nice
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
 #+end_src
 
-******* lilex
+****** lilex
 nice l and i
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
 #+end_src
 
-******* fira
+****** fira
 nice defaults
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-******* shure
+****** shure
 boxy nice stuff 😃
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-******* lekton
+****** lekton
 nice little font actually :)
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
 #+end_src
 
-******* space mono
+****** space mono
 use with rofi as well...clean cut font but kinda thin and no semibold
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
 #+end_src
 
-******* Monofur
+****** Monofur
 kawaii - but does not look nice for ide maybe for ui?
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
 #+end_src
 
-******* SauceCode Pro
+****** SauceCode Pro
 #+begin_src emacs-lisp :tangle no
 (setq
  doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
 #+end_src
 
-******* Geist
+****** Geist
 sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
 #+end_src
 
-******* monaspace
+****** monaspace
 one family, 5 fonts, 3 variable axes
 
 
@@ -1095,9 +1088,31 @@ one family, 5 fonts, 3 variable axes
 (setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
 #+end_src
 
-**** TODO variable font and symbols
-**** change fonts on the fly
-[[file:~/org/org-roam/20250401030930-doom_emacs.org::*]]
+**** change fonts on the fly [[file:~/org/org-roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
+**** extraDocs
+source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
+‘slant’
+One of ‘italic’, ‘oblique’, or ‘roman’.
+
+‘weight’
+One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
+
+‘style’
+Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
+
+‘width’
+One of ‘condensed’, ‘normal’, or ‘expanded’.
+
+‘spacing’
+One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
+
+ Doom exposes five (optional) variables for controlling fonts in Doom:
+
+ - `doom-font' -- the primary font to use
+ - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+   - used in websites? eww?
+   - headers?
+
 *** theme
 **** load theme
 
