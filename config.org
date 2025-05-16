@@ -7,67 +7,8 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 #+end_src
 
-* name
-
-Some functionality uses this to identify you, e.g. GPG configuration, email
-clients, file templates and snippets. It is optional.
-
-#+begin_src emacs-lisp
-(setq user-full-name "Justin Malu"
-      user-mail-address "justinmalu@gmail.com")
-#+end_src
-
-
-* ultra-scroll
-#+begin_src emacs-lisp :tangle no
-(use-package ultra-scroll
-  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
-  :init
-  (setq scroll-conservatively 101 ; important!
-        scroll-margin 0)
-  :config
-  (ultra-scroll-mode 1))
-#+end_src
-
-* tags alist
-#+begin_src emacs-lisp
-(setq org-tag-alist
-      '(;;Places
-        ("@home" . ?H)
-        ("@school" . ?S)
-        ("@babe" . ?B)
-
-        ;;devices
-        ("@carthage" . ?C)
-        ("@tangier" . ?T)
-
-        ;;activites
-        ("@work" . ?W)
-        ("@pyrple" . ?P)
-        ("@emacs" . ?E)
-        ("@nix" . ?N)))
-#+end_src
-* Drag stuff
-minor mode for emacs. when drag-stuff-define-keys t
-#+begin_src emacs-lisp
-(use-package drag-stuff
-  :init
-  (drag-stuff-global-mode 1)
-  (drag-stuff-define-keys)
-)
-#+end_src
-* all the icons
-#+begin_src emacs-lisp :tangle no
-(use-package all-the-icons
-  :ensure t
-  :if (display-graphic-p))
-
-(use-package all-the-icons-dired
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-* centaur tabs
-
-* dired
+* package options, use-package
+** dired
 #+begin_src emacs-lisp :tangle no
 (use-package dired-open
   :config
@@ -87,17 +28,140 @@ minor mode for emacs. when drag-stuff-define-keys t
     (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
 )
 #+end_src
+** corfu
+#+begin_src elisp
+(use-package corfu
+  :init
+  (setq tab-always-indent 'complete) ; try complete if indent is off
+  )
+#+end_src
+- If t, hitting TAB always just indents the current line.
+- If nil, hitting TAB indents the current line if point is at the left margin
+ or in the line's indentation, otherwise it inserts a "real" TAB character.
+- If complete, TAB first tries to indent the current line, and if the line
+was already indented, then try to complete the thing at point.
 
+Also see tab-first-completion.
 
-* BACKUP
-By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
+Some programming language modes have their own variable to control this,
+e.g., c-tab-always-indent, and do not respect this variable.
+** org auto tangle
+[[github:yilkalargaw/org-auto-tangle]]
 
 #+begin_src emacs-lisp
-(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+(use-package org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  (setq org-auto-tangle-default t))
 #+end_src
 
-* Dashboard
-** FIXME does not work
+*** Babel Auto Tangle Safelist
+Add a list of files to the safelist to autotangle with noweb evaluation
+
+#+begin_src emacs-lisp
+(setq org-auto-tangle-babel-safelist '(
+                                     "~/system.org"
+                                     "~/test.org"
+                                     ))
+#+end_src
+** obsidian
+#+begin_src emacs-lisp :tangle no
+(setq obsidian-directory "~/OBSIDIAN")
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package obsidian
+  :config
+  (global-obsidian-mode t)
+  (obsidian-backlinks-mode t)
+  :custom
+  ;; location of obsidian vault
+  (obsidian-directory "~/OBSIDIAN")
+  ;; Default location for new notes from `obsidian-capture'
+  (obsidian-inbox-directory "Inbox")
+  ;; Useful if you're going to be using wiki links
+  (markdown-enable-wiki-links t)
+
+  ;; These bindings are only suggestions; it's okay to use other bindings
+  :bind (:map obsidian-mode-map
+              ;; Create note
+              ("C-c C-n" . obsidian-capture)
+              ;; If you prefer you can use `obsidian-insert-wikilink'
+              ("C-c C-l" . obsidian-insert-link)
+              ;; Open file pointed to by link at point
+              ("C-c C-o" . obsidian-follow-link-at-point)
+              ;; Open a different note from vault
+              ("C-c C-p" . obsidian-jump)
+              ;; Follow a backlink for the current file
+              ("C-c C-b" . obsidian-backlink-jump)))
+#+end_src
+
+** Drag stuff
+minor mode for emacs. when drag-stuff-define-keys t
+move text around
+#+begin_src emacs-lisp
+(use-package! drag-stuff
+  :init
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys)
+)
+#+end_src
+** highlight TODO
+#+begin_src emacs-lisp
+(use-package hl-todo
+  ;; :hook ((org-mode . hl-todo-mode)
+  ;;        (prog-mode . hl-todo-mode))
+  :hook (org-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        `(("TODO"       warning bold)
+          ("FIXME"      error bold)
+          ("NEVERDO"    warning bold)
+          ("HACK"       font-lock-constant-face bold)
+          ("REVIEW"     font-lock-keyword-face bold)
+          ("NOTE"       success bold)
+          ("DEPRECATED" font-lock-doc-face bold))))
+#+end_src
+** TODO see if needed
+** junk
+*** all the icons
+#+begin_src emacs-lisp
+(use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
+*** FIXME git time machine
+#+begin_src emacs-lisp :tangle no
+(use-package git-timemachine
+  :after git-timemachine
+  :hook (evil-normalize-keymaps . git-timemachine-hook)
+  :config
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-j") 'git-timemachine-show-previous-revision)
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
+)
+#+end_src
+
+*** ultra-scroll
+**** TODO make this work? test if needed
+#+begin_src emacs-lisp :tangle no
+(use-package ultra-scroll
+  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+#+end_src
+
+*** Dashboard
+**** FIXME does not work
 #+begin_src emacs-lisp :tangle no
 (use-package dashboard
   :ensure t
@@ -120,503 +184,114 @@ By default, Emacs creates automatic backups of files in their original directori
   (dashboard-setup-startup-hook))
 #+end_src
 
-
-* keybinds
-#+begin_src emacs-lisp
-;; (keymap-global-set "M-;" 'basic-save-buffer)
-(keymap-global-set "M-;" 'save-buffer)
-#+end_src
-
-* default workspace behaviour fix
-** TODO see if its fixed
-#+begin_src emacs-lisp
-(after! persp-mode
-  (setq persp-emacsclient-init-frame-behaviour-override
-   `(+workspace-current-name))
-)
-#+end_src
-
-* language specific
-#+begin_src emacs-lisp :tangle no
-(setq python-indent-level 4)
-#+end_src
-** TODO find out if it works
-* fonts
-** TODO variable font and symbols
-** tangier
-*** nerd fonts
-**** jetbrains mono
-#+begin_src emacs-lisp :tangle no
-(setq
- ;; org-ellipsis " ▾ "
- doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 20 :weight 'semibold ))
-#+end_src
-
-** carthage
-*** nerd fonts
-**** jetbrains mono
-#+begin_src emacs-lisp
-(setq
- doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium ))
-#+end_src
-**** mononoki
-kinda nice and kawaii
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
-#+end_src
-**** iosevka
-***** comfy
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
-#+end_src
-***** term
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
-#+end_src
-
-**** zed mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
-#+end_src
-
-**** martian mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
-#+end_src
-
-**** caskaydia
-***** code
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
-#+end_src
-***** mono
-kinda nice
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
-#+end_src
-
-**** lilex
-nice l and i
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
-#+end_src
-
-**** fira
-nice defaults
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-**** shure
-boxy nice stuff 😃
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-**** lekton
-nice little font actually :)
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
-#+end_src
-
-**** space mono
-use with rofi as well...clean cut font but kinda thin and no semibold
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
-#+end_src
-
-**** Monofur
-kawaii - but does not look nice for ide maybe for ui?
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
-#+end_src
-
-**** SauceCode Pro
-#+begin_src emacs-lisp :tangle no
-(setq
- doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
-#+end_src
-
-**** Geist
-sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
-#+end_src
-
-**** monaspace
-one family, 5 fonts, 3 variable axes
-
-
-|------+---------+--------------------|
-| abbr | name    | font (actual)      |
-|------+---------+--------------------|
-| Ne   | Neon    | Neo-grotesque sans |
-| Ar   | Argon   | Humanist sans      |
-| Xe   | Xenon   | Slab serif         |
-| Ra   | Radon   | Handwriting        |
-| Kr   | Kyrpton | Mechanical sans    |
-|------+---------+--------------------|
-
-#+begin_src emacs-lisp :tangle no
-;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
-(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
-#+end_src
-
-** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
-#+begin_src emacs-lisp
-(setq
-doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
-doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
-#+end_src
-* sync text in buffer to text on disk
-** Reverting a Buffer:
-The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
-- You've made changes in Emacs but want to discard them and return to the saved version.
-- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
-
-** Auto Revert Mode:
-Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
-- Viewing log files that are constantly being updated.
-- Keeping your Emacs buffer synchronized with files modified by other applications.
-
-#+begin_src emacs-lisp
-(global-auto-revert-mode t)
-#+end_src
-
-* sane defaults
-** select and type
-*** TODO see if works/needed
-#+begin_src emacs-lisp :tangle no
-(delete-selection-mode 1)
-#+end_src
-** weird emacs indent?
-Turn off the weird indenting that Emacs does by default.
-*** TODO test further
-#+begin_src emacs-lisp :tangle no
-(electric-indent-mode -1)
-#+end_src
-** sane
-#+begin_src emacs-lisp :tangle no
-(electric-pair-mode 1) ;; turns on automatic parens pairing
-#+end_src
-* git time machine
-#+begin_src emacs-lisp
-(use-package git-timemachine
-  :after git-timemachine
-  :hook (evil-normalize-keymaps . git-timemachine-hook)
-  :config
-    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-j") 'git-timemachine-show-previous-revision)
-    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
-)
-#+end_src
-
-* relative line numbers
-This determines the style of line numbers in effect. If set to `nil', line numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
-#+begin_src emacs-lisp
-(setq display-line-numbers-type 'relative)
-#+end_src
-* modeline
-works !!...height tooo small thought :height 0.9
-#+begin_src emacs-lisp
-(custom-set-faces!
-  '(mode-line :family "VictorMono Nerd Font" :size 16 )
-  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
-#+end_src
-
-** dt nerd fonts modeline
-#+begin_src emacs-lisp :tangle no
-(use-package nerd-icons
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
-#+end_src
-* highlight TODO
-#+begin_src emacs-lisp
-(use-package hl-todo
-  :hook ((org-mode . hl-todo-mode)
-         (prog-mode . hl-todo-mode))
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces
-        `(("TODO"       warning bold)
-          ("FIXME"      error bold)
-          ("HACK"       font-lock-constant-face bold)
-          ("REVIEW"     font-lock-keyword-face bold)
-          ("NOTE"       success bold)
-          ("DEPRECATED" font-lock-doc-face bold))))
-#+end_src
-* MINIBUFFER ESCAPE
-
-By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
-
-#+begin_src emacs-lisp
-(global-set-key [escape] 'keyboard-escape-quit)
-#+end_src
-
-* Org-Tempo
-Org-tempo is not a separate package but a module within org that can be enabled.  Org-tempo allows for ‘<s’ followed by TAB to expand to a begin_src tag.  Other expansions available include:
-
-
-| Typing the below + TAB | Expands to …                            |
-|------------------------+-----------------------------------------|
-| <a                     | ’#+BEGIN_EXPORT ascii’ … ‘#+END_EXPORT  |
-| <c                     | ’#+BEGIN_CENTER’ … ‘#+END_CENTER’       |
-| <C                     | ’#+BEGIN_COMMENT’ … ‘#+END_COMMENT’     |
-| <e                     | ’#+BEGIN_EXAMPLE’ … ‘#+END_EXAMPLE’     |
-| <E                     | ’#+BEGIN_EXPORT’ … ‘#+END_EXPORT’       |
-| <h                     | ’#+BEGIN_EXPORT html’ … ‘#+END_EXPORT’  |
-| <l                     | ’#+BEGIN_EXPORT latex’ … ‘#+END_EXPORT’ |
-| <q                     | ’#+BEGIN_QUOTE’ … ‘#+END_QUOTE’         |
-| <s                     | ’#+BEGIN_SRC’ … ‘#+END_SRC’             |
-| <v                     | ’#+BEGIN_VERSE’ … ‘#+END_VERSE’         |
-|------------------------+-----------------------------------------|
-
-# (require 'org-tempo)
-
-* Preserve Indentation On Org-Babel-Tangle
-#+begin_src emacs-lisp
-(setq org-src-preserve-indentation t)
-#+end_src
+*** centaur tabs
 
 * ORG
-
-** auto tangle
-[[github:yilkalargaw/org-auto-tangle]]
-
+** ORG specific settings
+*** org directories
 #+begin_src emacs-lisp
-(use-package org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
-  :config
-(setq org-auto-tangle-default t))
+(setq org-directory "~/org/") ;org
+(setq org-default-notes-file (concat org-directory "/notes.org")) ;notes
 #+end_src
-
-*** Babel Auto Tangle Safelist
-Add a list of files to the safelist to autotangle with noweb evaluation
-
-#+begin_src emacs-lisp
-(setq org-auto-tangle-babel-safelist '(
-                                     "~/system.org"
-                                     "~/test.org"
-                                     ))
-#+end_src
-** convert md to org
-*** FIXME not working
-#+begin_src emacs-lisp :tangle no
-(defun markdown-convert-buffer-to-org ()
-"Convert the current buffer's content from markdown to orgmode format and save it with the current buffer's file name but with .org extension."
-(interactive)
-(shell-command-on-region (point-min) (point-max)
-                            (format "pandoc -f markdown -t org -o %s"
-                                    (concat (file-name-sans-extension (buffer-file-name)) ".org"))))
-#+end_src
-
-** emphasis markers
-#+begin_src emacs-lisp
-(setq org-hide-emphasis-markers t)
-#+end_src
-** bullets mode
-#TODO TEST FURTHER
-#FIXME not working so far
-icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
-
-org-bullets-face-name
-#+begin_src emacs-lisp :tangle no
-(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src
-
-*** variables to look out for
-| org-bullets-face-name |
-** TODO multi-state workflow
-=C-c C-t= to change state
-- The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
-
+If you use `org' and don't want your org files in the default location below, change `org-directory'. It must be set before org loads!
+*** org-todo
 #+begin_src emacs-lisp
 (setq org-todo-keywords
       '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER")))
 #+end_src
 
-*** parallel to-do
 #+begin_src emacs-lisp :tangle no
+;;; parallel todo
 (setq org-todo-keywords
       '((sequence "TODO(t)" "|" "DONE(d)")
         (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 #+end_src
 
-*** change only in current file
+**** docs
+=C-c C-t= to change state
+- The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
+
+***** change only in current file
 add anywhere in the file then =C-c C-c= with the cursor on the line
 +TODO: TODO(t) | DONE(d)
 +TODO: REPORT(r) BUG(b) KNOWNCAUSE(k) | FIXED(f)
 +TODO: | CANCELED(c)
+*** emphasis markers
+#+begin_src emacs-lisp
+(setq org-hide-emphasis-markers t)
+#+end_src
+*** bullets mode
+#+begin_src emacs-lisp :tangle no
+(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+#TODO TEST FURTHER
+#FIXME not working so far
+icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
 
-** priorities
-=C-c ,= ( org priority )
+org-bullets-face-name
 
-** tags :juju:
-- if a heading has a tag subheadings inherit the tag
-  - if multiple levels...inherit all from the top-level parent
-  - can use metadata to specify globally
-- use =M-Tab= for completion after colon
-  
-+FILETAGS: :Peter:Boss:Secret:
-
-*** set tags
-see also: [[\[\[https://orgmode.org/orgguide.html#Setting-tags-1\]\]][org guide - settings tags]]
-
-|---------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------|
-| =C-c C-q= | org-set-tags-command | Enter new tags for the current headline. Org mode either offers completion or a special single-key interface for setting tags, see below. |
-| =C-c C-c= | org-set-tags-comand  | When point is in a headline, this does the same as C-c C-q.                                                                               |
-|---------+----------------------+-------------------------------------------------------------------------------------------------------------------------------------------|
-    
-** done on task complete
+*** done on task complete
 [[https://orgmode.org/orgguide.html#Properties]]
-*** with timestamp
+**** with timestamp
 #+begin_src emacs-lisp
 (setq org-log-done 'time)
 #+end_src
 
-*** with note prompted to user
+**** with note prompted to user
 #+begin_src emacs-lisp :tangle no
 (setq org-log-done 'note)
 #+end_src
 
-** org directory & org roam & org capture
+*** tags alist
 #+begin_src emacs-lisp
-(setq org-directory "~/org/")
+(setq org-tag-alist
+      '(;;Places
+        ("@home" . ?H)
+        ("@school" . ?S)
+        ("@babe" . ?B)
+
+        ;;devices
+        ("@carthage" . ?C)
+        ("@tangier" . ?T)
+
+        ;;activites
+        ("@work" . ?W)
+        ("@pyrple" . ?P)
+        ("@emacs" . ?E)
+        ("@nix" . ?N)))
 #+end_src
-
-
-*** templates
-**** thoughtbot guy
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-      `(("t"    ;hotkey
-         "Todo list item"  ; name
-         entry ;type
-         ;heading type and title
-         (file+headline org-default-notes-file "Tasks")
-         "* TODO %?\n %i\n %a" ;template
-         )))
-#+end_src
-
-**** source??
-# default location for capture mode?
-#+begin_src emacs-lisp :tangle no
-(setq org-agenda-files (list "inbox.org"))
-#+end_src
-then we can setup a specific capture template for inbox:
-
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-       `(("i" "Inbox" entry  (file "inbox.org")
-        ,(concat "* TODO %?\n"
-                 "/Entered on/ %U"))))
-#+end_src
-*** capture 
-Capture lets you quickly store notes with no workflow interruption
-
+*** general UI/UX tweaks
+**** fancy priorities
+   Message: Invalid read syntax
+    Details: (")" 38 54)
 #+begin_src emacs-lisp
-(setq org-default-notes-file (concat org-directory "/notes.org"))
+(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
 #+end_src
 
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| command              | keymap          | does                                                                       |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
-| org-capture-finalize | =C-c C-c=         |                                                                            |
-| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
-| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-**** capture templates
-You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
-
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-      '(("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
-         "* TODO %?\n  %i\n  %a")
-        ("j" "Journal" entry (file+datetree "~/org/journal.org")
-         "* %?\nEntered on %U\n  %i\n  %a")))
-#+end_src
-If you then press t from the capture menu, Org will prepare the template for you like this:
-
-During expansion of the template, special %-escapes10 allow dynamic insertion of content. Here is a small selection of the possibilities, consult the manual for more.
-
-‘%a’	annotation, normally the link created with org-store-link
-‘%i’	initial content, the region when capture is called with C-u
-‘%t’, ‘%T’	timestamp, date only, or date and time
-‘%u’, ‘%U’	like above, but inactive timestamps
-‘%?’	after completing the template, position point here
-
-
-[[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
-*** TODO journal??
-*** roam
-#+begin_src emacs-lisp
-(setq org-roam-directory "~/org-roam")
-#+end_src
-
-** disable line numbers in org mode
+**** disable line numbers in org mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
 #+end_src
 
-** disable vi EOB tildes in org mode
+**** disable vi EOB tildes in org mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook (lambda () (vi-tilde-fringe-mode 0)))
 #+end_src
 
-** disable version control colors in org mode
+**** disable version control colors in org mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook (lambda () (diff-hl-mode 0)))
 #+end_src
 
-** worg tricks
-*** Colorize clocking tasks with a block
-[[https://orgmode.org/worg/org-hacks.html][org hacks -worg]]
+**** extra
 #+begin_src emacs-lisp :tangle no
-;; work with org-agenda dispatcher [c] "Today Clocked Tasks" to view today's clocked tasks.
-(defun org-agenda-log-mode-colorize-block ()
-  "Set different line spacing based on clock time duration."
-  (save-excursion
-    (let* ((colors (cl-case (alist-get 'background-mode (frame-parameters))
-                                 ('light
-                                  (list "#F6B1C3" "#FFFF9D" "#BEEB9F" "#ADD5F7"))
-                                 ('dark
-                                  (list "#aa557f" "DarkGreen" "DarkSlateGray" "DarkSlateBlue"))))
-           pos
-           duration)
-      (nconc colors colors)
-      (goto-char (point-min))
-      (while (setq pos (next-single-property-change (point) 'duration))
-        (goto-char pos)
-        (when (and (not (equal pos (point-at-eol)))
-                   (setq duration (org-get-at-bol 'duration)))
-          ;; larger duration bar height
-          (let ((line-height (if (< duration 15) 1.0 (+ 0.5 (/ duration 30))))
-                (ov (make-overlay (point-at-bol) (1+ (point-at-eol)))))
-            (overlay-put ov 'face `(:background ,(car colors) :foreground "black"))
-            (setq colors (cdr colors))
-            (overlay-put ov 'line-height line-height)
-            (overlay-put ov 'line-spacing (1- line-height))))))))
-
-(add-hook 'org-agenda-finalize-hook #'org-agenda-log-mode-colorize-block)
+(add-hook! 'org-mode-hook (company-mode -1))
+(add-hook! 'org-capture-mode-hook (company-mode -1))
 #+end_src
 
-*** Go back to the previous top-level heading
-**** TODO test further
-#+begin_src emacs-lisp :tangle no
-(defun org-back-to-top-level-heading ()
-  "Go back to the current top level heading."
-  (interactive)
-  (or (re-search-backward "^\* " nil t)
-      (goto-char (point-min))))
-#+end_src
-** zaiste
+*** experiments
+**** zaiste
 #+begin_src emacs-lisp :tangle no
 (after! org
   (set-face-attribute 'org-link nil
@@ -659,69 +334,483 @@ During expansion of the template, special %-escapes10 allow dynamic insertion of
                       :weight 'bold)
 #+end_src
 
-*** fancy priorities
-   Message: Invalid read syntax
-    Details: (")" 38 54)
-#+begin_src emacs-lisp
-(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
-#+end_src
-
-*** extra
+**** convert md to org
+**** FIXME Preserve Indentation On Org-Babel-Tangle
 #+begin_src emacs-lisp :tangle no
-(add-hook! 'org-mode-hook (company-mode -1))
-(add-hook! 'org-capture-mode-hook (company-mode -1))
+(setq org-src-preserve-indentation t)
+#+end_src
+** org-roam
+#+begin_src emacs-lisp
+(setq org-roam-directory "~/org/org-roam")
+#+end_src
+** org-capture
+Capture lets you quickly store notes with no workflow interruption
+#+begin_src emacs-lisp
+(use-package org-capture
+  :ensure nil
+  :bind ("C-c c" . org-capture)
+  :config
+  ;; (require 'prot-org)
+  (setq org-capture-templates
+      '(("d" "Demo Template" entry
+          (file+headline "demo.org" "Our first heading");relative to ~/org DIR
+          "* DEMO TEXT %?")
+        ("o" "Options in prompt" entry
+         (file+headline "demo.org" "Our second heading")
+         "* %^{Select your option|ONE|TWO|THREE} %?")
+        ("t" "Task with a date" entry
+         (file+headline "demo.org" "Scheduled tasks")
+         "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+        ("p" "Prompt for input: " entry
+            (file+headline "demo.org" "Our first +heading")
+            "* %^ %?")
+        ("a" "A random template") ; group 'em up
+            ("at" "submenu - option [t]" entry
+             (file+headline "demo.org" "Scheduled tasks")
+             "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+        )))
 #+end_src
 
-* initial buffer
-** TODO make this change with dashboard
-** TODO make this restore previous workpace instead
- #+begin_src emacs-lisp :tangle no
-(setq initial-buffer-choice "~/.doom.d/config.org") ;
- #+end_src
+*** prot tech :prot:
+#+begin_src elisp :tangle no
+(use-package org-capture
+  :ensure nil
+  :bind ("C-c c" . org-capture)
+  :config
+  ;; (require 'prot-org)
 
-* custom start mode
+  (setq org-capture-templates
+        `(("u" "Unprocessed" entry
+           (file+headline "tasks.org" "Unprocessed")
+           ,(concat "* %^{Title}\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%i%?")
+           :empty-lines-after 1)
+          ("w" "Wishlist" entry
+           (file+olp "tasks.org" "All tasks" "Wishlist")
+           ,(concat "* %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("t" "Task to do" entry
+           (file+headline "tasks.org" "All tasks")
+           ,(concat "* TODO %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("s" "Select file and heading to add to" entry
+           (function prot-org-select-heading-in-file)
+           ,(concat "* TODO %^{Title}%?\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n")
+           :empty-lines-after 1)
+
+          ;; NOTE 2024-11-24: I am not using this, but am keeping it
+          ;; here because the approach is good.
+
+          ;; ("c" "Clock in and do immediately" entry
+          ;;  (file+headline "tasks.org" "Clocked tasks")
+          ;;  ,(concat "* TODO %^{Title}\n"
+          ;;           ":PROPERTIES:\n"
+          ;;           ":EFFORT: %^{Effort estimate in minutes|5|10|15|30|45|60|90|120}\n"
+          ;;           ":END:\n\n"
+          ;;           "%a\n")
+          ;;  :prepend t
+          ;;  :clock-in t
+          ;;  :clock-keep t
+          ;;  :immediate-finish t
+          ;;  :empty-lines-after 1)
+          ("p" "Private lesson or service" entry
+           (file "coach.org")
+           #'prot-org-capture-coach
+           :prepend t
+           :empty-lines 1)
+          ("P" "Private service clocked" entry
+           (file+headline "coach.org" "Clocked services")
+           #'prot-org-capture-coach-clock
+           :prepend t
+           :clock-in t
+           :clock-keep t
+           :immediate-finish t
+           :empty-lines 1)))
+
+  ;; NOTE 2024-11-10: I realised that I was not using this enough, so
+  ;; I decided to simplify my setup.  Keeping it here, in case I need
+  ;; it again.
+
+  ;; (setq org-capture-templates-contexts
+  ;;       '(("e" ((in-mode . "notmuch-search-mode")
+  ;;               (in-mode . "notmuch-show-mode")
+  ;;               (in-mode . "notmuch-tree-mode")))))
+  )
+#+end_src
+*** escape codes
+|------------------+-----------------------------------------------------------|
+| special =%= escape | does                                                      |
+|------------------+-----------------------------------------------------------|
+| =%a=               | annotation, normally the link created with org-store-link |
+| =%i=               | with active region selected, insert it at point           |
+| =%t=  =%T=           | timestamp, date only, or date and time                    |
+| =%^t=              | prompt for timestamp                                      |
+| =%u=  =%U=           | like above, but inactive timestamps                       |
+| =%?=               | after completing the template, position point here        |
+| =%^=               | input/prompt                                              |
+|------------------+-----------------------------------------------------------|
+**** time management
+dont have to select manually you can:
++ relative time +3d
+
+*** shortcurts
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| command              | keymap          | does                                                                       |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
+| org-capture-finalize | =C-c C-c=         |                                                                            |
+| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
+| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+*** templates
+**** thoughtbot guy
 #+begin_src emacs-lisp :tangle no
-(define-minor-mode start-mode
-  "Provide functions for custom start page"
-  :lighter " start"
-  :keymap (let ((map (make-sparse-keymap)))
-                (evil-define-key 'normal start-mode-map
-                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
-                map))
-;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
-(provide 'start-mode)
+(setq org-capture-templates
+      `(("t"    ;hotkey
+         "Todo list item"  ; name
+         entry ;type
+         ;heading type and title
+         (file+headline org-default-notes-file "Tasks")
+         "* TODO %?\n %i\n %a" ;template
+         )))
 #+end_src
 
-* scroll off
-SCHEDULED: <2025-03-10 Mon 21:00>
+**** source??
+# default location for capture mode?
+#+begin_src emacs-lisp :tangle no
+(setq org-agenda-files (list "inbox.org"))
+#+end_src
+then we can setup a specific capture template for inbox:
+
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+       `(("i" "Inbox" entry  (file "inbox.org")
+        ,(concat "* TODO %?\n"
+                 "/Entered on/ %U"))))
+#+end_src
+**** capture templates :prot:
+more: manual
+
+You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
+
+If you then press =t= from the capture menu, Org will prepare the template for you like this:
+
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree "~/org/journal.org")
+         "* %?\nEntered on %U\n  %i\n  %a")))
+#+end_src
+
+
+
+[[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
+** org-agenda
+(key desc type match settings files)
+#+begin_src emacs-lisp :tangle yes
+(load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
+
+(setq org-agenda-custom-commands
+      `(
+        ("D" "Today's view"
+         ((todo "WAIT"
+                ((org-agenda-overriding-header "Tasks on hold\n")))
+         (agenda ""
+                 ((org-agenda-block-separator nil) ;"*"
+                  (org-agenda-span 1) ;7:: how many days should it span
+                  ;; (org-deadline-warning-days 0) ;events not for today
+                  (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                  ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
+                  ;; (org-agenda-fontify-priorities nil)
+                  (org-agenda-overriding-header "\nDaily agenda view\n")))
+         ))
+        ("P" "Protesilaos"
+         ,maluware-custom-org-daily-agenda)
+        ))
+#+end_src
+*** external variable files
+For neater/shorter presentation
+**** defvar maluware-org-custom-daily-agenda
+#+begin_src emacs-lisp :tangle maluware-org-agenda.el
+(defvar maluware-custom-org-daily-agenda
+  `((tags-todo "*"
+     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
+      (org-agenda-skip-function
+       `(org-agenda-skip-entry-if
+         'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
+      (org-agenda-block-separator nil)
+      (org-agenda-overriding-header "Important tasks without a date\n")))
+    (agenda "" ((org-agenda-span 1)
+                (org-deadline-warning-days 0)
+                (org-agenda-block-separator nil)
+                (org-scheduled-past-days 0)
+                ;; We don't need the `org-agenda-date-today'
+                ;; highlight because that only has a practical
+                ;; utility in multi-day views.
+                (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                (org-agenda-format-date "%A %-e %B %Y")
+                (org-agenda-overriding-header "\nToday's agenda\n")))
+    (agenda "" ((org-agenda-start-on-weekday nil)
+                (org-agenda-start-day "+1d")
+                (org-agenda-span 3)
+                (org-deadline-warning-days 0)
+                (org-agenda-block-separator nil)
+                (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                (org-agenda-overriding-header "\nNext three days\n")))
+    (agenda "" ((org-agenda-time-grid nil)
+                (org-agenda-start-on-weekday nil)
+                ;; We don't want to replicate the previous section's
+                ;; three days, so we start counting from the day after.
+                (org-agenda-start-day "+4d")
+                (org-agenda-span 14)
+                (org-agenda-show-all-dates nil)
+                (org-deadline-warning-days 0)
+                (org-agenda-block-separator nil)
+                (org-agenda-entry-types '(:deadline))
+                (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n"))))
+  "Custom agenda for use in `org-agenda-custom-commands'.")
+#+end_src
+
+***** org-agenda-custom-commands
+#+begin_src emacs-lisp :tangle no
+(setq org-agenda-custom-commands
+      `(("A" "Daily agenda and top priority tasks"
+         ((tags-todo "*"
+                     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
+                      (org-agenda-skip-function
+                       `(org-agenda-skip-entry-if
+                         'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
+                      (org-agenda-block-separator nil)
+                      (org-agenda-overriding-header "Important tasks without a date\n")))
+          (agenda "" ((org-agenda-span 1)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-scheduled-past-days 0)
+                      ;; We don't need the `org-agenda-date-today'
+                      ;; highlight because that only has a practical
+                      ;; utility in multi-day views.
+                      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                      (org-agenda-format-date "%A %-e %B %Y")
+                      (org-agenda-overriding-header "\nToday's agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))
+        ("P" "Plain text daily agenda and top priorities"
+         ((tags-todo "*"
+                     ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
+                      (org-agenda-skip-function
+                       `(org-agenda-skip-entry-if
+                         'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
+                      (org-agenda-block-separator nil)
+                      (org-agenda-overriding-header "Important tasks without a date\n")))
+          (agenda "" ((org-agenda-span 1)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-scheduled-past-days 0)
+                      ;; We don't need the `org-agenda-date-today'
+                      ;; highlight because that only has a practical
+                      ;; utility in multi-day views.
+                      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                      (org-agenda-format-date "%A %-e %B %Y")
+                      (org-agenda-overriding-header "\nToday's agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n"))))
+         ((org-agenda-with-colors nil)
+          (org-agenda-prefix-format "%t %s")
+          (org-agenda-current-time-string ,(car (last org-agenda-time-grid)))
+          (org-agenda-fontify-priorities nil)
+          (org-agenda-remove-tags t))
+         ("agenda.txt"))))
+#+end_src
+
+***** org-agenda-custom-commands
+#+begin_src emacs-lisp :tangle no
+(setq org-agenda-custom-commands
+      `(("A" "Daily agenda and top priority tasks"
+         ,prot-org-custom-daily-agenda)
+        ("P" "Plain text daily agenda and top priorities"
+         ,prot-org-custom-daily-agenda
+         ((org-agenda-with-colors nil)
+          (org-agenda-prefix-format "%t %s")
+          (org-agenda-current-time-string ,(car (last org-agenda-time-grid)))
+          (org-agenda-fontify-priorities nil)
+          (org-agenda-remove-tags t))
+         ("agenda.txt"))))
+#+end_src
+**** experiment custom-org-daily-agenda
+#+begin_src emacs-lisp :tangle no
+(defvar maluware-custom-org-daily-agenda
+         `((tags-todo "*"
+            (org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp))))
+           (org-agenda-skip-function
+            `(org-agenda-skip-entry-if
+              'notrege))
+           (todo "WAIT"
+                ((org-agenda-overriding-header "Tasks on hold\n")))
+         (agenda ""
+                 ((org-agenda-block-separator nil) ;"*"
+                  ;; (org-agenda-span 1) ;7:: how many days should it span
+                  ;; (org-deadline-warning-days 0) ;events not for today
+                  (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                  ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
+                  ;; (org-agenda-fontify-priorities nil)
+                  ;; org-agenda-skip-function
+                  (org-agenda-overriding-header "\nDaily agenda\n"))))
+  )
+#+end_src
+*** from manual
+#+begin_src emacs-lisp :tangle no
+(setq org-agenda-custom-commands
+    '(("h" "Agenda and Home-related tasks"
+        ((agenda "")
+        (tags-todo "home")
+        (tags "garden")))
+      ("o" "Agenda and Office-related tasks"
+        ((agenda "")
+        (tags-todo "work")
+        (tags "office")))
+      ))
+#+end_src
+*** worg tricks
+**** Colorize clocking tasks with a block
+[[https://orgmode.org/worg/org-hacks.html][org hacks -worg]]
+#+begin_src emacs-lisp :tangle no
+;; work with org-agenda dispatcher [c] "Today Clocked Tasks" to view today's clocked tasks.
+(defun org-agenda-log-mode-colorize-block ()
+  "Set different line spacing based on clock time duration."
+  (save-excursion
+    (let* ((colors (cl-case (alist-get 'background-mode (frame-parameters))
+                                 ('light
+                                  (list "#F6B1C3" "#FFFF9D" "#BEEB9F" "#ADD5F7"))
+                                 ('dark
+                                  (list "#aa557f" "DarkGreen" "DarkSlateGray" "DarkSlateBlue"))))
+           pos
+           duration)
+      (nconc colors colors)
+      (goto-char (point-min))
+      (while (setq pos (next-single-property-change (point) 'duration))
+        (goto-char pos)
+        (when (and (not (equal pos (point-at-eol)))
+                   (setq duration (org-get-at-bol 'duration)))
+          ;; larger duration bar height
+          (let ((line-height (if (< duration 15) 1.0 (+ 0.5 (/ duration 30))))
+                (ov (make-overlay (point-at-bol) (1+ (point-at-eol)))))
+            (overlay-put ov 'face `(:background ,(car colors) :foreground "black"))
+            (setq colors (cdr colors))
+            (overlay-put ov 'line-height line-height)
+            (overlay-put ov 'line-spacing (1- line-height))))))))
+
+(add-hook 'org-agenda-finalize-hook #'org-agenda-log-mode-colorize-block)
+#+end_src
+
+**** Go back to the previous top-level heading
+***** TODO test further
+#+begin_src emacs-lisp :tangle no
+(defun org-back-to-top-level-heading ()
+  "Go back to the current top level heading."
+  (interactive)
+  (or (re-search-backward "^\* " nil t)
+      (goto-char (point-min))))
+#+end_src
+* DOOM functionality
+** UX
+*** keybinds
 #+begin_src emacs-lisp
-(setq scroll-margin 18) ; Adjust the number as needed
+(keymap-global-set "M-;" 'save-buffer)
+#+end_src
+*** tab | shifts
+#+begin_src elisp :tangle no
+(setq tab-width 2
+      evil-shift-width 2)
 #+end_src
 
-- This variable controls how Emacs scrolls when the cursor moves off the screen.  
-- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
-- Setting it to 101 is a common practice, because it is a value higher than most screen heights.
+#+begin_src elisp :tangle yes
+(use-package emacs
+  :custom
+  (tab-width 2)
+  (evil-shift-width 2))
+#+end_src
 
+#+begin_src elisp :tangle no
+(customize-set-variable 'tab-width 2)
+#+end_src
+*** language/major-mode specific settings
+**** python
+***** based pyright
 #+begin_src emacs-lisp
-(setq scroll-conservatively 101) ; TODO test usefulness
+(setq lsp-pyright-langserver-command "basedpyright")
 #+end_src
 
-* mode hook
+#+begin_src emacs-lisp :tangle no
+(setq python-indent-level 4)
+#+end_src
+
+#+begin_src elisp
+(setq-hook! python-mode python-indent-offset 4)
+#+end_src
+
+***** hook
 #+begin_src emacs-lisp :tangle no
 (add-hook 'python-mode-hook
           (lambda ()
             (local-set-key (kbd "C-c r") 'python-shell-send-region)))
 #+end_src
-
-* package config
-** based pyright
-#+begin_src emacs-lisp
-(setq lsp-pyright-langserver-command "basedpyright")
-#+end_src
-
-** nil lsp
+**** nix
+***** nil lsp
 nil: An incremental analysis assistant for writing in Nix.
-
 #+begin_src emacs-lisp :tangle no
 (use-package lsp-mode
   :ensure t)
@@ -738,10 +827,10 @@ nil: An incremental analysis assistant for writing in Nix.
   :ensure t)
 #+end_src
 
-*** TODO fixes
+***** TODO fixes
 - kinda slow
 - disabled for now noly use :lang nix
-** nixd
+***** nixd
 #+begin_src emacs-lisp :tangle no
 (use-package nix-mode
 :after lsp-mode
@@ -761,7 +850,7 @@ nil: An incremental analysis assistant for writing in Nix.
          ;; enable autocompletion with company
          (setq company-idle-delay 0.1))
 #+end_src
-** emacs lsp booster
+***** emacs lsp booster
 #+begin_src emacs-lisp
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
@@ -794,42 +883,58 @@ nil: An incremental analysis assistant for writing in Nix.
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
-** obsidian
+*** sync text in buffer to text on disk
 #+begin_src emacs-lisp
-
-(use-package obsidian
-  :config
-  (global-obsidian-mode t)
-  (obsidian-backlinks-mode t)
-  :custom
-  ;; location of obsidian vault
-  (obsidian-directory "~/OBSIDIAN")
-  ;; Default location for new notes from `obsidian-capture'
-  (obsidian-inbox-directory "Inbox")
-  ;; Useful if you're going to be using wiki links
-  (markdown-enable-wiki-links t)
-
-  ;; These bindings are only suggestions; it's okay to use other bindings
-  :bind (:map obsidian-mode-map
-              ;; Create note
-              ("C-c C-n" . obsidian-capture)
-              ;; If you prefer you can use `obsidian-insert-wikilink'
-              ("C-c C-l" . obsidian-insert-link)
-              ;; Open file pointed to by link at point
-              ("C-c C-o" . obsidian-follow-link-at-point)
-              ;; Open a different note from vault
-              ("C-c C-p" . obsidian-jump)
-              ;; Follow a backlink for the current file
-              ("C-c C-b" . obsidian-backlink-jump)))
+(global-auto-revert-mode t)
 #+end_src
+**** Reverting a Buffer:
+The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
+- You've made changes in Emacs but want to discard them and return to the saved version.
+- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
 
-* dont tangle
+**** Auto Revert Mode:
+Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
+- Viewing log files that are constantly being updated.
+- Keeping your Emacs buffer synchronized with files modified by other applications.
+
+*** default workspace behaviour fix
+#+begin_src emacs-lisp
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override
+   `(+workspace-current-name))
+)
+#+end_src
+**** TODO see if its fixed/works
+*** delete trailing whitespace
 #+begin_src emacs-lisp :tangle no
-(message "Don't tangle me")
+(add-hook 'after-save-hook #'delete-trailing-whitespace)
+;; or
+;; (add-hook 'after-save-hook #'whitespace-cleanup)
 #+end_src
+unneeded since we use ws-butler which:
++ only on modified lines
++ replaces trailing whitespace with virtual whitespace
+*** MINIBUFFER ESCAPE
+By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+*** automatic parens pairing
+#+begin_src emacs-lisp :tangle no
+(electric-pair-mode 1) ;; turns on automatic parens pairing
+#+end_src
+*** better buffer names - files with same names
+#+begin_src elisp
+(setq uniquify-buffer-name-style 'post-forward) ;nil::
+#+end_src
+*** experiment
+**** initial buffer
+ #+begin_src emacs-lisp :tangle no
+(setq initial-buffer-choice "~/.doom.d/config.org") ;
+ #+end_src
 
-* hide #+begin_src end_src blocks
-** FIX does not work well...with doom? better way?
+**** hide #+begin_src end_src blocks
+***** FIX does not work well...with doom? better way?
 see plugin options
 #+begin_src emacs-lisp :tangle no
 (let ((background-color (face-attribute 'default :background)))
@@ -837,3 +942,451 @@ see plugin options
                       :foreground background-color
                       :background background-color))
 #+end_src
+**** sane defaults
+***** select and type
+#+begin_src emacs-lisp :tangle no
+(delete-selection-mode 1)
+#+end_src
+****** TODO see if works/needed
+***** weird emacs indent?
+Turn off the weird indenting that Emacs does by default.
+#+begin_src emacs-lisp :tangle no
+(electric-indent-mode -1)
+#+end_src
+****** TODO test further
+*** BACKUP - delete to trash
+By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+#+end_src
+
+*** name
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets. It is optional.
+#+begin_src emacs-lisp
+(setq user-full-name "Justin Malu"
+      user-mail-address "justinmalu@gmail.com")
+#+end_src
+** UI
+*** fonts
+**** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
+#+begin_src emacs-lisp
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
+#+end_src
+***** options
+- var:doom-font: the primary font for Emacs to use.
+- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
+- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
+- var:doom-symbol-font: used for rendering symbols.
+- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
+- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
+***** nerd font experiement
+****** in use
+******* jetbrains mono
+#+begin_src emacs-lisp :tangle no
+(setq
+ doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium ))
+#+end_src
+****** dormant
+******* mononoki
+kinda nice and kawaii
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
+#+end_src
+******* iosevka
+******** comfy
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
+#+end_src
+******** term
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
+#+end_src
+
+******* zed mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
+#+end_src
+
+******* martian mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
+#+end_src
+
+******* caskaydia
+******** code
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
+#+end_src
+******** mono
+kinda nice
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
+#+end_src
+
+******* lilex
+nice l and i
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
+#+end_src
+
+******* fira
+nice defaults
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+******* shure
+boxy nice stuff 😃
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+******* lekton
+nice little font actually :)
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
+#+end_src
+
+******* space mono
+use with rofi as well...clean cut font but kinda thin and no semibold
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
+#+end_src
+
+******* Monofur
+kawaii - but does not look nice for ide maybe for ui?
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
+#+end_src
+
+******* SauceCode Pro
+#+begin_src emacs-lisp :tangle no
+(setq
+ doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
+#+end_src
+
+******* Geist
+sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
+#+end_src
+
+******* monaspace
+one family, 5 fonts, 3 variable axes
+
+
+|------+---------+--------------------|
+| abbr | name    | font (actual)      |
+|------+---------+--------------------|
+| Ne   | Neon    | Neo-grotesque sans |
+| Ar   | Argon   | Humanist sans      |
+| Xe   | Xenon   | Slab serif         |
+| Ra   | Radon   | Handwriting        |
+| Kr   | Kyrpton | Mechanical sans    |
+|------+---------+--------------------|
+
+#+begin_src emacs-lisp :tangle no
+;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
+(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
+#+end_src
+
+**** TODO variable font and symbols
+**** change fonts on the fly
+[[file:~/org/org-roam/20250401030930-doom_emacs.org::*]]
+*** theme
+**** load theme
+
+ There are =two ways= to load a theme. Both assume the theme is installed and
+ available.
+
+ You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
+
+**** favs
+***** dark
+- solarized-dark
+- one
+- horizon - nice red accents and purple
+- dracula
+- solarized-dark-high-contrast
+- ayu-mirage
+- snazzy
+- moonlight
+- material - nice purple dotts and cursor
+- monokai-octagon
+
+***** light
+- doom-solarized-light
+- earl grey
+***** really light white light
+- doom-winter-is-coming-light
+- ayu light
+- one light
+***** pastel
+- ephemeral
+- nord-aurora
+****** modeline
+works !!...height tooo small thought :height 0.9
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(mode-line :family "VictorMono Nerd Font" :size 16 )
+  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
+#+end_src
+
+****** relative line numbers
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'relative)
+#+end_src
+options: nil, 'relative, t (enable)
+****** scroll off
+#+begin_src emacs-lisp
+(setq scroll-margin 18) ; Adjust the number as needed
+(setq scroll-conservatively 101) ; TODO test usefulness
+#+end_src
+=scroll-conservatively=
+does: Scroll up to this many lines, to bring point back on screen.
+- This variable controls how Emacs scrolls when the cursor moves off the screen.  
+- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
+- Setting it to 101 is a common practice, because it is a value higher than most screen heights.redisplay will never recenter point,
+but will always scroll just enough text to bring point into view, even
+if you move far away.
+- A value of zero means always recenter point if it moves off screen.
+
+****** custom start mode
+#+begin_src emacs-lisp :tangle no
+(define-minor-mode start-mode
+  "Provide functions for custom start page"
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+                (evil-define-key 'normal start-mode-map
+                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
+                map))
+;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
+(provide 'start-mode)
+#+end_src
+
+* NOTES
+** use of different files (config.el, init.el, packages.el)
+*** config.el
+**** after!
+**** use-package!
+- built into > emacs29
+- is not a package manager...its a configuration macro
+- evaluated line by line on start of emacs unless using defer?
+
+- featurep - macro to make some configuration conditional based on the state of another module or the presence of a flag.
+
+|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
+| flag (order unimportant) | takes        | comment                                              | extra                                                                         |
+|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
+| =:ensure=                  | t nil        | use default pkg manager(package.el) * care with doom | can use variable use-package-always-ensure to have ensure default to t always |
+| =:config=                  | <elisp>      | evaluate code after package has been loaded          |                                                                               |
+| =:init=                    | <elisp>      | ensure loaded before package loads                   |                                                                               |
+| =:if (variable)=           |              | if in display-graphic-p (in graphical env)           | eg. :if (display-graphic-p)                                                   |
+| =:defer=                   |              |                                                      |                                                                               |
+| =:bind=                    |              | keymaps in k . v pairs("keys" . <functions>)         |                                                                               |
+| =:demand=                  | t            | load package immediately on emacs start              |                                                                               |
+| =:defer=                   | t N(seconds) | dont load immediately                                |                                                                               |
+| =:after=                   | <pkgName>    | load after another pkg loads                         | check out with-eval-after-load elisp function to avoid using :after           |
+| =:hook=                    |              | see after-init-hook (after emacs init?)              |                                                                               |
+|                          |              |                                                      |                                                                               |
+|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
+
+**** conditional loading
+***** if
+#+begin_src elisp :tangle no
+:if (eq system-type 'gnu-linux)
+#+end_src
+***** when
+the code executes when the check passes
+#+begin_src elisp :tangle no
+(when (eq system-type 'gnu-linux)
+  (use-package <package>
+    :ensure t))
+#+end_src
+***** unless??
+**** defer loading
+***** by binding keys
+****** without global
+#+begin_src elisp :tangle no
+(use-package denote
+  :ensure t
+  :bind
+  ;; ("C-c n n" . denote) ;single binding
+  (("C-c n n" . denote)
+   ("C-r n r" . denote-rename-file)) ; list of pairs for multiple key bindings/association list
+  :config
+  (setq denote-known-keywords '("emacs" "philosophy" "politics")))
+#+end_src
+
+****** global map
+#+begin_src elisp :tangle no
+(use-package denote
+  :ensure t
+  :bind
+  (:map global-map
+        ("C-c n n" . denote))
+  :config
+  (setq denote-known-keywords '("emacs" "philosophy" "politics")))
+#+end_src
+dont evaluate :config befoore i hit the key
+****** map modes:
++ global-map
++ text-mode-map
++ dired-mode-mapa
+***** hook
+****** single
+#+begin_src elisp :tangle no
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode) ; single mode
+  :config
+  ;;Evaluated after im in dired)
+#+end_src
+****** multiple
+#+begin_src elisp :tangle no
+(use-package abbrev
+  :ensure nil
+  :hook ((text-mode prog-mode git-commit-mode) . abbrev-mode)) ; list of hooks
+;; or
+(use-package abbrev
+  :ensure nil
+  :hook ((text-mode . abbrev-mode)
+         (prog-mode . abbrev-mode)
+         (git-commit-mode . abbrev-mode)))
+  #+end_src
+
+***** command is executed
+normally not needed - packages handle this? ;;;###autoload cookie
+#+begin_src elisp :tangle no
+(use-package bookmark
+  :ensure nil
+  :commands (bookmark-set bookmark-jump bookmark-bmenu-list))
+#+end_src
+***** until file loaded (for major modes)
+generally not needed since major modes handle this
+#+begin_src elisp :tangle no
+(use-package sxhkdrc-mode
+  :ensure t
+  :mode :"sxhkdr_.*"
+  )
+  #+end_src
+***** defer indefinitely or fo N seconds of idleness
+N seconds
+#+begin_src elisp :tangle no
+(use-package server ;built in server
+  :ensure nil
+  :defer 1
+  :config
+  (setq server-client-instructions nil)
+  (unless (server-running-p)
+  (server-start)))
+  #+end_src
+
+indefinitely until something else happens. eg. command
+#+begin_src elisp :tangle no
+(use-package markdown-mode
+  :ensure t
+  :defer t
+  :config
+  (setq markdown-fontify-code-blocks-natively t)) ; t::
+  #+end_src
+
+ Here are some additional functions/macros that will help you configure Doom.
+ + =load!= for loading external *.el files relative to this one
+ + =use-package!= for configuring packages
+ + =after!= for running code after a package has loaded
+ + =add-load-path!= for adding directories to the `load-path', relative to
+   this file. Emacs searches the `load-path' when you load packages with
+   =require= or =use-package=.
+ + =map!= for binding new keys
+
+**** getting help on functions/macros
+ move the cursor over the highlighted symbol at press =K= (non-evil users must press =C-c c k').
+
+ This will open documentation for it, including demos of how they are used.
+
+ Alternatively, use =C-h o= to look up a symbol (functions, variables, faces, etc).
+
+ You can also try =gd= (or =C-c c d=) to jump to their definition and see how they are implemented.
+
+*** init.el
+DO:
++ configure emacs, setup
++ use-package-hook! when after! is not enough
+*** packages.el
+DONT:
++ perform expensive calculations: files here read often
++ produce any side effects
+DO
++ featurep macro
++ :disable - single package
++ disable-packages! macro to disable multiple packages
+**** example
+source: [[https://github.com/doomemacs/doomemacs/blob/master/docs/getting_started.org#configuring-packages]]
+#+begin_src elisp :tangle no
+;;; ~/.doom.d/config.el (example)
+(setq doom-font (font-spec :family "Fira Mono" :size 12))
+
+;; Takes a feature symbol or a library name (string)
+(after! evil
+  (setq evil-magic nil))
+
+;; Takes a major-mode, a quoted hook function or a list of either
+(add-hook! python-mode
+  (setq python-shell-interpreter "bpython"))
+
+;; These are equivalent
+(setq-hook! 'python-mode-hook python-indent-offset 2)
+(setq-hook! python-mode python-indent-offset 2)
+
+(use-package! hl-todo
+  ;; if you omit :defer, :hook, :commands, or :after, then the package is loaded
+  ;; immediately. By using :hook here, the `hl-todo` package won't be loaded
+  ;; until prog-mode-hook is triggered (by activating a major mode derived from
+  ;; it, e.g. python-mode)
+  :hook (prog-mode . hl-todo-mode)
+  :init
+  ;; code here will run immediately
+  :config
+  ;; code here will run after the package is loaded
+  (setq hl-todo-highlight-punctuation ":"))
+#+end_src
+**** custom `load-path'
+#+begin_src elisp :tangle no
+(use-package notmuch
+  :ensure nil ; do not install, because I get it from my linux pkgs
+  :load-path "/usr/share/emacs/site-lisp"
+  :defer t
+  :commands (notmuch notmuch-mua-new-mail))
+  #+end_src
+
+*** autoload.el
+*** split config | include | load
+#+begin_src elisp :tangle no
+;; Omitting the file extension allows Emacs to load the byte-compiled version,
+;; if it is available:
+(load! "+git")   ; loads ./+git.el
+#+end_src
+** Doom concepts
+*** doom cookies
+*** variables, funcitons, faces, etc
++ describe-variable (SPC h v)
++ describe-function (SPC h f)
++ describe-face (SPC h F)
++ describe-bindings (SPC h b)
++ describe-key (SPC h k)
++ describe-char (SPC h ')
++ find-library (SPC h P)
+*** evaluate emacs-lisp on the fly
++ eval code with =M-;= =SPC-;=
++ eval elisp with =M-:=
++ =SPC x= will open a scratch buffer. M-x emacs-lisp-mode will change it to the appropriate major mode, then use +eval:region (=gr=) and +eval/buffer (=gR=) to evaluate code,
+*** sandbox
+| =SPC h E=           | evil users |
+| =M-x: doom/sandbox= |            |

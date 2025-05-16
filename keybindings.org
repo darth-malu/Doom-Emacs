@@ -1,6 +1,0 @@
-* keybindings
-leader: =SPC=
-local leader: =SPC-m=
-#+begin_src emacs-lisp
-
-#+end_src
