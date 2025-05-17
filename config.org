@@ -345,6 +345,8 @@ org-bullets-face-name
 #+end_src
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
+*** my org-capture-template
+
 #+begin_src emacs-lisp
 (use-package org-capture
   :ensure nil
@@ -352,24 +354,64 @@ Capture lets you quickly store notes with no workflow interruption
   :config
   ;; (require 'prot-org)
   (setq org-capture-templates
-      '(("d" "Demo Template" entry
-          (file+headline "demo.org" "Our first heading");relative to ~/org DIR
-          "* DEMO TEXT %?")
-        ("o" "Options in prompt" entry
-         (file+headline "demo.org" "Our second heading")
-         "* %^{Select your option|ONE|TWO|THREE} %?")
-        ("t" "Task with a date" entry
-         (file+headline "demo.org" "Scheduled tasks")
-         "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
-        ("p" "Prompt for input: " entry
-            (file+headline "demo.org" "Our first +heading")
-            "* %^ %?")
-        ("a" "A random template") ; group 'em up
-            ("at" "submenu - option [t]" entry
-             (file+headline "demo.org" "Scheduled tasks")
-             "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+      '(
+        ;;; MY STUFF
+        ;; ("m" "Movies template" plain
+        ;;   (file+headline "bucket-list.org" "Movies to watch");relative to ~/org DIR
+        ;;   "- [ ] %?")
+
+        ;; ("g" "Games template" plain
+        ;;   (file+headline "bucket-list.org" "Games to play");
+        ;;   "- [ ] %?")
+
+        ;; ("b" "Books template" plain
+        ;;   (file+headline "bucket-list.org" "Books to read")
+        ;;   "- [ ] %?")
+
+        ;; try entry, plain
+        ("b" "Bucket List [ movies books ]") ; group 'em up
+            ("bm" "movies" plain
+             (file+headline "bucket-list.org" "Movies")
+             "- [ ] %?")
+            ("bb" "books" plain
+             (file+headline "bucket-list.org" "Books")
+             "- [ ] %?")
+
         )))
 #+end_src
+
+**** old template
+#+begin_src elisp
+;; ("d" "Demo Template" entry
+;;   (file+headline "demo.org" "Our first heading");relative to ~/org DIR
+;;   "* DEMO TEXT %?")
+
+;; ("o" "Options in prompt" entry
+;;  (file+headline "demo.org" "Our second heading")
+;;  "* %^{Select your option|ONE|TWO|THREE} %?")
+
+;;; capture region and insert into template ;; attach current time
+;; ("t" "Task with a date" entry
+;;  (file+headline "demo.org" "Scheduled tasks")
+;;  "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+
+;; ("p" "Prompt for input: " entry
+;;     (file+headline "demo.org" "Our first +heading")
+;;     "* %^ %?")
+
+;; ("a" "A random template") ; group 'em up
+;;     ("at" "submenu - option [t]" entry
+;;      (file+headline "demo.org" "Scheduled tasks")
+;;      "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+#+end_src
+*** howardism
+
+org capture template consists of 3 parts:
++ a key binding
++ a destination, (a file, and some section in that file, like a heading, list item etc)
++ a formatting template
+
+source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
 
 *** prot tech :prot:
 #+begin_src elisp :tangle no
@@ -493,7 +535,7 @@ dont have to select manually you can:
          )))
 #+end_src
 
-**** source??
+**** source?? - nice stuff
 # default location for capture mode?
 #+begin_src emacs-lisp :tangle no
 (setq org-agenda-files (list "inbox.org"))
@@ -525,7 +567,12 @@ If you then press =t= from the capture menu, Org will prepare the template for y
 
 [[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
 ** org-agenda
+
 (key desc type match settings files)
+
+Doom Emacs sets (org-agenda-start-day "-3d").
+
+*** pro tech :prot:
 #+begin_src emacs-lisp :tangle yes
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
@@ -537,10 +584,11 @@ If you then press =t= from the capture menu, Org will prepare the template for y
          (agenda ""
                  ((org-agenda-block-separator nil) ;"*"
                   (org-agenda-span 1) ;7:: how many days should it span
-                  ;; (org-deadline-warning-days 0) ;events not for today
-                  (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                  (org-deadline-warning-days 0) ; remove warnings for events not for today
+                  ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
                   ;; (org-agenda-fontify-priorities nil)
+                  (org-agenda-start-day nil)
                   (org-agenda-overriding-header "\nDaily agenda view\n")))
          ))
         ("P" "Protesilaos"
