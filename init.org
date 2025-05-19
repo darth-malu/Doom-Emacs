@@ -58,7 +58,7 @@ The search engine for life and love
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
-       (emoji +unicode)  ; 🙂
+       (emoji +ascii +unicode)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
        (ligatures +extra)         ; ligatures and symbols to make your code pretty again
@@ -68,20 +68,23 @@ The search engine for life and love
        nav-flash         ; blink cursor line after big motions
        ;; neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on ; TODO read further
-       (popup +defaults)   ; tame sudden yet inevitable temporary windows
+       (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
        tabs              ; a tab bar for Emacs
        (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
        unicode           ; extended unicode support for various languages
        (vc-gutter +pretty) ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
-       (window-select +numbers)     ; visually switch windows
-       window-select
-       workspaces        ; tab emulation, persistence & separate workspaces
+       (window-select +switch-window +numbers)     ; visually switch windows
+       ;; window-select
+       workspaces        ; tab emulation, persistence & separate workspaces ;persp-mode
        ;;zen               ; distraction-free coding or writing
 #+end_src
+
 *** docs
 **** deft - major mode
 **** ligatures
+This module enables ligatures and arbitrary symbol substitutions with mac-auto-operator-composition-mode (on supported macOS systems) or composition tables (harfbuzz on Emacs 28), falling back on =prettify-symbols-mode= otherwise.
+
 **** emoji
 +unicode +ascii +github
 **** popup
@@ -92,6 +95,12 @@ modeline can be disabled in popups
 **** treemacs
 ***** TODO treemacs-git-mode
 +lsp .
+**** window-seclect
+This module provides several methods for selecting windows without the use of the mouse or spatial navigation (e.g. =C-w {h,j,k,l}=).
+
+The command other-window is remapped to either =switch-window= or =ace-window=, depending on which backend you’ve enabled. It is bound to =C-x o= (and =C-w C-w= for evil users).
+
+It also provides numbered windows and selection with the =winum= package, if desired. Evil users can jump to window N in =C-w <N>= (where N is a number between 0 and 9). Non evil users have =C-x w <N>= instead.
 ** editor
 #+begin_src emacs-lisp :tangle init.el
 :editor
@@ -110,13 +119,20 @@ modeline can be disabled in popups
 #+end_src
 *** explainer
 + parinfer
-  Parinfer is a proof-of-concept editor mode for Lisp programming languages. It simplifies the way we write Lisp by auto-adjusting parens when indentation changes and vice versa. The hope is to make basic Lisp-editing easier for newcomers and experts alike
+ 
+  Parinfer is a minor mode that aids the writing of Lisp code. It automatically infers parenthesis matching and indentation alignment, keeping your code balanced and beautiful.
+
+  Parinfer is a proof-of-concept editor mode for Lisp programming languages.
+  It simplifies the way we write Lisp by auto-adjusting parens when indentation changes and vice versa. The hope is to make basic Lisp-editing easier for newcomers and experts alike
+  
   a. source:[[https://shaunlebron.github.io/parinfer/]]
+
 + =file-templates= - This module adds file templates for blank files, powered by yasnippet.
 + =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
 + The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
 + in visual mode =#= =*= search for the selection instead of just the word under cursor
 ** emacs
+
 #+begin_src emacs-lisp :tangle init.el
 :emacs
        dired             ; making dired pretty [functional]
@@ -126,12 +142,20 @@ modeline can be disabled in popups
        (undo +tree)      ; persistent, smarter undo for your inevitable mistakes
        vc                ; version-control and Emacs, sitting in a tree
 #+end_src
+*** ibuffer
++ Adds project-based grouping of buffers
++ Support for file-type icons
++ Uses human-readable file-size
+
+*** git
+This module augments Emacs builtin version control support and provides better integration with git.
+
 ** term
 #+begin_src emacs-lisp :tangle init.el
 :term
        eshell            ; the elisp shell that works everywhere
-       shell             ; simple shell REPL for Emacs
-       term              ; basic terminal emulator for Emacs
+       ;; shell             ; simple shell REPL for Emacs
+       ;; term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
 #+end_src
 
@@ -178,8 +202,10 @@ This module provides syntax checking and error highlighting, powered by flycheck
 This modules adds inline code evaluation support to Emacs and a universal interface for opening and interacting with REPLs.
 
 *flags*
+
 +overlay
-- Display evaluation results in an overlay at point rather than the minibuffer. That is, unless the results are too big (<5 lines), in which case it falls back to the minibuffer/popup buffer.
++ Display evaluation results in an overlay at point rather than the minibuffer. That is, unless the results are too big (<5 lines), in which case it falls back to the minibuffer/popup buffer.
+  packages: quickrun
 
 **** lookup
 Flags: +dictionary +docsets +offline
@@ -194,8 +220,14 @@ Integration with Dash.app docsets.
 Support for online (and offline) dictionaries and thesauruses.
 
 **** lsp
-- +eglot (use instead of default lsp-mode ) - minimal
-- +peek (use lsp-ui-peek)
++ +eglot (use instead of default lsp-mode ) - minimal
++ +peek (use lsp-ui-peek)
+  Use =lsp-ui-peek= when looking up definitions and references with functionality from the =:tools lookup= module.
+
+To get LSP working, you’ll need to do three things:
++ Enable this module,
++ Install a language server appropriate for your targeted language(s) (a table mapping languages to supported servers can be found in lsp-mode’s README).
++ Enable the +lsp flag on the :lang modules you want to enable LSP support for. If your language’s module doesn’t have LSP support, and you know it can (or should), please let us know! In the meantime, you must configure it yourself (described in the Configuration section).
 
 **** pdf
 This module improves support for reading and interacting with PDF files in Emacs.
@@ -216,18 +248,22 @@ Displaying PDF files is just one function of pdf-tools. See its project website 
        data              ; config/data formats
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML
-       (java +lsp)       ; the poster child for carpal tunnel syndrome
-       (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
-       latex             ; writing papers in Emacs has never been so fun
+       yaml              ; JSON, but readable
+       ;; (java +lsp)       ; the poster child for carpal tunnel syndrome
+       ;; (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
+       ;; latex             ; writing papers in Emacs has never been so fun
        (lua +lsp)               ; one-based indices? one-based indices
        (markdown +grip)          ; writing docs for people to ignore
        (nix +lsp)               ; I hereby declare "nix geht mehr!"
+       ;; nix
        (org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty)
-       (python +lsp +pyright)            ; beautiful is better than ugly
-       web               ; the tubes
+       (python +lsp +pyright +pyenv)            ; beautiful is better than ugly
+       ;; web               ; the tubes
        (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
-       yaml              ; JSON, but readable
 #+end_src
+
+pyenv:[[github:shellbj/pyenv.el]]
+
 *** defaults
 #+begin_src emacs-lisp :tangle no
 :lang
@@ -302,6 +338,12 @@ This module adds Python support to Doom Emacs.
   - lsp-python-ms
 
 **** web
+
+|---------------------------------------------------------+---------------------------------------------------------------|
+| major mode                                              | default language server                                       |
+|---------------------------------------------------------+---------------------------------------------------------------|
+| web-mode, css-mode, scss-mode, sass-mode, less-css-mode | vscode-css-languageserver-bin, vscode-html-languageserver-bin |
+|---------------------------------------------------------+---------------------------------------------------------------|
 This module adds support for various web languages, including HTML5, CSS, SASS/SCSS, Pug/Jade/Slim, and HAML, as well as various web frameworks, like ReactJS, Wordpress, Jekyll, Phaser, AngularJS, Djano, and more.
 
 **** nix
@@ -364,6 +406,14 @@ Note that if you change Java version you may need to remove the LSP server and i
        ;;(wanderlust +gmail)
 
 #+end_src
+*** mu4e
++ Tidied mu4e headers view, with flags from all-the-icons.
++ Consistent coloring of reply depths (across compose and gnus modes).
++ Prettified mu4e:main view.
++ Cooperative locking of the mu process. Another Emacs instance may request access, or grab the lock when it’s available.
++ org-msg integration with +org, which can be toggled per-message, with revamped style and an accent color.
++ Gmail integrations with the +gmail flag.
++ Email notifications with mu4e-alert, and (on Linux) a customised notification style.
 ** app
 #+begin_src emacs-lisp :tangle init.el
 :app

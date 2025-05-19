@@ -7,6 +7,485 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 #+end_src
 
+* DOOM functionality
+** UX
+*** keybinds
+#+begin_src emacs-lisp
+(keymap-global-set "M-;" 'save-buffer)
+#+end_src
+*** tab | shifts
+#+begin_src elisp :tangle no
+(setq tab-width 2
+      evil-shift-width 2)
+#+end_src
+
+=Witchmacs= :witch:
+#+begin_src emacs-lisp :tangle no
+(setq-default tab-width 4)
+(setq-default standard-indent 4)
+(setq c-basic-offset tab-width)
+(setq-default electric-indent-inhibit t)
+(setq-default indent-tabs-mode t)
+(setq backward-delete-char-untabify-method 'nil)
+#+end_src
+
+#+begin_src elisp :tangle yes
+(use-package emacs
+  :custom
+  (tab-width 2)
+  (evil-shift-width 2))
+#+end_src
+
+#+begin_src elisp :tangle no
+(customize-set-variable 'tab-width 2)
+#+end_src
+*** language/major-mode specific settings
+**** python
+***** python-mode
+#+begin_src emacs-lisp :tangle no
+(use-package python-mode
+  :ensure nil
+  ;; :custom
+  ;; (python-shell-interpreter "python3")
+  )
+#+end_src
+***** elpy
+#+begin_src emacs-lisp :tangle no
+(elpy-enable)
+#+end_src
+
+***** based pyright
+lsp pyright
+source: [[https://emacs-lsp.github.io/lsp-pyright/]]
+
+#+begin_src elisp :tangle yes
+(use-package lsp-pyright
+  :ensure nil
+  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp-deferred))))  ; lsp:: lsp-deferred
+#+end_src
+
+#+begin_src elisp :tangle no
+(setq-hook! python-mode python-indent-offset 4)
+#+end_src
+***** hook
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'python-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c r") 'python-shell-send-region)))
+#+end_src
+**** nix
+***** nil lsp
+nil: An incremental analysis assistant for writing in Nix.
+#+begin_src emacs-lisp :tangle no
+(use-package lsp-mode
+  :ensure nil)
+
+(use-package lsp-nix
+  :ensure lsp-mode
+  :after (lsp-mode)
+  :demand t
+  :custom
+  (lsp-nix-nil-formatter ["nixfmt"]))
+
+(use-package nix-mode
+  :hook (nix-mode . lsp-deferred)
+  :ensure nil)
+#+end_src
+
+***** TODO COMMENT fixes
+- kinda slow
+- disabled for now noly use :lang nix
+***** nixd
+#+begin_src emacs-lisp :tangle no
+(use-package nix-mode
+:after lsp-mode
+:ensure t
+:hook
+(nix-mode . lsp-deferred) ;; So that envrc mode will work
+:custom
+(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
+:config
+(setq lsp-nix-nixd-server-path "nixd"
+      lsp-nix-nixd-formatting-command [ "nixfmt" ]
+      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
+
+(add-hook! 'nix-mode-hook
+         ;; enable autocompletion with company
+         (setq company-idle-delay 0.1))
+#+end_src
+***** emacs lsp booster
+#+begin_src emacs-lisp
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+#+end_src
+*** sync text in buffer to text on disk
+#+begin_src emacs-lisp
+(global-auto-revert-mode t)
+#+end_src
+**** Reverting a Buffer:
+The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
+- You've made changes in Emacs but want to discard them and return to the saved version.
+- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
+
+**** Auto Revert Mode:
+Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
+- Viewing log files that are constantly being updated.
+- Keeping your Emacs buffer synchronized with files modified by other applications.
+
+*** default workspace behaviour fix
+#+begin_src emacs-lisp :tangle no
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override
+   `(+workspace-current-name))
+)
+#+end_src
+**** TODO see if its fixed/works
+*** delete trailing whitespace
+#+begin_src emacs-lisp :tangle no
+(add-hook 'after-save-hook #'delete-trailing-whitespace)
+;; or
+;; (add-hook 'after-save-hook #'whitespace-cleanup)
+#+end_src
+unneeded since we use ws-butler which:
++ only on modified lines
++ replaces trailing whitespace with virtual whitespace
+*** MINIBUFFER ESCAPE
+By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+*** automatic parens pairing
+#+begin_src emacs-lisp :tangle no
+(electric-pair-mode 1) ;; turns on automatic parens pairing
+#+end_src
+*** better buffer names - files with same names
+#+begin_src elisp
+(setq uniquify-buffer-name-style 'post-forward) ;nil::
+#+end_src
+*** experiment
+**** initial buffer
+ #+begin_src emacs-lisp :tangle no
+(setq initial-buffer-choice "~/.doom.d/config.org") ;
+ #+end_src
+
+**** hide #+begin_src end_src blocks
+***** FIX does not work well...with doom? better way?
+see plugin options
+#+begin_src emacs-lisp :tangle no
+(let ((background-color (face-attribute 'default :background)))
+  (set-face-attribute 'org-block-begin-line nil
+                      :foreground background-color
+                      :background background-color))
+#+end_src
+**** sane defaults
+***** select and type
+#+begin_src emacs-lisp :tangle no
+(delete-selection-mode 1)
+#+end_src
+****** TODO see if works/needed
+***** weird emacs indent?
+Turn off the weird indenting that Emacs does by default.
+#+begin_src emacs-lisp :tangle yes
+(setq electric-pair-pairs '(
+                            (?\{ . ?\})
+                            (?\( . ?\))
+                            (?\[ . ?\])
+                            (?\" . ?\")
+                            ))
+;; (electric-indent-mode -1)
+#+end_src
+****** TODO test further
+***** creating a new window switches cursor to it
+#+begin_src emacs-lisp :tangle yes
+ (defun split-and-follow-horizontally ()
+	(interactive)
+	(split-window-below)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+ (defun split-and-follow-vertically ()
+	(interactive)
+	(split-window-right)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+end_src
+***** turn yes-or-no questions into y or no
+#+begin_src emacs-lisp :tangle no
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+***** defer load most packages for quick startup
+#+begin_src emacs-lisp :tangle no
+(setq use-package-always-defer t)
+#+end_src
+*** BACKUP - delete to trash
+By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+#+end_src
+
+*** name
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets. It is optional.
+#+begin_src emacs-lisp
+(setq user-full-name "Justin Malu"
+      user-mail-address "justinmalu@gmail.com")
+#+end_src
+** UI
+*** fonts
+**** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
+#+begin_src emacs-lisp
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
+#+end_src
+***** options
+- var:doom-font: the primary font for Emacs to use.
+- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
+- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
+- var:doom-symbol-font: used for rendering symbols.
+- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
+- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
+***** nerd font experiement
+****** mononoki
+kinda nice and kawaii
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
+#+end_src
+****** iosevka
+******* comfy
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
+#+end_src
+******* term
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
+#+end_src
+
+****** zed mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
+#+end_src
+
+****** martian mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
+#+end_src
+
+****** caskaydia
+******* code
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
+#+end_src
+******* mono
+kinda nice
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
+#+end_src
+
+****** lilex
+nice l and i
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
+#+end_src
+
+****** fira
+nice defaults
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+****** shure
+boxy nice stuff 😃
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+****** lekton
+nice little font actually :)
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
+#+end_src
+
+****** space mono
+use with rofi as well...clean cut font but kinda thin and no semibold
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
+#+end_src
+
+****** Monofur
+kawaii - but does not look nice for ide maybe for ui?
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
+#+end_src
+
+****** SauceCode Pro
+#+begin_src emacs-lisp :tangle no
+(setq
+ doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
+#+end_src
+
+****** Geist
+sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
+#+end_src
+
+****** monaspace
+one family, 5 fonts, 3 variable axes
+
+
+|------+---------+--------------------|
+| abbr | name    | font (actual)      |
+|------+---------+--------------------|
+| Ne   | Neon    | Neo-grotesque sans |
+| Ar   | Argon   | Humanist sans      |
+| Xe   | Xenon   | Slab serif         |
+| Ra   | Radon   | Handwriting        |
+| Kr   | Kyrpton | Mechanical sans    |
+|------+---------+--------------------|
+
+#+begin_src emacs-lisp :tangle no
+;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
+(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
+#+end_src
+
+**** change fonts on the fly [[file:~/org/org-roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
+**** extraDocs
+source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
+‘slant’
+One of ‘italic’, ‘oblique’, or ‘roman’.
+
+‘weight’
+One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
+
+‘style’
+Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
+
+‘width’
+One of ‘condensed’, ‘normal’, or ‘expanded’.
+
+‘spacing’
+One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
+
+ Doom exposes five (optional) variables for controlling fonts in Doom:
+
+ - `doom-font' -- the primary font to use
+ - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+   - used in websites? eww?
+   - headers?
+
+*** theme
+**** load theme
+
+ There are =two ways= to load a theme. Both assume the theme is installed and
+ available.
+
+ You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
+
+**** favs
+***** dark
+- solarized-dark
+- one
+- horizon - nice red accents and purple
+- dracula
+- solarized-dark-high-contrast
+- ayu-mirage
+- snazzy
+- moonlight
+- material - nice purple dotts and cursor
+- monokai-octagon
+
+***** light
+- doom-solarized-light
+- earl grey
+***** really light white light
+- doom-winter-is-coming-light
+- ayu light
+- one light
+***** pastel
+- ephemeral
+- nord-aurora
+****** modeline
+works !!...height tooo small thought :height 0.9
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(mode-line :family "VictorMono Nerd Font" :size 16 )
+  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
+#+end_src
+
+****** relative line numbers
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'relative)
+#+end_src
+options: nil, 'relative, t (enable)
+****** scroll off
+#+begin_src emacs-lisp
+(setq scroll-margin 18) ; Adjust the number as needed
+(setq scroll-conservatively 101) ; TODO test usefulness
+#+end_src
+=scroll-conservatively=
+does: Scroll up to this many lines, to bring point back on screen.
+- This variable controls how Emacs scrolls when the cursor moves off the screen.  
+- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
+- Setting it to 101 is a common practice, because it is a value higher than most screen heights.redisplay will never recenter point,
+but will always scroll just enough text to bring point into view, even
+if you move far away.
+- A value of zero means always recenter point if it moves off screen.
+
+****** custom start mode
+#+begin_src emacs-lisp :tangle yes
+(setq inhibit-startup-message t)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(define-minor-mode start-mode
+  "Provide functions for custom start page"
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+                (evil-define-key 'normal start-mode-map
+                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
+                map))
+;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
+(provide 'start-mode)
+#+end_src
+
 * package options, use-package
 ** dired
 #+begin_src emacs-lisp :tangle no
@@ -813,425 +1292,18 @@ For neater/shorter presentation
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
 #+end_src
-* DOOM functionality
-** UX
-*** keybinds
-#+begin_src emacs-lisp
-(keymap-global-set "M-;" 'save-buffer)
-#+end_src
-*** tab | shifts
-#+begin_src elisp :tangle no
-(setq tab-width 2
-      evil-shift-width 2)
+* Async
+#+begin_src emacs-lisp :tangle yes
+ (use-package async
+	:ensure t
+	:init
+	(dired-async-mode 1)) ;Do dired actions asynchronously.
 #+end_src
 
-#+begin_src elisp :tangle yes
-(use-package emacs
-  :custom
-  (tab-width 2)
-  (evil-shift-width 2))
-#+end_src
+* ESHELL
+Eshell cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
 
-#+begin_src elisp :tangle no
-(customize-set-variable 'tab-width 2)
-#+end_src
-*** language/major-mode specific settings
-**** python
-***** based pyright
-#+begin_src emacs-lisp
-(setq lsp-pyright-langserver-command "basedpyright")
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(setq python-indent-level 4)
-#+end_src
-
-#+begin_src elisp
-(setq-hook! python-mode python-indent-offset 4)
-#+end_src
-
-***** hook
-#+begin_src emacs-lisp :tangle no
-(add-hook 'python-mode-hook
-          (lambda ()
-            (local-set-key (kbd "C-c r") 'python-shell-send-region)))
-#+end_src
-**** nix
-***** nil lsp
-nil: An incremental analysis assistant for writing in Nix.
-#+begin_src emacs-lisp :tangle no
-(use-package lsp-mode
-  :ensure t)
-
-(use-package lsp-nix
-  :ensure lsp-mode
-  :after (lsp-mode)
-  :demand t
-  :custom
-  (lsp-nix-nil-formatter ["nixfmt"]))
-
-(use-package nix-mode
-  :hook (nix-mode . lsp-deferred)
-  :ensure t)
-#+end_src
-
-***** TODO fixes
-- kinda slow
-- disabled for now noly use :lang nix
-***** nixd
-#+begin_src emacs-lisp :tangle no
-(use-package nix-mode
-:after lsp-mode
-:ensure t
-:hook
-(nix-mode . lsp-deferred) ;; So that envrc mode will work
-:custom
-(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
-:config
-(setq lsp-nix-nixd-server-path "nixd"
-      lsp-nix-nixd-formatting-command [ "nixfmt" ]
-      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
-
-(add-hook! 'nix-mode-hook
-         ;; enable autocompletion with company
-         (setq company-idle-delay 0.1))
-#+end_src
-***** emacs lsp booster
-#+begin_src emacs-lisp
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
-(advice-add (if (progn (require 'json)
-                       (fboundp 'json-parse-buffer))
-                'json-parse-buffer
-              'json-read)
-            :around
-            #'lsp-booster--advice-json-parse)
-
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-            (setcar orig-result command-from-exec-path))
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
-#+end_src
-*** sync text in buffer to text on disk
-#+begin_src emacs-lisp
-(global-auto-revert-mode t)
-#+end_src
-**** Reverting a Buffer:
-The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
-- You've made changes in Emacs but want to discard them and return to the saved version.
-- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
-
-**** Auto Revert Mode:
-Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
-- Viewing log files that are constantly being updated.
-- Keeping your Emacs buffer synchronized with files modified by other applications.
-
-*** default workspace behaviour fix
-#+begin_src emacs-lisp
-(after! persp-mode
-  (setq persp-emacsclient-init-frame-behaviour-override
-   `(+workspace-current-name))
-)
-#+end_src
-**** TODO see if its fixed/works
-*** delete trailing whitespace
-#+begin_src emacs-lisp :tangle no
-(add-hook 'after-save-hook #'delete-trailing-whitespace)
-;; or
-;; (add-hook 'after-save-hook #'whitespace-cleanup)
-#+end_src
-unneeded since we use ws-butler which:
-+ only on modified lines
-+ replaces trailing whitespace with virtual whitespace
-*** MINIBUFFER ESCAPE
-By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
-#+begin_src emacs-lisp
-(global-set-key [escape] 'keyboard-escape-quit)
-#+end_src
-*** automatic parens pairing
-#+begin_src emacs-lisp :tangle no
-(electric-pair-mode 1) ;; turns on automatic parens pairing
-#+end_src
-*** better buffer names - files with same names
-#+begin_src elisp
-(setq uniquify-buffer-name-style 'post-forward) ;nil::
-#+end_src
-*** experiment
-**** initial buffer
- #+begin_src emacs-lisp :tangle no
-(setq initial-buffer-choice "~/.doom.d/config.org") ;
- #+end_src
-
-**** hide #+begin_src end_src blocks
-***** FIX does not work well...with doom? better way?
-see plugin options
-#+begin_src emacs-lisp :tangle no
-(let ((background-color (face-attribute 'default :background)))
-  (set-face-attribute 'org-block-begin-line nil
-                      :foreground background-color
-                      :background background-color))
-#+end_src
-**** sane defaults
-***** select and type
-#+begin_src emacs-lisp :tangle no
-(delete-selection-mode 1)
-#+end_src
-****** TODO see if works/needed
-***** weird emacs indent?
-Turn off the weird indenting that Emacs does by default.
-#+begin_src emacs-lisp :tangle no
-(electric-indent-mode -1)
-#+end_src
-****** TODO test further
-*** BACKUP - delete to trash
-By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
-
-#+begin_src emacs-lisp
-(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
-#+end_src
-
-*** name
-Some functionality uses this to identify you, e.g. GPG configuration, email
-clients, file templates and snippets. It is optional.
-#+begin_src emacs-lisp
-(setq user-full-name "Justin Malu"
-      user-mail-address "justinmalu@gmail.com")
-#+end_src
-** UI
-*** fonts
-**** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
-#+begin_src emacs-lisp
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
-  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
-#+end_src
-***** options
-- var:doom-font: the primary font for Emacs to use.
-- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
-- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
-- var:doom-symbol-font: used for rendering symbols.
-- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
-- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
-***** nerd font experiement
-****** mononoki
-kinda nice and kawaii
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
-#+end_src
-****** iosevka
-******* comfy
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
-#+end_src
-******* term
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
-#+end_src
-
-****** zed mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
-#+end_src
-
-****** martian mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
-#+end_src
-
-****** caskaydia
-******* code
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
-#+end_src
-******* mono
-kinda nice
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
-#+end_src
-
-****** lilex
-nice l and i
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
-#+end_src
-
-****** fira
-nice defaults
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-****** shure
-boxy nice stuff 😃
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-****** lekton
-nice little font actually :)
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
-#+end_src
-
-****** space mono
-use with rofi as well...clean cut font but kinda thin and no semibold
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
-#+end_src
-
-****** Monofur
-kawaii - but does not look nice for ide maybe for ui?
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
-#+end_src
-
-****** SauceCode Pro
-#+begin_src emacs-lisp :tangle no
-(setq
- doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
-#+end_src
-
-****** Geist
-sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
-#+end_src
-
-****** monaspace
-one family, 5 fonts, 3 variable axes
-
-
-|------+---------+--------------------|
-| abbr | name    | font (actual)      |
-|------+---------+--------------------|
-| Ne   | Neon    | Neo-grotesque sans |
-| Ar   | Argon   | Humanist sans      |
-| Xe   | Xenon   | Slab serif         |
-| Ra   | Radon   | Handwriting        |
-| Kr   | Kyrpton | Mechanical sans    |
-|------+---------+--------------------|
-
-#+begin_src emacs-lisp :tangle no
-;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
-(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
-#+end_src
-
-**** change fonts on the fly [[file:~/org/org-roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
-**** extraDocs
-source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
-‘slant’
-One of ‘italic’, ‘oblique’, or ‘roman’.
-
-‘weight’
-One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
-
-‘style’
-Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
-
-‘width’
-One of ‘condensed’, ‘normal’, or ‘expanded’.
-
-‘spacing’
-One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
-
- Doom exposes five (optional) variables for controlling fonts in Doom:
-
- - `doom-font' -- the primary font to use
- - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-   - used in websites? eww?
-   - headers?
-
-*** theme
-**** load theme
-
- There are =two ways= to load a theme. Both assume the theme is installed and
- available.
-
- You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
-
-**** favs
-***** dark
-- solarized-dark
-- one
-- horizon - nice red accents and purple
-- dracula
-- solarized-dark-high-contrast
-- ayu-mirage
-- snazzy
-- moonlight
-- material - nice purple dotts and cursor
-- monokai-octagon
-
-***** light
-- doom-solarized-light
-- earl grey
-***** really light white light
-- doom-winter-is-coming-light
-- ayu light
-- one light
-***** pastel
-- ephemeral
-- nord-aurora
-****** modeline
-works !!...height tooo small thought :height 0.9
-#+begin_src emacs-lisp
-(custom-set-faces!
-  '(mode-line :family "VictorMono Nerd Font" :size 16 )
-  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
-#+end_src
-
-****** relative line numbers
-#+begin_src emacs-lisp
-(setq display-line-numbers-type 'relative)
-#+end_src
-options: nil, 'relative, t (enable)
-****** scroll off
-#+begin_src emacs-lisp
-(setq scroll-margin 18) ; Adjust the number as needed
-(setq scroll-conservatively 101) ; TODO test usefulness
-#+end_src
-=scroll-conservatively=
-does: Scroll up to this many lines, to bring point back on screen.
-- This variable controls how Emacs scrolls when the cursor moves off the screen.  
-- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
-- Setting it to 101 is a common practice, because it is a value higher than most screen heights.redisplay will never recenter point,
-but will always scroll just enough text to bring point into view, even
-if you move far away.
-- A value of zero means always recenter point if it moves off screen.
-
-****** custom start mode
-#+begin_src emacs-lisp :tangle no
-(define-minor-mode start-mode
-  "Provide functions for custom start page"
-  :lighter " start"
-  :keymap (let ((map (make-sparse-keymap)))
-                (evil-define-key 'normal start-mode-map
-                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
-                map))
-;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
-(provide 'start-mode)
-#+end_src
-
+I recommend using eshell for light cli work, and using your external terminal emulator of choice for heavier tasks
 * NOTES
 ** use of different files (config.el, init.el, packages.el)
 *** config.el
@@ -1453,3 +1525,5 @@ source: [[https://github.com/doomemacs/doomemacs/blob/master/docs/getting_starte
 *** sandbox
 | =SPC h E=           | evil users |
 | =M-x: doom/sandbox= |            |
+* sources:
+https://github.com/snackon/Witchmacs/
