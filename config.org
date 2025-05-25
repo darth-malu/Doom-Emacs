@@ -2,123 +2,12 @@
 #+author: justin malu
 #+startup: inlineimages content indent
 
-* lexical bind
 #+begin_src emacs-lisp
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 #+end_src
 
-* DOOM functionality
-** UX
-*** keybinds
-#+begin_src emacs-lisp
-(keymap-global-set "M-;" 'save-buffer)
-#+end_src
-*** tab | shifts
-#+begin_src elisp :tangle no
-(setq tab-width 2
-      evil-shift-width 2)
-#+end_src
-
-=Witchmacs= :witch:
-#+begin_src emacs-lisp :tangle no
-(setq-default tab-width 4)
-(setq-default standard-indent 4)
-(setq c-basic-offset tab-width)
-(setq-default electric-indent-inhibit t)
-(setq-default indent-tabs-mode t)
-(setq backward-delete-char-untabify-method 'nil)
-#+end_src
-
-#+begin_src elisp :tangle yes
-(use-package emacs
-  :custom
-  (tab-width 2)
-  (evil-shift-width 2))
-#+end_src
-
-#+begin_src elisp :tangle no
-(customize-set-variable 'tab-width 2)
-#+end_src
-*** language/major-mode specific settings
-**** python
-***** python-mode
-#+begin_src emacs-lisp :tangle no
-(use-package python-mode
-  :ensure nil
-  ;; :custom
-  ;; (python-shell-interpreter "python3")
-  )
-#+end_src
-***** elpy
-#+begin_src emacs-lisp :tangle no
-(elpy-enable)
-#+end_src
-
-***** based pyright
-lsp pyright
-source: [[https://emacs-lsp.github.io/lsp-pyright/]]
-
-#+begin_src elisp :tangle yes
-(use-package lsp-pyright
-  :ensure nil
-  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp-deferred))))  ; lsp:: lsp-deferred
-#+end_src
-
-#+begin_src elisp :tangle no
-(setq-hook! python-mode python-indent-offset 4)
-#+end_src
-***** hook
-#+begin_src emacs-lisp :tangle yes
-(add-hook 'python-mode-hook
-          (lambda ()
-            (local-set-key (kbd "C-c r") 'python-shell-send-region)))
-#+end_src
-**** nix
-***** nil lsp
-nil: An incremental analysis assistant for writing in Nix.
-#+begin_src emacs-lisp :tangle no
-(use-package lsp-mode
-  :ensure nil)
-
-(use-package lsp-nix
-  :ensure lsp-mode
-  :after (lsp-mode)
-  :demand t
-  :custom
-  (lsp-nix-nil-formatter ["nixfmt"]))
-
-(use-package nix-mode
-  :hook (nix-mode . lsp-deferred)
-  :ensure nil)
-#+end_src
-
-***** TODO COMMENT fixes
-- kinda slow
-- disabled for now noly use :lang nix
-***** nixd
-#+begin_src emacs-lisp :tangle no
-(use-package nix-mode
-:after lsp-mode
-:ensure t
-:hook
-(nix-mode . lsp-deferred) ;; So that envrc mode will work
-:custom
-(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
-:config
-(setq lsp-nix-nixd-server-path "nixd"
-      lsp-nix-nixd-formatting-command [ "nixfmt" ]
-      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
-
-(add-hook! 'nix-mode-hook
-         ;; enable autocompletion with company
-         (setq company-idle-delay 0.1))
-#+end_src
-***** emacs lsp booster
+* language major modes
+** emacs lsp booster
 #+begin_src emacs-lisp
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
@@ -151,58 +40,200 @@ nil: An incremental analysis assistant for writing in Nix.
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
-*** sync text in buffer to text on disk
-#+begin_src emacs-lisp
-(global-auto-revert-mode t)
+** python
+*** python-mode
+#+begin_src emacs-lisp :tangle yes
+(use-package! python
+  :ensure nil
+  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
+  ;; (python-shell-interpreter "python3")
+  :hook
+  ;; (python-mode . lsp-deferred)
+  (python-mode . (lambda () (require 'lsp-pyright) (lsp-deferred)))
+  (python-mode . (lambda () (local-set-key (kbd "C-c r") 'python-shell-send-region))))
+  ;; (setq-hook! python-mode python-indent-offset 4)
 #+end_src
-**** Reverting a Buffer:
-The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
-- You've made changes in Emacs but want to discard them and return to the saved version.
-- Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
+source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 
-**** Auto Revert Mode:
-Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
-- Viewing log files that are constantly being updated.
-- Keeping your Emacs buffer synchronized with files modified by other applications.
+*** elpy
+#+begin_src emacs-lisp :tangle yes
+;; (elpy-enable)
+(use-package! elpy
+  :defer t
+  ;; :init
+  ;; (elpy-enable)
+  :init (advice-add 'python-mode :before 'elpy-enable))
+#+end_src
 
-*** default workspace behaviour fix
-#+begin_src emacs-lisp :tangle no
-(after! persp-mode
-  (setq persp-emacsclient-init-frame-behaviour-override
-   `(+workspace-current-name))
-)
+|---------+--------------------------------------------------------|
+| =C-c C-c= | evaluate current script                                |
+| =C-RET=   | evaluate current statement (plus nested lines)         |
+| =C-c C-z= | switches between your script and the interactive shell |
+| =C-c C-d= | display documentation for the thing under cursor       |
+|---------+--------------------------------------------------------|
+** Lsp Mode
+*** lsp ui
+#+begin_src emacs-lisp :tangle yes
+(use-package! lsp-ui
+  :custom
+  (lsp-ui-doc-show 'bottom))
 #+end_src
-**** TODO see if its fixed/works
-*** delete trailing whitespace
-#+begin_src emacs-lisp :tangle no
-(add-hook 'after-save-hook #'delete-trailing-whitespace)
-;; or
-;; (add-hook 'after-save-hook #'whitespace-cleanup)
+
+https://emacs-lsp.github.io/lsp-ui/
+
+*** lsp treemacs
+#+begin_src emacs-lisp :tangle yes
+(use-package lsp-treemacs
+  :after lsp)
 #+end_src
-unneeded since we use ws-butler which:
-+ only on modified lines
-+ replaces trailing whitespace with virtual whitespace
-*** MINIBUFFER ESCAPE
-By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+
+** nix
+https://github.com/NixOS/nix-mode
+
+*** nil lsp
+nil: An incremental analysis assistant for writing in Nix.
+#+begin_src emacs-lisp :tangle no
+(use-package! lsp-nix
+  ;; :ensure lsp-mode
+  :after (lsp-mode)
+  :demand t
+  :custom
+  (lsp-nix-nil-formatter ["nixfmt"]))
+
+(use-package! nix-mode
+  :hook (nix-mode . lsp-deferred)
+  :ensure nil)
+#+end_src
+
+*** nixd
+#+begin_src emacs-lisp :tangle no
+(use-package! nix-mode
+:after lsp-mode
+:ensure nil
+:hook
+(nix-mode . lsp-deferred) ;; So that envrc mode will work
+:custom
+(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
+:config
+(setq lsp-nix-nixd-server-path "nixd"
+      lsp-nix-nixd-formatting-command [ "nixfmt" ]
+      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
+
+;; (add-hook!! 'nix-mode-hook
+         ;; enable autocompletion with company
+         ;; (setq company-idle-delay 0.1))
+#+end_src
+
+* DOOM functionality
+** fonts
+
+change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
+
 #+begin_src emacs-lisp
-(global-set-key [escape] 'keyboard-escape-quit)
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
 #+end_src
-*** automatic parens pairing
+
+** modeline
+
+works !!...height tooo small thought :height 0.9
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(mode-line :family "VictorMono Nerd Font" :size 16 )
+  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
+#+end_src
+
+** custom start mode
+
 #+begin_src emacs-lisp :tangle no
-(electric-pair-mode 1) ;; turns on automatic parens pairing
+(define-minor-mode start-mode
+  "Provide functions for custom start page"
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+                (evil-define-key 'normal start-mode-map
+                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
+                map))
+;;(add-hook! 'start-mode-hook 'read-only-mode) ;;make start org read only
+(provide 'start-mode)
 #+end_src
-*** better buffer names - files with same names
-#+begin_src elisp
-(setq uniquify-buffer-name-style 'post-forward) ;nil::
+
+** keybinds
+#+begin_src emacs-lisp :tangle no
+(keymap-global-set "M-;" 'save-buffer) ;easier saving
+;; (keymap-global-set "U" 'evil-redo) ;easier redo :)
 #+end_src
-*** experiment
-**** initial buffer
+** emacs sane
+#+begin_src elisp :tangle yes
+(use-package! emacs
+  :custom
+  ;;misc
+  (tab-width 2)
+  (evil-shift-width 2)
+  (uniquify-buffer-name-style 'post-forward) ;nil::
+  ;; (electric-pair-mode 1) ;; turns on automatic parens pairing
+  (global-auto-revert-mode t) ; auto-revert mode
+  (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
+
+  ;;user
+  (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
+  (user-mail-address "justinmalu@gmail.com")
+
+  ;;scroll
+  (scroll-margin 18) ; Adjust the number as needed
+  (scroll-conservatively 101) ; TODO test usefulness
+  (inhibit-startup-message t)
+
+  (display-line-numbers-type 'relative)
+
+  :config
+  (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+
+  :bind
+  (:map evil-normal-state-map
+        ("M-;" . save-buffer)
+        ("U" . evil-redo))
+  )
+#+end_src
+
+#+begin_src elisp :tangle no
+(customize-set-variable 'tab-width 2)
+#+end_src
+
++ =Docs=
+  Reverting a Buffer:
+  The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
+    + You've made changes in Emacs but want to discard them and return to the saved version.
+    + Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
+
+  Auto Revert Mode:
+  Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
+    + Viewing log files that are constantly being updated.
+    + Keeping your Emacs buffer synchronized with files modified by other applications.
+
+** experiment
+*** initial buffer
  #+begin_src emacs-lisp :tangle no
 (setq initial-buffer-choice "~/.doom.d/config.org") ;
  #+end_src
 
-**** hide #+begin_src end_src blocks
-***** FIX does not work well...with doom? better way?
+*** witchmacs stuff
+
+=Witchmacs= :witch:
+#+begin_src emacs-lisp :tangle no
+(setq-default tab-width 4)
+(setq-default standard-indent 4)
+(setq c-basic-offset tab-width)
+(setq-default electric-indent-inhibit t)
+(setq-default indent-tabs-mode t)
+(setq backward-delete-char-untabify-method 'nil)
+#+end_src
+
+*** hide #+begin_src end_src blocks
+**** FIX does not work well...with doom? better way?
 see plugin options
 #+begin_src emacs-lisp :tangle no
 (let ((background-color (face-attribute 'default :background)))
@@ -210,13 +241,13 @@ see plugin options
                       :foreground background-color
                       :background background-color))
 #+end_src
-**** sane defaults
-***** select and type
+*** sane defaults
+**** select and type
 #+begin_src emacs-lisp :tangle no
 (delete-selection-mode 1)
 #+end_src
-****** TODO see if works/needed
-***** weird emacs indent?
+***** TODO see if works/needed
+**** weird emacs indent?
 Turn off the weird indenting that Emacs does by default.
 #+begin_src emacs-lisp :tangle yes
 (setq electric-pair-pairs '(
@@ -227,8 +258,8 @@ Turn off the weird indenting that Emacs does by default.
                             ))
 ;; (electric-indent-mode -1)
 #+end_src
-****** TODO test further
-***** creating a new window switches cursor to it
+***** TODO test further
+**** creating a new window switches cursor to it
 #+begin_src emacs-lisp :tangle yes
  (defun split-and-follow-horizontally ()
 	(interactive)
@@ -244,252 +275,35 @@ Turn off the weird indenting that Emacs does by default.
 	(other-window 1))
  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 #+end_src
-***** turn yes-or-no questions into y or no
+**** turn yes-or-no questions into y or no
 #+begin_src emacs-lisp :tangle no
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
-***** defer load most packages for quick startup
+**** defer load most packages for quick startup
 #+begin_src emacs-lisp :tangle no
-(setq use-package-always-defer t)
+(setq use-package!-always-defer t)
 #+end_src
-*** BACKUP - delete to trash
-By default, Emacs creates automatic backups of files in their original directories, such “file.el” and the backup “file.el~”.  This leads to a lot of clutter, so let’s tell Emacs to put all backups that it creates in the TRASH directory.
-
-#+begin_src emacs-lisp
-(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
-#+end_src
-
-*** name
-Some functionality uses this to identify you, e.g. GPG configuration, email
-clients, file templates and snippets. It is optional.
-#+begin_src emacs-lisp
-(setq user-full-name "Justin Malu"
-      user-mail-address "justinmalu@gmail.com")
-#+end_src
-** UI
-*** fonts
-**** investigate functionality of doom-symbol-font and why nerd font needed for modeline still
-#+begin_src emacs-lisp
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
-  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 13)) ; TODO test this further .
-#+end_src
-***** options
-- var:doom-font: the primary font for Emacs to use.
-- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
-- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
-- var:doom-symbol-font: used for rendering symbols.
-- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
-- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
-***** nerd font experiement
-****** mononoki
-kinda nice and kawaii
+*** delete trailing whitespace
 #+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
+(add-hook! 'after-save-hook #'delete-trailing-whitespace)
+;; or
+;; (add-hook! 'after-save-hook #'whitespace-cleanup)
 #+end_src
-****** iosevka
-******* comfy
+unneeded since we use ws-butler which:
++ only on modified lines
++ replaces trailing whitespace with virtual whitespace
+*** default workspace behaviour fix
 #+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override
+   `(+workspace-current-name))
+)
 #+end_src
-******* term
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
-#+end_src
-
-****** zed mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
-#+end_src
-
-****** martian mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
-#+end_src
-
-****** caskaydia
-******* code
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
-#+end_src
-******* mono
-kinda nice
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
-#+end_src
-
-****** lilex
-nice l and i
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
-#+end_src
-
-****** fira
-nice defaults
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-****** shure
-boxy nice stuff 😃
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-****** lekton
-nice little font actually :)
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
-#+end_src
-
-****** space mono
-use with rofi as well...clean cut font but kinda thin and no semibold
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
-#+end_src
-
-****** Monofur
-kawaii - but does not look nice for ide maybe for ui?
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
-#+end_src
-
-****** SauceCode Pro
-#+begin_src emacs-lisp :tangle no
-(setq
- doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
-#+end_src
-
-****** Geist
-sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
-#+end_src
-
-****** monaspace
-one family, 5 fonts, 3 variable axes
-
-
-|------+---------+--------------------|
-| abbr | name    | font (actual)      |
-|------+---------+--------------------|
-| Ne   | Neon    | Neo-grotesque sans |
-| Ar   | Argon   | Humanist sans      |
-| Xe   | Xenon   | Slab serif         |
-| Ra   | Radon   | Handwriting        |
-| Kr   | Kyrpton | Mechanical sans    |
-|------+---------+--------------------|
-
-#+begin_src emacs-lisp :tangle no
-;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
-(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
-#+end_src
-
-**** change fonts on the fly [[file:~/org/org-roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
-**** extraDocs
-source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
-‘slant’
-One of ‘italic’, ‘oblique’, or ‘roman’.
-
-‘weight’
-One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
-
-‘style’
-Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
-
-‘width’
-One of ‘condensed’, ‘normal’, or ‘expanded’.
-
-‘spacing’
-One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
-
- Doom exposes five (optional) variables for controlling fonts in Doom:
-
- - `doom-font' -- the primary font to use
- - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-   - used in websites? eww?
-   - headers?
-
-*** theme
-**** load theme
-
- There are =two ways= to load a theme. Both assume the theme is installed and
- available.
-
- You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
-
-**** favs
-***** dark
-- solarized-dark
-- one
-- horizon - nice red accents and purple
-- dracula
-- solarized-dark-high-contrast
-- ayu-mirage
-- snazzy
-- moonlight
-- material - nice purple dotts and cursor
-- monokai-octagon
-
-***** light
-- doom-solarized-light
-- earl grey
-***** really light white light
-- doom-winter-is-coming-light
-- ayu light
-- one light
-***** pastel
-- ephemeral
-- nord-aurora
-****** modeline
-works !!...height tooo small thought :height 0.9
-#+begin_src emacs-lisp
-(custom-set-faces!
-  '(mode-line :family "VictorMono Nerd Font" :size 16 )
-  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
-#+end_src
-
-****** relative line numbers
-#+begin_src emacs-lisp
-(setq display-line-numbers-type 'relative)
-#+end_src
-options: nil, 'relative, t (enable)
-****** scroll off
-#+begin_src emacs-lisp
-(setq scroll-margin 18) ; Adjust the number as needed
-(setq scroll-conservatively 101) ; TODO test usefulness
-#+end_src
-=scroll-conservatively=
-does: Scroll up to this many lines, to bring point back on screen.
-- This variable controls how Emacs scrolls when the cursor moves off the screen.  
-- If it's set to a non-zero value, Emacs will try to scroll only the minimum amount necessary to bring the cursor back into view.
-- Setting it to 101 is a common practice, because it is a value higher than most screen heights.redisplay will never recenter point,
-but will always scroll just enough text to bring point into view, even
-if you move far away.
-- A value of zero means always recenter point if it moves off screen.
-
-****** custom start mode
-#+begin_src emacs-lisp :tangle yes
-(setq inhibit-startup-message t)
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(define-minor-mode start-mode
-  "Provide functions for custom start page"
-  :lighter " start"
-  :keymap (let ((map (make-sparse-keymap)))
-                (evil-define-key 'normal start-mode-map
-                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
-                map))
-;;(add-hook 'start-mode-hook 'read-only-mode) ;;make start org read only
-(provide 'start-mode)
-#+end_src
-
-* package options, use-package
+**** TODO see if its fixed/works
+* Packages
 ** dired
 #+begin_src emacs-lisp :tangle no
-(use-package dired-open
+(use-package! dired-open
   :config
   (setq dired-open-extensions '(("gif" . "sxiv")
                                 ("jpg" . "sxiv")
@@ -497,7 +311,7 @@ if you move far away.
                                 ("mkv" . "mpv")
                                 ("mp4" . "mpv"))))
 
-(use-package peep-dired
+(use-package! peep-dired
   :after dired
   :hook (evil-normalize-keymaps . peep-dired-hook)
   :config
@@ -508,10 +322,19 @@ if you move far away.
 )
 #+end_src
 ** corfu
+not sure if after! init works lul
+
 #+begin_src elisp
-(use-package corfu
-  :init
+(use-package! corfu
+  :config
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
   (setq tab-always-indent 'complete) ; try complete if indent is off
+  ;; (text-mode-ispell-word-completion nil)
+    ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  ;; commands are hidden, since they are not used via M-x. This setting is
+  ;; useful beyond Corfu.
+  ;; (read-extended-command-predicate #'command-completion-default-include-p)
   )
 #+end_src
 - If t, hitting TAB always just indents the current line.
@@ -524,33 +347,142 @@ Also see tab-first-completion.
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
-** org auto tangle
+** Async
+#+begin_src emacs-lisp :tangle yes
+(use-package! async
+  :ensure nil
+  :init
+  (dired-async-mode 1)) ;Do dired actions asynchronously.
+#+end_src
+
+** company
+#+begin_src elisp :tangle yes
+(use-package! company
+  :defer t
+  :custom
+  (company-idle-delay
+        (lambda () (if (company-in-string-or-comment) nil 0.3))) ; delay in seconds
+  (company-minimum-prefix-length 3)
+  (company-selection-wrap-around t)
+  (company-require-match 'never) ; dont need to pick a choice
+  (company-tooltip-limit 10))
+#+end_src
+
+Company is a text and code completion framework for Emacs. The name stands for "complete anything".
+
+It uses pluggable back-ends and front-ends to retrieve and display completion candidates.
+
+It comes with several back-ends such as Clang, Ispell, CMake, BBDB, Yasnippet, Dabbrev, Etags, Gtags, Files, Keywords and others.
+And the CAPF back-end provides a bridge to the standard completion-at-point-functions facility, and thus works with any major mode that uses the common protocol.
+
+To see or change the list of enabled back-ends, type M-x =customize-variable= RET company-backends. Also see its description for information on writing a back-end.
+
+Once installed, enable company-mode with M-x =company-mode=.
+
+usage:
+|-----------------------+------------------------------------------------------|
+| =C-n / C-p=             | up / down                                            |
+| =C-s C-r C-o=           | search through completions                           |
+| =M-<digit>=             | quickly complete with one of the first 10 candidates |
+| =M-x: company-complete= | to initiate completion manually                      |
+|-----------------------+------------------------------------------------------|
+source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
+** centaur tabs
+#+begin_src elisp :tangle yes
+(use-package! centaur-tabs
+  :ensure nil
+  :defer t
+  :init
+  ;; (setq centaur-tabs-mode nil)
+  ;; (centaur-tabs-change-fonts "arial" 112)
+  ;; (require 'projectile)
+  ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
+  :config
+  (setq centaur-tabs-set-bar nil ; left, over
+        centaur-tabs-style 'wave ;alternate, bar, box
+        centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
+        centaur-tabs-set-icons t
+        ;; centaur-tabs-close-button "X"
+        ;; centaur-tabs-set-close-button nil
+        ;; centaur-tabs-plain-icons t ; for same color as text
+        centaur-tabs-gray-out-icons 'buffer
+        centaur-tabs-cycle-scope 'tabs
+        centaur-tabs-height 18)
+  :hook ((nix-mode  . centaur-tabs-mode)
+         (python-mode  . centaur-tabs-mode)
+         (org-mode . centaur-tabs-local-mode)) ; no centaur tabs on org documents
+  :bind
+  (:map evil-normal-state-map
+        ("g t" . centaur-tabs-forward)
+        ("g T" . centaur-tabs-backward)))
+#+end_src
+
+centaur-tabs-gray-out-icons 'buffer ; grey icons for unselected buffer
+centaur-tabs-height 18 ; 22;;
+centaur-tabs-style "bar"
+centaur-tabs-modified-marker "•" - Also
+  there are two faces to customize the close button string: centaur-tabs-modified-marker-unselected and centaur-tabs-modified-marker-selected
+
+centaur-tabs-set-bar:
+- left': displays the bar at the left of the currently selected tab.
+- under': displays the bar under the currently selected tab.
+- over': displays the bar over the currently selected tab.
+
+=Projectile integration=
+You can group your tabs by Projectile’s project. Just use the following function in your configuration:
+
+~(centaur-tabs-group-by-projectile-project)~
+This function can be called interactively to enable Projectile grouping. To go back to centaur-tabs’s user defined (or default) buffer grouping function you can interactively call:
+
+~(centaur-tabs-group-buffer-groups)~
+
+** org-auto-tangle
+
+#+begin_src emacs-lisp
+(use-package! org-auto-tangle
+  :defer t
+  ;; :hook (org-mode . org-auto-tangle-mode)
+  :hook (org-src-mode . org-auto-tangle-mode)
+  :config
+  (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
+  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
+#+end_src
+
 [[github:yilkalargaw/org-auto-tangle]]
 
+** Drag stuff
+minor mode for emacs. when drag-stuff-define-keys t
+moves text around
+
 #+begin_src emacs-lisp
-(use-package org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
+(use-package! drag-stuff
+  :init
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys))
+#+end_src
+
+** highlight TODO
+#+begin_src emacs-lisp
+(use-package! hl-todo
+  :hook (org-mode . hl-todo-mode)
   :config
-  (setq org-auto-tangle-default t))
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces `(("TODO"       warning bold)
+                                ("FIXME"      error bold)
+                                ("NEVERDO"    warning bold)
+                                ("HACK"       font-lock-constant-face bold)
+                                ("REVIEW"     font-lock-keyword-face bold)
+                                ("NOTE"       success bold)
+                                ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
-
-*** Babel Auto Tangle Safelist
-Add a list of files to the safelist to autotangle with noweb evaluation
-
-#+begin_src emacs-lisp
-(setq org-auto-tangle-babel-safelist '(
-                                     "~/system.org"
-                                     "~/test.org"
-                                     ))
-#+end_src
-** obsidian
+** old | phased out
+*** obsidian
 #+begin_src emacs-lisp :tangle no
 (setq obsidian-directory "~/OBSIDIAN")
 #+end_src
 
 #+begin_src emacs-lisp :tangle no
-(use-package obsidian
+(use-package! obsidian
   :config
   (global-obsidian-mode t)
   (obsidian-backlinks-mode t)
@@ -576,49 +508,21 @@ Add a list of files to the safelist to autotangle with noweb evaluation
               ("C-c C-b" . obsidian-backlink-jump)))
 #+end_src
 
-** Drag stuff
-minor mode for emacs. when drag-stuff-define-keys t
-move text around
+*** junk
+**** all the icons
 #+begin_src emacs-lisp
-(use-package! drag-stuff
-  :init
-  (drag-stuff-global-mode 1)
-  (drag-stuff-define-keys)
-)
-#+end_src
-** highlight TODO
-#+begin_src emacs-lisp
-(use-package hl-todo
-  ;; :hook ((org-mode . hl-todo-mode)
-  ;;        (prog-mode . hl-todo-mode))
-  :hook (org-mode . hl-todo-mode)
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces
-        `(("TODO"       warning bold)
-          ("FIXME"      error bold)
-          ("NEVERDO"    warning bold)
-          ("HACK"       font-lock-constant-face bold)
-          ("REVIEW"     font-lock-keyword-face bold)
-          ("NOTE"       success bold)
-          ("DEPRECATED" font-lock-doc-face bold))))
-#+end_src
-** TODO see if needed
-** junk
-*** all the icons
-#+begin_src emacs-lisp
-(use-package all-the-icons
-  :ensure t
+(use-package! all-the-icons
+  :ensure nil
   :if (display-graphic-p))
 #+end_src
 
 #+begin_src emacs-lisp :tangle no
-(use-package all-the-icons-dired
+(use-package! all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 #+end_src
-*** FIXME git time machine
+**** FIXME git time machine
 #+begin_src emacs-lisp :tangle no
-(use-package git-timemachine
+(use-package! git-timemachine
   :after git-timemachine
   :hook (evil-normalize-keymaps . git-timemachine-hook)
   :config
@@ -627,10 +531,10 @@ move text around
 )
 #+end_src
 
-*** ultra-scroll
-**** TODO make this work? test if needed
+**** ultra-scroll
+***** TODO make this work? test if needed
 #+begin_src emacs-lisp :tangle no
-(use-package ultra-scroll
+(use-package! ultra-scroll
   ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
   :init
   (setq scroll-conservatively 101 ; important!
@@ -639,11 +543,11 @@ move text around
   (ultra-scroll-mode 1))
 #+end_src
 
-*** Dashboard
-**** FIXME does not work
+**** Dashboard
+***** FIXME does not work
 #+begin_src emacs-lisp :tangle no
-(use-package dashboard
-  :ensure t
+(use-package! dashboard
+  :ensure nil
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -662,69 +566,42 @@ move text around
   :config
   (dashboard-setup-startup-hook))
 #+end_src
+* Terminal Modes
+** ESHELL
+Eshell cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
 
-*** centaur tabs
-
+I recommend using eshell for light cli work, and using your external terminal emulator of choice for heavier tasks
+** term-mode
+#+begin_src elisp :tangle no
+(use-package! term
+  :ensure nil
+  :config
+  (setq explicit-shell-file-name "bash")
+  ;;(setq explicit-zsh-args '())
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+#+end_src
 * ORG
 ** ORG specific settings
-*** org directories
-#+begin_src emacs-lisp
-(setq org-directory "~/org/") ;org
-(setq org-default-notes-file (concat org-directory "/notes.org")) ;notes
-#+end_src
-If you use `org' and don't want your org files in the default location below, change `org-directory'. It must be set before org loads!
-*** org-todo
-#+begin_src emacs-lisp
-(setq org-todo-keywords
-      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER")))
-#+end_src
 
-#+begin_src emacs-lisp :tangle no
-;;; parallel todo
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "|" "DONE(d)")
-        (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
-#+end_src
-
-**** docs
-=C-c C-t= to change state
-- The vertical bar separates the ‘TODO’ keywords (states that need action) from the ‘DONE’ states (which need no further action)
-
-***** change only in current file
-add anywhere in the file then =C-c C-c= with the cursor on the line
-+TODO: TODO(t) | DONE(d)
-+TODO: REPORT(r) BUG(b) KNOWNCAUSE(k) | FIXED(f)
-+TODO: | CANCELED(c)
-*** emphasis markers
-#+begin_src emacs-lisp
-(setq org-hide-emphasis-markers t)
-#+end_src
-*** bullets mode
-#+begin_src emacs-lisp :tangle no
-(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src
-#TODO TEST FURTHER
-#FIXME not working so far
-icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
-
-org-bullets-face-name
-
-*** done on task complete
 [[https://orgmode.org/orgguide.html#Properties]]
-**** with timestamp
-#+begin_src emacs-lisp
-(setq org-log-done 'time)
-#+end_src
 
-**** with note prompted to user
-#+begin_src emacs-lisp :tangle no
-(setq org-log-done 'note)
-#+end_src
-
-*** tags alist
-#+begin_src emacs-lisp
-(setq org-tag-alist
+#+begin_src emacs-lisp :tangle yes
+(use-package! org
+  :init
+  (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
+        ;; org-default-notes-file (concat org-directory "/notes.org")
+        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+  :hook
+  (org-mode . (lambda ()
+                (vi-tilde-fringe-mode -1)
+                (display-line-numbers-mode -1)
+                (diff-hl-mode -1)))
+  :custom
+  (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
+  (org-log-done 'time) ; task done with timestamp
+  ;; (org-log-done 'note) ;task done with note prompted to user
+  (org-hide-emphasis-markers t)
+  (org-tag-alist
       '(;;Places
         ("@home" . ?H)
         ("@school" . ?S)
@@ -739,34 +616,12 @@ org-bullets-face-name
         ("@pyrple" . ?P)
         ("@emacs" . ?E)
         ("@nix" . ?N)))
-#+end_src
-*** general UI/UX tweaks
-**** fancy priorities
-   Message: Invalid read syntax
-    Details: (")" 38 54)
-#+begin_src emacs-lisp
-(setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
-#+end_src
+  (org-todo-keywords
+      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER"))))
+  ;; (org-todo-keywords
+  ;;     '((sequence "TODO(t)" "|" "DONE(d)")
+  ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
-**** disable line numbers in org mode
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
-#+end_src
-
-**** disable vi EOB tildes in org mode
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook (lambda () (vi-tilde-fringe-mode 0)))
-#+end_src
-
-**** disable version control colors in org mode
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook (lambda () (diff-hl-mode 0)))
-#+end_src
-
-**** extra
-#+begin_src emacs-lisp :tangle no
-(add-hook! 'org-mode-hook (company-mode -1))
-(add-hook! 'org-capture-mode-hook (company-mode -1))
 #+end_src
 
 *** experiments
@@ -818,45 +673,75 @@ org-bullets-face-name
 #+begin_src emacs-lisp :tangle no
 (setq org-src-preserve-indentation t)
 #+end_src
+**** bullets mode
+#+begin_src emacs-lisp :tangle no
+(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
+(add-hook! 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+#TODO TEST FURTHER
+#FIXME not working so far
+icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
+
+org-bullets-face-name
+
 ** org-roam
 #+begin_src emacs-lisp
-(setq org-roam-directory "~/org/org-roam")
+;; (setq org-roam-directory "~/org/org-roam")
+(use-package! org-roam
+  :init
+  (setq org-roam-directory (file-truename "~/org/roam")))
+  ;; :custom
+  ;; (org-roam-completion-everywhere t) ;default t
+  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;;        ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ;; ("C-c n j" . org-roam-dailies-capture-today))
+  ;; :config
+  ;; (org-roam-db-autosync-enable))
 #+end_src
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
 *** my org-capture-template
 
 #+begin_src emacs-lisp
-(use-package org-capture
+(use-package! org-capture
   :ensure nil
   :bind ("C-c c" . org-capture)
   :config
   ;; (require 'prot-org)
   (setq org-capture-templates
-      '(
+        '(
         ;;; MY STUFF
-        ;; ("m" "Movies template" plain
-        ;;   (file+headline "bucket-list.org" "Movies to watch");relative to ~/org DIR
-        ;;   "- [ ] %?")
+          ;; ("m" "Movies template" plain
+          ;;   (file+headline "bucket-list.org" "Movies to watch");relative to ~/org DIR
+          ;;   "- [ ] %?")
+          ;; try entry, plain
 
-        ;; ("g" "Games template" plain
-        ;;   (file+headline "bucket-list.org" "Games to play");
-        ;;   "- [ ] %?")
+          ("e" "EMACs" plain
+            (file+headline "EmacsTODO.org" "TONEVERDO list - emacs")
+            "- [ ] %?")
 
-        ;; ("b" "Books template" plain
-        ;;   (file+headline "bucket-list.org" "Books to read")
-        ;;   "- [ ] %?")
+          ("b" "Bucket List [ movies books ]") ; group 'em up
+          ("bm" "movies" plain
+           (file+headline "bucket-list.org" "Movies")
+           "- [ ] %?")
+          ("bb" "books" plain
+           (file+headline "bucket-list.org" "Books")
+           "- [ ] %?")
 
-        ;; try entry, plain
-        ("b" "Bucket List [ movies books ]") ; group 'em up
-            ("bm" "movies" plain
-             (file+headline "bucket-list.org" "Movies")
-             "- [ ] %?")
-            ("bb" "books" plain
-             (file+headline "bucket-list.org" "Books")
-             "- [ ] %?")
-
-        )))
+          ("d" "Life's Morsels")
+          ("dw" "words [w]" plain
+           (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
+           "\n %?")
+          ("di" "idioms [i]" plain
+           (file+headline "diction.org" "Idioms")
+           "\n %?")
+          ("dp" "phrases [p]" plain
+           (file+headline "diction.org" "Phrases")
+           "\n %?"))))
 #+end_src
 
 **** old template
@@ -894,7 +779,7 @@ source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturi
 
 *** prot tech :prot:
 #+begin_src elisp :tangle no
-(use-package org-capture
+(use-package! org-capture
   :ensure nil
   :bind ("C-c c" . org-capture)
   :config
@@ -1280,7 +1165,7 @@ For neater/shorter presentation
             (overlay-put ov 'line-height line-height)
             (overlay-put ov 'line-spacing (1- line-height))))))))
 
-(add-hook 'org-agenda-finalize-hook #'org-agenda-log-mode-colorize-block)
+(add-hook! 'org-agenda-finalize-hook #'org-agenda-log-mode-colorize-block)
 #+end_src
 
 **** Go back to the previous top-level heading
@@ -1292,238 +1177,173 @@ For neater/shorter presentation
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
 #+end_src
-* Async
-#+begin_src emacs-lisp :tangle yes
- (use-package async
-	:ensure t
-	:init
-	(dired-async-mode 1)) ;Do dired actions asynchronously.
-#+end_src
-
-* ESHELL
-Eshell cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
-
-I recommend using eshell for light cli work, and using your external terminal emulator of choice for heavier tasks
-* NOTES
-** use of different files (config.el, init.el, packages.el)
-*** config.el
-**** after!
-**** use-package!
-- built into > emacs29
-- is not a package manager...its a configuration macro
-- evaluated line by line on start of emacs unless using defer?
-
-- featurep - macro to make some configuration conditional based on the state of another module or the presence of a flag.
-
-|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
-| flag (order unimportant) | takes        | comment                                              | extra                                                                         |
-|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
-| =:ensure=                  | t nil        | use default pkg manager(package.el) * care with doom | can use variable use-package-always-ensure to have ensure default to t always |
-| =:config=                  | <elisp>      | evaluate code after package has been loaded          |                                                                               |
-| =:init=                    | <elisp>      | ensure loaded before package loads                   |                                                                               |
-| =:if (variable)=           |              | if in display-graphic-p (in graphical env)           | eg. :if (display-graphic-p)                                                   |
-| =:defer=                   |              |                                                      |                                                                               |
-| =:bind=                    |              | keymaps in k . v pairs("keys" . <functions>)         |                                                                               |
-| =:demand=                  | t            | load package immediately on emacs start              |                                                                               |
-| =:defer=                   | t N(seconds) | dont load immediately                                |                                                                               |
-| =:after=                   | <pkgName>    | load after another pkg loads                         | check out with-eval-after-load elisp function to avoid using :after           |
-| =:hook=                    |              | see after-init-hook (after emacs init?)              |                                                                               |
-|                          |              |                                                      |                                                                               |
-|--------------------------+--------------+------------------------------------------------------+-------------------------------------------------------------------------------|
-
-**** conditional loading
-***** if
-#+begin_src elisp :tangle no
-:if (eq system-type 'gnu-linux)
-#+end_src
-***** when
-the code executes when the check passes
-#+begin_src elisp :tangle no
-(when (eq system-type 'gnu-linux)
-  (use-package <package>
-    :ensure t))
-#+end_src
-***** unless??
-**** defer loading
-***** by binding keys
-****** without global
-#+begin_src elisp :tangle no
-(use-package denote
-  :ensure t
-  :bind
-  ;; ("C-c n n" . denote) ;single binding
-  (("C-c n n" . denote)
-   ("C-r n r" . denote-rename-file)) ; list of pairs for multiple key bindings/association list
-  :config
-  (setq denote-known-keywords '("emacs" "philosophy" "politics")))
-#+end_src
-
-****** global map
-#+begin_src elisp :tangle no
-(use-package denote
-  :ensure t
-  :bind
-  (:map global-map
-        ("C-c n n" . denote))
-  :config
-  (setq denote-known-keywords '("emacs" "philosophy" "politics")))
-#+end_src
-dont evaluate :config befoore i hit the key
-****** map modes:
-+ global-map
-+ text-mode-map
-+ dired-mode-mapa
-***** hook
-****** single
-#+begin_src elisp :tangle no
-(use-package nerd-icons-dired
-  :ensure t
-  :hook
-  (dired-mode . nerd-icons-dired-mode) ; single mode
-  :config
-  ;;Evaluated after im in dired)
-#+end_src
-****** multiple
-#+begin_src elisp :tangle no
-(use-package abbrev
-  :ensure nil
-  :hook ((text-mode prog-mode git-commit-mode) . abbrev-mode)) ; list of hooks
-;; or
-(use-package abbrev
-  :ensure nil
-  :hook ((text-mode . abbrev-mode)
-         (prog-mode . abbrev-mode)
-         (git-commit-mode . abbrev-mode)))
-  #+end_src
-
-***** command is executed
-normally not needed - packages handle this? ;;;###autoload cookie
-#+begin_src elisp :tangle no
-(use-package bookmark
-  :ensure nil
-  :commands (bookmark-set bookmark-jump bookmark-bmenu-list))
-#+end_src
-***** until file loaded (for major modes)
-generally not needed since major modes handle this
-#+begin_src elisp :tangle no
-(use-package sxhkdrc-mode
-  :ensure t
-  :mode :"sxhkdr_.*"
-  )
-  #+end_src
-***** defer indefinitely or fo N seconds of idleness
-N seconds
-#+begin_src elisp :tangle no
-(use-package server ;built in server
-  :ensure nil
-  :defer 1
-  :config
-  (setq server-client-instructions nil)
-  (unless (server-running-p)
-  (server-start)))
-  #+end_src
-
-indefinitely until something else happens. eg. command
-#+begin_src elisp :tangle no
-(use-package markdown-mode
-  :ensure t
-  :defer t
-  :config
-  (setq markdown-fontify-code-blocks-natively t)) ; t::
-  #+end_src
-
- Here are some additional functions/macros that will help you configure Doom.
- + =load!= for loading external *.el files relative to this one
- + =use-package!= for configuring packages
- + =after!= for running code after a package has loaded
- + =add-load-path!= for adding directories to the `load-path', relative to
-   this file. Emacs searches the `load-path' when you load packages with
-   =require= or =use-package=.
- + =map!= for binding new keys
-
-**** getting help on functions/macros
- move the cursor over the highlighted symbol at press =K= (non-evil users must press =C-c c k').
-
- This will open documentation for it, including demos of how they are used.
-
- Alternatively, use =C-h o= to look up a symbol (functions, variables, faces, etc).
-
- You can also try =gd= (or =C-c c d=) to jump to their definition and see how they are implemented.
-
-*** init.el
-DO:
-+ configure emacs, setup
-+ use-package-hook! when after! is not enough
-*** packages.el
-DONT:
-+ perform expensive calculations: files here read often
-+ produce any side effects
-DO
-+ featurep macro
-+ :disable - single package
-+ disable-packages! macro to disable multiple packages
-**** example
-source: [[https://github.com/doomemacs/doomemacs/blob/master/docs/getting_started.org#configuring-packages]]
-#+begin_src elisp :tangle no
-;;; ~/.doom.d/config.el (example)
-(setq doom-font (font-spec :family "Fira Mono" :size 12))
-
-;; Takes a feature symbol or a library name (string)
-(after! evil
-  (setq evil-magic nil))
-
-;; Takes a major-mode, a quoted hook function or a list of either
-(add-hook! python-mode
-  (setq python-shell-interpreter "bpython"))
-
-;; These are equivalent
-(setq-hook! 'python-mode-hook python-indent-offset 2)
-(setq-hook! python-mode python-indent-offset 2)
-
-(use-package! hl-todo
-  ;; if you omit :defer, :hook, :commands, or :after, then the package is loaded
-  ;; immediately. By using :hook here, the `hl-todo` package won't be loaded
-  ;; until prog-mode-hook is triggered (by activating a major mode derived from
-  ;; it, e.g. python-mode)
-  :hook (prog-mode . hl-todo-mode)
-  :init
-  ;; code here will run immediately
-  :config
-  ;; code here will run after the package is loaded
-  (setq hl-todo-highlight-punctuation ":"))
-#+end_src
-**** custom `load-path'
-#+begin_src elisp :tangle no
-(use-package notmuch
-  :ensure nil ; do not install, because I get it from my linux pkgs
-  :load-path "/usr/share/emacs/site-lisp"
-  :defer t
-  :commands (notmuch notmuch-mua-new-mail))
-  #+end_src
-
-*** autoload.el
-*** split config | include | load
-#+begin_src elisp :tangle no
-;; Omitting the file extension allows Emacs to load the byte-compiled version,
-;; if it is available:
-(load! "+git")   ; loads ./+git.el
-#+end_src
-** Doom concepts
-*** doom cookies
-*** variables, funcitons, faces, etc
-+ describe-variable (SPC h v)
-+ describe-function (SPC h f)
-+ describe-face (SPC h F)
-+ describe-bindings (SPC h b)
-+ describe-key (SPC h k)
-+ describe-char (SPC h ')
-+ find-library (SPC h P)
-*** evaluate emacs-lisp on the fly
-+ eval code with =M-;= =SPC-;=
-+ eval elisp with =M-:=
-+ =SPC x= will open a scratch buffer. M-x emacs-lisp-mode will change it to the appropriate major mode, then use +eval:region (=gr=) and +eval/buffer (=gR=) to evaluate code,
-*** sandbox
-| =SPC h E=           | evil users |
-| =M-x: doom/sandbox= |            |
 * sources:
 https://github.com/snackon/Witchmacs/
+* DOCS
+** docs | old
+*** fonts
+source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
+‘slant’
+One of ‘italic’, ‘oblique’, or ‘roman’.
+
+‘weight’
+One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
+
+‘style’
+Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
+
+‘width’
+One of ‘condensed’, ‘normal’, or ‘expanded’.
+
+‘spacing’
+One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
+
+ Doom exposes five (optional) variables for controlling fonts in Doom:
+
+ - `doom-font' -- the primary font to use
+ - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+   - used in websites? eww?
+   - headers?
+
+*** theme
+**** load theme
+
+ There are =two ways= to load a theme. Both assume the theme is installed and
+ available.
+
+ You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
+
+**** favs
+***** dark
+- solarized-dark
+- one
+- horizon - nice red accents and purple
+- dracula
+- solarized-dark-high-contrast
+- ayu-mirage
+- snazzy
+- moonlight
+- material - nice purple dotts and cursor
+- monokai-octagon
+
+***** light
+- doom-solarized-light
+- earl grey
+***** really light white light
+- doom-winter-is-coming-light
+- ayu light
+- one light
+***** pastel
+- ephemeral
+- nord-aurora
+*** nerd font experiement
+**** mononoki
+kinda nice and kawaii
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
+#+end_src
+**** iosevka
+***** comfy
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
+#+end_src
+***** term
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
+#+end_src
+
+**** zed mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
+#+end_src
+
+**** martian mono
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
+#+end_src
+
+**** caskaydia
+***** code
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
+#+end_src
+***** mono
+kinda nice
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
+#+end_src
+
+**** lilex
+nice l and i
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
+#+end_src
+
+**** fira
+nice defaults
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+**** shure
+boxy nice stuff 😃
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
+#+end_src
+
+**** lekton
+nice little font actually :)
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
+#+end_src
+
+**** space mono
+use with rofi as well...clean cut font but kinda thin and no semibold
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
+#+end_src
+
+**** Monofur
+kawaii - but does not look nice for ide maybe for ui?
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
+#+end_src
+
+**** SauceCode Pro
+#+begin_src emacs-lisp :tangle no
+(setq
+ doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
+#+end_src
+
+**** Geist
+sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
+#+begin_src emacs-lisp :tangle no
+(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
+#+end_src
+
+**** monaspace
+one family, 5 fonts, 3 variable axes
+
+
+|------+---------+--------------------|
+| abbr | name    | font (actual)      |
+|------+---------+--------------------|
+| Ne   | Neon    | Neo-grotesque sans |
+| Ar   | Argon   | Humanist sans      |
+| Xe   | Xenon   | Slab serif         |
+| Ra   | Radon   | Handwriting        |
+| Kr   | Kyrpton | Mechanical sans    |
+|------+---------+--------------------|
+
+#+begin_src emacs-lisp :tangle no
+;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
+(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
+#+end_src
+
+*** options
+- var:doom-font: the primary font for Emacs to use.
+- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
+- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
+- var:doom-symbol-font: used for rendering symbols.
+- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
+- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.

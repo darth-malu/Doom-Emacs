@@ -24,9 +24,8 @@
 ;; (package! obsidian)
 (package! tldr)
 (package! lsp-pyright)
-;; (package! elpy)
+(package! elpy)
 (package! org-auto-tangle)
-;; (package! org-bullets)
 (package! drag-stuff) ;TODO desc
 (package! all-the-icons) ;TODO add desc
 ;;(package! git-timemachine) ;TODO investigate further

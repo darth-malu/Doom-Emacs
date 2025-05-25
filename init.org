@@ -33,12 +33,13 @@ Alternatively, press =gd= on a module to browse its
 ** completion
 #+begin_src emacs-lisp :tangle init.el
 :completion
-       ;; company           ; the ultimate code completion backend
+       ;; (company +tng +childframe)           ; the ultimate code completion backend
        (corfu +orderless)  ; complete with cap(f), cape and a flying feather!
-       ;;helm              ; the *other* search engine for love and life
-       ;;ido               ; the other *other* search engine...
+       ;; (helm +childframe +icons +fuzzy )              ; the *other* search engine for love and life
+       ;; ido               ; the other *other* search engine...
        ;;ivy               ; a search engine for love and life
-       vertico           ; the search engine of the future
+       ;; (ivy +childframe +icons)
+       (vertico +icons)           ; the search engine of the future
 #+end_src
 *** vertico
 =Flags=: +icons
@@ -51,21 +52,45 @@ The search engine for life and love
  - Embark, which provides a set of minibuffer actions
  - Marginalia, which provides annotations to completion candidates
  - Orderless, which provides better filtering methods
+*** helm
+
+=+childframe#=
+Display Helm popups in a floating frame rather than in the pop up window at the bottom.
+
+=+fuzzy=
+Enable fuzzy completion for Helm searches.
+
+=+icons=
+Enable icons (supports both all-the-icons and treemacs icons).
+
+*** ivy
+=+childframe=
+Cause Ivy to display in a floating child frame, over Emacs.
+
+=+fuzzy=
+Enable fuzzy completion for Ivy searches.
+
+=+icons=
+Enable file icons for switch-{buffer,project}/find-file counsel commands.
+
+=+prescient=
+Enable prescient filtering and sorting for Ivy searches.
+
 ** ui
 #+begin_src emacs-lisp :tangle init.el
 :ui
-       deft              ; notational velocity for Emacs
+       ;; deft              ; notational velocity for Emacs
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
-       (emoji +ascii +unicode)  ; 🙂
+       (emoji +unicode)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
        (ligatures +extra)         ; ligatures and symbols to make your code pretty again
        ;; minimap           ; show a map of the code on the side
        ;; ( modeline +light)          ; snazzy, Atom-inspired modeline, plus API
        modeline
-       nav-flash         ; blink cursor line after big motions
+       ;; nav-flash         ; blink cursor line after big motions
        ;; neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on ; TODO read further
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
@@ -86,7 +111,12 @@ The search engine for life and love
 This module enables ligatures and arbitrary symbol substitutions with mac-auto-operator-composition-mode (on supported macOS systems) or composition tables (harfbuzz on Emacs 28), falling back on =prettify-symbols-mode= otherwise.
 
 **** emoji
-+unicode +ascii +github
+=+ascii=
+Enable plain text emojis like :).
+=+github=
+Enable Github-style emojis like :smile:.
+=+unicode=
+Enable unicode emojis like 🙂.
 **** popup
 [[doom-module:ui/popup]]
 +extra
@@ -96,11 +126,15 @@ modeline can be disabled in popups
 ***** TODO treemacs-git-mode
 +lsp .
 **** window-seclect
+***** switch window
 This module provides several methods for selecting windows without the use of the mouse or spatial navigation (e.g. =C-w {h,j,k,l}=).
 
 The command other-window is remapped to either =switch-window= or =ace-window=, depending on which backend you’ve enabled. It is bound to =C-x o= (and =C-w C-w= for evil users).
 
 It also provides numbered windows and selection with the =winum= package, if desired. Evil users can jump to window N in =C-w <N>= (where N is a number between 0 and 9). Non evil users have =C-x w <N>= instead.
+***** numbers
+Enable numbered windows and window selection (using =winum=).
+
 ** editor
 #+begin_src emacs-lisp :tangle init.el
 :editor
@@ -111,7 +145,7 @@ It also provides numbered windows and selection with the =winum= package, if des
        ;;god               ; run Emacs commands without modifier keys
        ;;lispy             ; vim for lisp, for people who don't like vim
        multiple-cursors  ; editing in many places at once
-       ;;objed             ; text object editing for the innocent
+       (objed +manual)             ; text object editing for the innocent ;TODO test this
        parinfer          ; turn lisp into python, sort of ;TODO see if need
        rotate-text       ; cycle region at point between text candidates eg false to true
        snippets          ; my elves. They type so I don't have to
@@ -131,21 +165,34 @@ It also provides numbered windows and selection with the =winum= package, if des
 + =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
 + The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
 + in visual mode =#= =*= search for the selection instead of just the word under cursor
++ =objed=
+  This modules adds objed, a global minor-mode for navigating and manipulating text objects.
+  It combines the ideas of versor-mode and other editors like Vim or Kakoune and tries to align them with regular Emacs conventions.
+  +manual
+  Do not activate objed automatically. The user is responsible for calling objed-activate (bound to M-SPC if using the default Emacs bindings).
+
 ** emacs
 
 #+begin_src emacs-lisp :tangle init.el
 :emacs
-       dired             ; making dired pretty [functional]
+       (dired +icons +ranger)             ; making dired pretty [functional]
        electric          ; smarter, keyword-based electric-indent
        eww               ; the internet is gross
        (ibuffer +icons)  ; interactive buffer management
        (undo +tree)      ; persistent, smarter undo for your inevitable mistakes
        vc                ; version-control and Emacs, sitting in a tree
 #+end_src
+
 *** ibuffer
 + Adds project-based grouping of buffers
 + Support for file-type icons
 + Uses human-readable file-size
+*** dired
+=+icons=
+Enable file type icons in dired buffers, using all-the-icons.
+
+=+ranger=
+Make dired behave like ranger.
 
 *** git
 This module augments Emacs builtin version control support and provides better integration with git.
@@ -154,8 +201,8 @@ This module augments Emacs builtin version control support and provides better i
 #+begin_src emacs-lisp :tangle init.el
 :term
        eshell            ; the elisp shell that works everywhere
-       ;; shell             ; simple shell REPL for Emacs
-       ;; term              ; basic terminal emulator for Emacs
+       shell             ; simple shell REPL for Emacs
+       term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
 #+end_src
 
@@ -164,25 +211,47 @@ This module provides syntax checking and error highlighting, powered by flycheck
 #+begin_src emacs-lisp :tangle init.el
 :checkers
        syntax              ; tasing you for every semicolon you forget
+       (syntax +childframe)
        ;; (spell +flyspell) ; tasing you for misspelling mispelling
+       ;; (spell +hunspell) ; tasing you for misspelling mispelling
        ;; spell
        ;; grammar           ; tasing grammar mistake every you make
 #+end_src
 
+*** spell
+=+aspell=
+Use aspell as a backend for correcting words.
+
+=+enchant=
+Use enchant-2 as a backend for correcting words.
+
+=+everywhere=
+Spell check in programming modes as well (in comments).
+
+=+flyspell=
+Use flyspell instead of spell-fu. It’s significantly slower, but supports multiple languages and dictionaries.
+
+=+hunspell=
+Use hunspell as a backend for correcting words.
+*** syntax
+
+=+childframe=
+Enables displaying completion candidates in a child frame, rather than an overlay or tooltip (among with other UI enhancements).
+
 ** tools
 #+begin_src emacs-lisp :tangle init.el
 :tools
-       editorconfig      ; let someone else argue about tabs vs spaces TODO test this
+       ;; editorconfig      ; let someone else argue about tabs vs spaces TODO test this
        (eval +overlay)     ; run code, run (also, repls) TODO test this
        (lookup +dictionary +offline)              ; navigate your code and its documentation
        (lsp +peek)               ; M-x vscode
        ;; (magit +forge)             ; a git porcelain for Emacs
        magit
-       make              ; run make tasks from Emacs
+       ;; make              ; run make tasks from Emacs
        pdf               ; pdf enhancements
        rgb ; TODO test if works
        tree-sitter       ; syntax and parsing, sitting in a tree...
-       taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
+       ;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
        ;;ein               ; tame Jupyter notebooks with emacs
        ;; upload            ; map local to remote projects via ssh/ftp
        ;; pass              ; password manager for nerds
@@ -228,6 +297,8 @@ To get LSP working, you’ll need to do three things:
 + Enable this module,
 + Install a language server appropriate for your targeted language(s) (a table mapping languages to supported servers can be found in lsp-mode’s README).
 + Enable the +lsp flag on the :lang modules you want to enable LSP support for. If your language’s module doesn’t have LSP support, and you know it can (or should), please let us know! In the meantime, you must configure it yourself (described in the Configuration section).
+**** make
+This module adds commands for executing Makefile targets.
 
 **** pdf
 This module improves support for reading and interacting with PDF files in Emacs.
@@ -235,6 +306,11 @@ This module improves support for reading and interacting with PDF files in Emacs
 It uses pdf-tools, which is a replacement for the built-in doc-view-mode for PDF files. The key difference being pages are not pre-rendered, but instead rendered on-demand and stored in memory; a much faster approach, especially for larger PDFs.
 
 Displaying PDF files is just one function of pdf-tools. See its project website for details and videos.
+**** rgb
+Highlights color hex values and names with the color itself, and provides tools to easily modify color values or formats.
+**** taskrunner
+This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
+
 
 ** os
 #+begin_src emacs-lisp :tangle init.el
@@ -256,12 +332,13 @@ Displaying PDF files is just one function of pdf-tools. See its project website 
        (markdown +grip)          ; writing docs for people to ignore
        (nix +lsp)               ; I hereby declare "nix geht mehr!"
        ;; nix
-       (org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty)
-       (python +lsp +pyright +pyenv)            ; beautiful is better than ugly
+       (org +roam2 +brain +dragndrop +pandoc +pretty)
+       (python +lsp +pyright +conda)            ; beautiful is better than ugly
        ;; web               ; the tubes
        (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
 #+end_src
 
+org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty
 pyenv:[[github:shellbj/pyenv.el]]
 
 *** defaults
@@ -433,7 +510,7 @@ Note that if you change Java version you may need to remove the LSP server and i
 *** docs
 literate config -consists of a $DOOMDIR/config.org. All src blocks within are tangled $DOOMDIR/config.el, by default, when $ doom sync is executed.
 
-Defaults module is intended as a “reasonable-defaults” module, but also as a reference for your own private config.
+=Defaults= module is intended as a “reasonable-defaults” module, but also as a reference for your own private config.
  + A Spacemacs-esque keybinding scheme.
  + Extra Ex commands for evil-mode users.
  + A yasnippet snippets library tailored to Doom emacs.
