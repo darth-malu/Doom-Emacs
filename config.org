@@ -170,12 +170,17 @@ works !!...height tooo small thought :height 0.9
 #+begin_src elisp :tangle yes
 (use-package! emacs
   :custom
-  ;;misc
+
+  ;;; Editor
   (tab-width 2)
   (evil-shift-width 2)
+  (display-line-numbers-type 'relative)
+
+  ;;; misc
+  (bookmark-save-flag 1)
   (uniquify-buffer-name-style 'post-forward) ;nil::
-  ;; (electric-pair-mode 1) ;; turns on automatic parens pairing
-  (global-auto-revert-mode t) ; auto-revert mode
+  ;; (electric-pair-mode 1)
+  (global-auto-revert-mode t)
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
 
   ;;user
@@ -187,16 +192,13 @@ works !!...height tooo small thought :height 0.9
   (scroll-conservatively 101) ; TODO test usefulness
   (inhibit-startup-message t)
 
-  (display-line-numbers-type 'relative)
-
   :config
   (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
 
   :bind
   (:map evil-normal-state-map
         ("M-;" . save-buffer)
-        ("U" . evil-redo))
-  )
+        ("U" . evil-redo)))
 #+end_src
 
 #+begin_src elisp :tangle no
@@ -722,15 +724,15 @@ Capture lets you quickly store notes with no workflow interruption
 
           ("e" "EMACs" plain
             (file+headline "EmacsTODO.org" "TONEVERDO list - emacs")
-            "- [ ] %?")
+            "+ [ ] %?")
 
           ("b" "Bucket List [ movies books ]") ; group 'em up
           ("bm" "movies" plain
            (file+headline "bucket-list.org" "Movies")
-           "- [ ] %?")
+           "+ [ ] %?")
           ("bb" "books" plain
            (file+headline "bucket-list.org" "Books")
-           "- [ ] %?")
+           "+ [ ] %?")
 
           ("d" "Life's Morsels")
           ("dw" "words [w]" plain

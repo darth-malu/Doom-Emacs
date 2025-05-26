@@ -145,12 +145,13 @@ Enable numbered windows and window selection (using =winum=).
        ;;god               ; run Emacs commands without modifier keys
        ;;lispy             ; vim for lisp, for people who don't like vim
        multiple-cursors  ; editing in many places at once
-       (objed +manual)             ; text object editing for the innocent ;TODO test this
+       ;; (objed +manual)             ; text object editing for the innocent ;TODO incompatible with :editor evil
        parinfer          ; turn lisp into python, sort of ;TODO see if need
        rotate-text       ; cycle region at point between text candidates eg false to true
        snippets          ; my elves. They type so I don't have to
        word-wrap         ; soft wrapping with language-aware indent
 #+end_src
+
 *** explainer
 + parinfer
  
@@ -165,7 +166,8 @@ Enable numbered windows and window selection (using =winum=).
 + =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
 + The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
 + in visual mode =#= =*= search for the selection instead of just the word under cursor
-+ =objed=
+
+=objed=
   This modules adds objed, a global minor-mode for navigating and manipulating text objects.
   It combines the ideas of versor-mode and other editors like Vim or Kakoune and tries to align them with regular Emacs conventions.
   +manual
@@ -175,7 +177,7 @@ Enable numbered windows and window selection (using =winum=).
 
 #+begin_src emacs-lisp :tangle init.el
 :emacs
-       (dired +icons +ranger)             ; making dired pretty [functional]
+       (dired +icons)             ; making dired pretty [functional]
        electric          ; smarter, keyword-based electric-indent
        eww               ; the internet is gross
        (ibuffer +icons)  ; interactive buffer management
@@ -210,12 +212,12 @@ This module augments Emacs builtin version control support and provides better i
 This module provides syntax checking and error highlighting, powered by flycheck.
 #+begin_src emacs-lisp :tangle init.el
 :checkers
-       syntax              ; tasing you for every semicolon you forget
+       ;; syntax              ; tasing you for every semicolon you forget
        (syntax +childframe)
        ;; (spell +flyspell) ; tasing you for misspelling mispelling
-       ;; (spell +hunspell) ; tasing you for misspelling mispelling
+       (spell +hunspell) ; tasing you for misspelling mispelling
        ;; spell
-       ;; grammar           ; tasing grammar mistake every you make
+       grammar           ; tasing grammar mistake every you make
 #+end_src
 
 *** spell
@@ -249,7 +251,7 @@ Enables displaying completion candidates in a child frame, rather than an overla
        magit
        ;; make              ; run make tasks from Emacs
        pdf               ; pdf enhancements
-       rgb ; TODO test if works
+       rgb ; create color str
        tree-sitter       ; syntax and parsing, sitting in a tree...
        ;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
        ;;ein               ; tame Jupyter notebooks with emacs
@@ -277,16 +279,28 @@ This modules adds inline code evaluation support to Emacs and a universal interf
   packages: quickrun
 
 **** lookup
-Flags: +dictionary +docsets +offline
-
 Navigate your labyrinthine code and docs
+
+=+dictionary=
+Enable word definition and thesaurus lookup functionality.
+defineword, powerthesaurus
+
+=+docsets=
+Enable integration with Dash.app docsets.
+dashdocs
+
+=+offline=
+Prefer offline dictionary and thesaurus. Requires =+dictionary=.
+wordnut, synosaurus
+
+
 This module adds code navigation and documentation lookup tools to help you quickly look up definitions, references, documentation, dictionary definitions or synonyms.
 
-Jump-to-definition and find-references implementations that just work.
-Powerful xref integration for languages that support it.
-Search online providers like devdocs.io, stackoverflow, google, duckduckgo, or youtube (duckduckgo and google have live suggestions).
-Integration with Dash.app docsets.
-Support for online (and offline) dictionaries and thesauruses.
+a. Jump-to-definition and find-references implementations that just work.
+b. Powerful xref integration for languages that support it.
+c. Search online providers like devdocs.io, stackoverflow, google, duckduckgo or youtube (duckduckgo and google have live suggestions).
+d. Integration with Dash.app docsets.
+e. Support for online (and offline) dictionaries and thesauruses.
 
 **** lsp
 + +eglot (use instead of default lsp-mode ) - minimal
@@ -311,13 +325,13 @@ Highlights color hex values and names with the color itself, and provides tools 
 **** taskrunner
 This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
 
-
 ** os
 #+begin_src emacs-lisp :tangle init.el
 :os
-       (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
+       ;; (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
        tty               ; improve the terminal Emacs experience
 #+end_src
+
 ** lang
 #+begin_src emacs-lisp :tangle init.el
 :lang
@@ -491,16 +505,18 @@ Note that if you change Java version you may need to remove the LSP server and i
 + org-msg integration with +org, which can be toggled per-message, with revamped style and an accent color.
 + Gmail integrations with the +gmail flag.
 + Email notifications with mu4e-alert, and (on Linux) a customised notification style.
+
 ** app
 #+begin_src emacs-lisp :tangle init.el
 :app
        calendar
        ;; twitter ; TODO never works?
        emms
-       ;; everywhere        ; *leave* Emacs!? You must be joking
+       everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader
 #+end_src
+
 ** config
 #+begin_src emacs-lisp :tangle init.el
 :config
