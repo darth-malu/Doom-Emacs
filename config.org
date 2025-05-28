@@ -446,7 +446,7 @@ This function can be called interactively to enable Projectile grouping. To go b
   ;; :hook (org-mode . org-auto-tangle-mode)
   :hook (org-src-mode . org-auto-tangle-mode)
   :config
-  (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
+  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
   (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
 #+end_src
 
