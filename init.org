@@ -83,7 +83,7 @@ Enable prescient filtering and sorting for Ivy searches.
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
-       (emoji +unicode)  ; 🙂
+       (emoji +unicode +ascii)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
        (ligatures +extra)         ; ligatures and symbols to make your code pretty again
@@ -145,7 +145,7 @@ Enable numbered windows and window selection (using =winum=).
        ;;god               ; run Emacs commands without modifier keys
        ;;lispy             ; vim for lisp, for people who don't like vim
        multiple-cursors  ; editing in many places at once
-       ;; (objed +manual)             ; text object editing for the innocent ;TODO incompatible with :editor evil
+       (objed +manual)             ; text object editing for the innocent ;TODO test this
        parinfer          ; turn lisp into python, sort of ;TODO see if need
        rotate-text       ; cycle region at point between text candidates eg false to true
        snippets          ; my elves. They type so I don't have to
@@ -166,7 +166,7 @@ Enable numbered windows and window selection (using =winum=).
 + =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
 + The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
 + in visual mode =#= =*= search for the selection instead of just the word under cursor
-
+ 
 =objed=
   This modules adds objed, a global minor-mode for navigating and manipulating text objects.
   It combines the ideas of versor-mode and other editors like Vim or Kakoune and tries to align them with regular Emacs conventions.
@@ -243,11 +243,10 @@ Enables displaying completion candidates in a child frame, rather than an overla
 ** tools
 #+begin_src emacs-lisp :tangle init.el
 :tools
-       ;; editorconfig      ; let someone else argue about tabs vs spaces TODO test this
+       editorconfig      ; let someone else argue about tabs vs spaces TODO test this
        (eval +overlay)     ; run code, run (also, repls) TODO test this
        (lookup +dictionary +offline)              ; navigate your code and its documentation
        (lsp +peek)               ; M-x vscode
-       ;; (magit +forge)             ; a git porcelain for Emacs
        magit
        ;; make              ; run make tasks from Emacs
        pdf               ; pdf enhancements
@@ -328,7 +327,7 @@ This module integrates taskrunner into Doom Emacs, which scraps runnable tasks f
 ** os
 #+begin_src emacs-lisp :tangle init.el
 :os
-       ;; (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
+       (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
        tty               ; improve the terminal Emacs experience
 #+end_src
 

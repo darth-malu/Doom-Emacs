@@ -2,16 +2,6 @@
 #+auto_tangle: t
 #+startup: content indent
 
-* file contents :toc:
-- [[#start--lexical-intro][start -lexical intro]]
-- [[#my-pkgs][my pkgs]]
-- [[#defaults][defaults]]
-  - [[#install-pkg][install pkg]]
-  - [[#disable-doom-pkgs][disable doom pkgs]]
-  - [[#override-pkgs][override pkgs]]
-- [[#extra][extra]]
-
-* start -lexical intro
 #+begin_src emacs-lisp :tangle packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
@@ -36,7 +26,7 @@
 ;; (package! ob-hide-markers) ;TODO test if this is wooorking using work around for now
 #+end_src
 
-* defaults
+* DOCS
 ** install pkg
 
 To install a package with Doom you must declare them here and run ='doom sync'=
@@ -142,7 +132,7 @@ Whenever you reconfigure a package, make sure to wrap your config in an
    =require= or =use-package=.
  + =map!= for binding new keys
 
-* extra
+** extra
  To get information about any of these functions/macros, move the cursor over
  the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
  This will open documentation for it, including demos of how they are used.

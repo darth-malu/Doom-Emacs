@@ -1,14 +1,15 @@
 #+title: my config
 #+author: justin malu
 #+startup: inlineimages content indent
+#+auto_tangle: t
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 #+end_src
 
 * language major modes
 ** emacs lsp booster
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
   (or
@@ -44,24 +45,22 @@
 *** python-mode
 #+begin_src emacs-lisp :tangle yes
 (use-package! python
-  :ensure nil
-  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
+  ;; :ensure nil
+  ;; :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
   ;; (python-shell-interpreter "python3")
   :hook
-  ;; (python-mode . lsp-deferred)
-  (python-mode . (lambda () (require 'lsp-pyright) (lsp-deferred)))
-  (python-mode . (lambda () (local-set-key (kbd "C-c r") 'python-shell-send-region))))
-  ;; (setq-hook! python-mode python-indent-offset 4)
+  (python-mode . (lambda ()
+                   (setq-local lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
+                   (require 'lsp-pyright)
+                   (lsp-deferred)
+                   (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 #+end_src
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 
 *** elpy
 #+begin_src emacs-lisp :tangle yes
-;; (elpy-enable)
 (use-package! elpy
   :defer t
-  ;; :init
-  ;; (elpy-enable)
   :init (advice-add 'python-mode :before 'elpy-enable))
 #+end_src
 
@@ -73,10 +72,24 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 |---------+--------------------------------------------------------|
 ** Lsp Mode
 *** lsp ui
-#+begin_src emacs-lisp :tangle yes
+https://github.com/emacs-lsp/lsp-ui
+
+By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
+
+#+begin_src emacs-lisp :tangle no
 (use-package! lsp-ui
   :custom
-  (lsp-ui-doc-show 'bottom))
+  ;; (lsp-ui-doc-show 'bottom)
+  ;; (lsp-ui-doc-position 'top)
+  ;; (lsp-ui-doc-enable t)
+  ;; (lsp-ui-doc-show-with-cursor t)
+  (lsp-ui-doc-show-with-mouse t)
+
+  ;; (lsp-ui-peek-show-directory t)
+  ;; (lsp-ui-peek-enable t)
+
+  (lsp-ui-sideline-show-code-actions t)
+  )
 #+end_src
 
 https://emacs-lsp.github.io/lsp-ui/
@@ -89,7 +102,6 @@ https://emacs-lsp.github.io/lsp-ui/
 
 ** nix
 https://github.com/NixOS/nix-mode
-
 *** nil lsp
 nil: An incremental analysis assistant for writing in Nix.
 #+begin_src emacs-lisp :tangle no
@@ -131,22 +143,29 @@ nil: An incremental analysis assistant for writing in Nix.
 
 change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
 
-#+begin_src emacs-lisp
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
-  doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 16 :weight 'medium )
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
+#+begin_src emacs-lisp :tangle yes
+  (setq
+    doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+    doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'medium )
+    doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
 #+end_src
 
 ** modeline
 
 works !!...height tooo small thought :height 0.9
-#+begin_src emacs-lisp
+
+#+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
-  '(mode-line :family "VictorMono Nerd Font" :size 16 )
-  '(mode-line-inactive :family "Iosevka Comfy" :size 17))
+  '(mode-line :family "Mononoki Nerd Font" :size 16 )
+  '(mode-line-inactive :family "Quicksand" :size 17))
 #+end_src
 
+=Nice Fonts=
++ SpaceMono Nerd Font
++ Mononoki Nerd Font
++ VictorMono Nerd Font
+ 
 ** custom start mode
 
 #+begin_src emacs-lisp :tangle no
@@ -163,24 +182,26 @@ works !!...height tooo small thought :height 0.9
 
 ** keybinds
 #+begin_src emacs-lisp :tangle no
-(keymap-global-set "M-;" 'save-buffer) ;easier saving
+;; (keymap-global-set "M-;" 'save-buffer) ;easier saving
 ;; (keymap-global-set "U" 'evil-redo) ;easier redo :)
 #+end_src
 ** emacs sane
 #+begin_src elisp :tangle yes
 (use-package! emacs
   :custom
-
   ;;; Editor
-  (tab-width 2)
+  (tab-width 2) ; TODO differentiate see custom-set-variable
   (evil-shift-width 2)
   (display-line-numbers-type 'relative)
+  (uniquify-buffer-name-style 'post-forward)
 
   ;;; misc
-  (bookmark-save-flag 1)
-  (uniquify-buffer-name-style 'post-forward) ;nil::
+  (bookmark-save-flag 1) ; TODO see docs
+  ;; (uniquify-buffer-name-style 'post-forward) ;nil::
   ;; (electric-pair-mode 1)
+
   (global-auto-revert-mode t)
+
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
 
   ;;user
@@ -198,7 +219,10 @@ works !!...height tooo small thought :height 0.9
   :bind
   (:map evil-normal-state-map
         ("M-;" . save-buffer)
-        ("U" . evil-redo)))
+        ("M-o" . +evil/insert-newline-below)
+        ("M-O" . +evil/insert-newline-above)
+        ;; ("U" . evil-redo)
+        ))
 #+end_src
 
 #+begin_src elisp :tangle no
@@ -350,7 +374,7 @@ Also see tab-first-completion.
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
 ** Async
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! async
   :ensure nil
   :init
@@ -392,7 +416,6 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 ** centaur tabs
 #+begin_src elisp :tangle yes
 (use-package! centaur-tabs
-  :ensure nil
   :defer t
   :init
   ;; (setq centaur-tabs-mode nil)
@@ -412,6 +435,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
         centaur-tabs-height 18)
   :hook ((nix-mode  . centaur-tabs-mode)
          (python-mode  . centaur-tabs-mode)
+         (pdf-view-mode . centaur-tabs-local-mode)
          (org-mode . centaur-tabs-local-mode)) ; no centaur tabs on org documents
   :bind
   (:map evil-normal-state-map
@@ -439,12 +463,11 @@ This function can be called interactively to enable Projectile grouping. To go b
 ~(centaur-tabs-group-buffer-groups)~
 
 ** org-auto-tangle
-
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 (use-package! org-auto-tangle
   :defer t
-  ;; :hook (org-mode . org-auto-tangle-mode)
-  :hook (org-src-mode . org-auto-tangle-mode)
+  :hook (org-mode . org-auto-tangle-mode)
+  ;; :hook (org-src-mode . org-auto-tangle-mode)
   :config
   ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
   (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
@@ -456,7 +479,7 @@ This function can be called interactively to enable Projectile grouping. To go b
 minor mode for emacs. when drag-stuff-define-keys t
 moves text around
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 (use-package! drag-stuff
   :init
   (drag-stuff-global-mode 1)
@@ -477,7 +500,36 @@ moves text around
                                 ("NOTE"       success bold)
                                 ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
+** all the icons
+#+begin_src elisp :tangle yes
+(use-package! all-the-icons
+  :if (display-graphic-p))
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package! all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
 ** old | phased out
+*** ultra-scroll
+#+begin_src emacs-lisp :tangle no
+(use-package! ultra-scroll
+  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
+  :config
+  (ultra-scroll-mode 1)
+  :recipe (:host github :repo "https://github.com/jdtsmith/ultra-scroll"))
+#+end_src
+
+Do you need this?
+
+If you don't scroll with a high-speed device (modern mouse or track-pad), no. If you do, but aren't sure, here's a good test to try:
+
+Open a heavy emacs buffer full screen on your largest monitor.
+While scrolling smoothly such that lines would move across your window's full height in about 5 seconds, can you easily read the text you see, without stopping, in both directions? Now, try this exercise again with your browser – I bet it's very readable there.
+Shouldn't emacs be like this?
+
+If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
+
 *** obsidian
 #+begin_src emacs-lisp :tangle no
 (setq obsidian-directory "~/OBSIDIAN")
@@ -510,19 +562,7 @@ moves text around
               ("C-c C-b" . obsidian-backlink-jump)))
 #+end_src
 
-*** junk
-**** all the icons
-#+begin_src emacs-lisp
-(use-package! all-the-icons
-  :ensure nil
-  :if (display-graphic-p))
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(use-package! all-the-icons-dired
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-**** FIXME git time machine
+*** FIXME git time machine
 #+begin_src emacs-lisp :tangle no
 (use-package! git-timemachine
   :after git-timemachine
@@ -533,20 +573,7 @@ moves text around
 )
 #+end_src
 
-**** ultra-scroll
-***** TODO make this work? test if needed
-#+begin_src emacs-lisp :tangle no
-(use-package! ultra-scroll
-  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
-  :init
-  (setq scroll-conservatively 101 ; important!
-        scroll-margin 0)
-  :config
-  (ultra-scroll-mode 1))
-#+end_src
-
-**** Dashboard
-***** FIXME does not work
+*** FIXME Dashboard
 #+begin_src emacs-lisp :tangle no
 (use-package! dashboard
   :ensure nil
@@ -568,6 +595,7 @@ moves text around
   :config
   (dashboard-setup-startup-hook))
 #+end_src
+
 * Terminal Modes
 ** ESHELL
 Eshell cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
@@ -688,7 +716,7 @@ icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣
 org-bullets-face-name
 
 ** org-roam
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 ;; (setq org-roam-directory "~/org/org-roam")
 (use-package! org-roam
   :init
@@ -708,9 +736,8 @@ org-bullets-face-name
 Capture lets you quickly store notes with no workflow interruption
 *** my org-capture-template
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 (use-package! org-capture
-  :ensure nil
   :bind ("C-c c" . org-capture)
   :config
   ;; (require 'prot-org)
@@ -723,8 +750,12 @@ Capture lets you quickly store notes with no workflow interruption
           ;; try entry, plain
 
           ("e" "EMACs" plain
-            (file+headline "EmacsTODO.org" "TONEVERDO list - emacs")
-            "+ [ ] %?")
+           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs")
+           "+ [ ] %?")
+
+          ("t" "TESt" checkitem
+           (file+olp "test.org" "Heading" "2 test")
+           "+ [ ] %?")
 
           ("b" "Bucket List [ movies books ]") ; group 'em up
           ("bm" "movies" plain
@@ -737,13 +768,15 @@ Capture lets you quickly store notes with no workflow interruption
           ("d" "Life's Morsels")
           ("dw" "words [w]" plain
            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
-           "\n %?")
+           "\n\n %?"
+           :empty-lines 1
+           :prepend t)
           ("di" "idioms [i]" plain
            (file+headline "diction.org" "Idioms")
-           "\n %?")
+           "+ %?")
           ("dp" "phrases [p]" plain
            (file+headline "diction.org" "Phrases")
-           "\n %?"))))
+           "+ %?"))))
 #+end_src
 
 **** old template
@@ -770,6 +803,20 @@ Capture lets you quickly store notes with no workflow interruption
 ;;      (file+headline "demo.org" "Scheduled tasks")
 ;;      "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
 #+end_src
+**** docs
+source: https://orgmode.org/manual/Template-elements.html
+
+=keys=
+characters only  eg. 'a' or 'ab'
+=type=
+|------------+--------------------------------------------------------------------|
+| entry      | text with heading                                                  |
+| item       | plain list item, placed in the first plain list at target location |
+| checkitem  | checkbox item                                                      |
+| table-line | A new line in the first table at the target location. see more     |
+| plain      | text inserted as i                                                 |
+|------------+--------------------------------------------------------------------|
+
 *** howardism
 
 org capture template consists of 3 parts:
@@ -1140,7 +1187,9 @@ For neater/shorter presentation
 #+end_src
 *** worg tricks
 **** Colorize clocking tasks with a block
+
 [[https://orgmode.org/worg/org-hacks.html][org hacks -worg]]
+
 #+begin_src emacs-lisp :tangle no
 ;; work with org-agenda dispatcher [c] "Today Clocked Tasks" to view today's clocked tasks.
 (defun org-agenda-log-mode-colorize-block ()
@@ -1181,6 +1230,7 @@ For neater/shorter presentation
 #+end_src
 * sources:
 https://github.com/snackon/Witchmacs/
+
 * DOCS
 ** docs | old
 *** fonts
