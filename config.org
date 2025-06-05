@@ -71,7 +71,10 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 | =C-c C-d= | display documentation for the thing under cursor       |
 |---------+--------------------------------------------------------|
 ** Lsp Mode
-*** lsp ui
+*** lsp ui :ATTACH:
+:PROPERTIES:
+:ID:       a0d63e63-721c-484a-b913-c440463e72d1
+:END:
 https://github.com/emacs-lsp/lsp-ui
 
 By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
@@ -81,18 +84,53 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   :custom
   ;; (lsp-ui-doc-show 'bottom)
   ;; (lsp-ui-doc-position 'top)
-  ;; (lsp-ui-doc-enable t)
+  (lsp-ui-doc-enable t) ; on hover dialogs
   ;; (lsp-ui-doc-show-with-cursor t)
   (lsp-ui-doc-show-with-mouse t)
 
-  ;; (lsp-ui-peek-show-directory t)
-  ;; (lsp-ui-peek-enable t)
+  (lsp-ui-peek-show-directory t)
+  (lsp-ui-peek-enable t)
 
+  ;;;imenu
+  (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
+  ;; (lsp-ui-imenu-refresh-delay) ;FIXME Does not exists?
+  ;; (lsp-ui-imenu-buffer-position 'left)
+
+  ;;;Sideline
+  ;; (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-show-code-actions t)
+  (lsp-enable-symbol-highlighting nil) ; symbol eg. print in python highlight
+  (lsp-ui-sideline-show-hover nil) ; hide only hover symbols
+  ;; (lsp-ui-sideline-show-diagnostics nil) ;hide only errors
+
+  ;;; eldoc
+  ;; (lsp-eldoc-enable-hover nil)
+
+  ;;;modeline
+  ;; (lsp-modeline-code-actions-enable nil)
+  ;; (lsp-modeline-diagnostics-enable nil)
+
+  ;;; lenses
+  ;; (lsp-lens-enable nil)
+
+  ;;;headerline
+  (lsp-headerline-breadcrumb-enable t)
+
+  ;;;flycheck
+  ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present)
+
+  ;;;completion
+  ;; (lsp-completion-show-detail nil) ;t::
+  ;; (lsp-completion-show-kind nil)
+  ;; (lsp-completion-provider :none) ; (company mode)
   )
 #+end_src
 
 https://emacs-lsp.github.io/lsp-ui/
+
+
+https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
+
 
 *** lsp treemacs
 #+begin_src emacs-lisp :tangle yes
@@ -193,15 +231,16 @@ works !!...height tooo small thought :height 0.9
   (tab-width 2) ; TODO differentiate see custom-set-variable
   (evil-shift-width 2)
   (display-line-numbers-type 'relative)
+
+  ;;;uniquify
   (uniquify-buffer-name-style 'post-forward)
+  (uniquify-separator " || ")
 
   ;;; misc
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
   ;; (electric-pair-mode 1)
-
   (global-auto-revert-mode t)
-
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
 
   ;;user
@@ -416,23 +455,28 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 ** centaur tabs
 #+begin_src elisp :tangle yes
 (use-package! centaur-tabs
-  :defer t
+  ;; :defer t
+  :demand
   :init
   ;; (setq centaur-tabs-mode nil)
   ;; (centaur-tabs-change-fonts "arial" 112)
+  (centaur-tabs-headline-match) ; headline face
   ;; (require 'projectile)
   ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
   :config
   (setq centaur-tabs-set-bar nil ; left, over
-        centaur-tabs-style 'wave ;alternate, bar, box
+        centaur-tabs-style 'slant ;alternate, bar, box(x)
         centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
         centaur-tabs-set-icons t
+        ;; centaur-tabs-plain-icons t
+        centaur-tabs-set-bar 'left
         ;; centaur-tabs-close-button "X"
         ;; centaur-tabs-set-close-button nil
         ;; centaur-tabs-plain-icons t ; for same color as text
+        ;; centaur-tabs-show-navigation-buttons t
         centaur-tabs-gray-out-icons 'buffer
-        centaur-tabs-cycle-scope 'tabs
-        centaur-tabs-height 18)
+        centaur-tabs-cycle-scope 'tabs ; default::, tabs , groups
+        centaur-tabs-height 15)
   :hook ((nix-mode  . centaur-tabs-mode)
          (python-mode  . centaur-tabs-mode)
          (pdf-view-mode . centaur-tabs-local-mode)
@@ -445,7 +489,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 
 centaur-tabs-gray-out-icons 'buffer ; grey icons for unselected buffer
 centaur-tabs-height 18 ; 22;;
-centaur-tabs-style "bar"
+centaur-tabs-style "bar" : https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
 centaur-tabs-modified-marker "•" - Also
   there are two faces to customize the close button string: centaur-tabs-modified-marker-unselected and centaur-tabs-modified-marker-selected
 
@@ -461,6 +505,12 @@ You can group your tabs by Projectile’s project. Just use the following functi
 This function can be called interactively to enable Projectile grouping. To go back to centaur-tabs’s user defined (or default) buffer grouping function you can interactively call:
 
 ~(centaur-tabs-group-buffer-groups)~
+
+You can make the headline face match the centaur-tabs-default face. This makes the tabbar have an uniform appearance. In your configuration use the following function:
+~(centaur-tabs-headline-match)~
+
+see also:
++ https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#buffer-groups
 
 ** org-auto-tangle
 #+begin_src emacs-lisp :tangle yes
@@ -750,7 +800,11 @@ Capture lets you quickly store notes with no workflow interruption
           ;; try entry, plain
 
           ("e" "EMACs" plain
-           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs")
+           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
+           "+ [ ] %?")
+
+          ("n" "nixOs" plain
+           (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
            "+ [ ] %?")
 
           ("t" "TESt" checkitem
