@@ -183,7 +183,7 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
 
 #+begin_src emacs-lisp :tangle yes
   (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font Mono")
+    doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'medium )
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
@@ -195,7 +195,7 @@ works !!...height tooo small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
-  '(mode-line :family "Mononoki Nerd Font" :size 16 )
+  '(mode-line :family "Mononoki Nerd Font" :size 19 )
   '(mode-line-inactive :family "Quicksand" :size 17))
 #+end_src
 
@@ -465,7 +465,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
   :config
   (setq centaur-tabs-set-bar nil ; left, over
-        centaur-tabs-style 'slant ;alternate, bar, box(x)
+        centaur-tabs-style 'slant ;alternate, bar, box(x) FIXME...slant does not work
         centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
         centaur-tabs-set-icons t
         ;; centaur-tabs-plain-icons t
