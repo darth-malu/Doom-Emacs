@@ -34,7 +34,7 @@ Alternatively, press =gd= on a module to browse its
 #+begin_src emacs-lisp :tangle init.el
 :completion
        ;; (company +tng +childframe)           ; the ultimate code completion backend
-       (corfu +orderless)  ; complete with cap(f), cape and a flying feather!
+       (corfu +orderless +icons)  ; complete with cap(f), cape and a flying feather!
        ;; (helm +childframe +icons +fuzzy )              ; the *other* search engine for love and life
        ;; ido               ; the other *other* search engine...
        ;;ivy               ; a search engine for love and life
@@ -126,13 +126,19 @@ modeline can be disabled in popups
 ***** TODO treemacs-git-mode
 +lsp .
 **** window-seclect
-***** switch window
+***** + switch-window
 This module provides several methods for selecting windows without the use of the mouse or spatial navigation (e.g. =C-w {h,j,k,l}=).
 
 The command other-window is remapped to either =switch-window= or =ace-window=, depending on which backend you’ve enabled. It is bound to =C-x o= (and =C-w C-w= for evil users).
 
 It also provides numbered windows and selection with the =winum= package, if desired. Evil users can jump to window N in =C-w <N>= (where N is a number between 0 and 9). Non evil users have =C-x w <N>= instead.
-***** numbers
+
+|-----------------------------+-----------------------------|
+| =C-w <N>=                     | go to window number =<N>=     |
+| =C-w C-w= or =C-x o= (non-evil) | winum pkg                   |
+| =C-w {h,j,k,l}=               | switch-window or ace-window |
+|-----------------------------+-----------------------------|
+***** + numbers
 Enable numbered windows and window selection (using =winum=).
 
 ** editor
@@ -210,35 +216,20 @@ This module augments Emacs builtin version control support and provides better i
 
 ** checkers
 This module provides syntax checking and error highlighting, powered by flycheck.
+
+I think hunspell increases startup time
 #+begin_src emacs-lisp :tangle init.el
 :checkers
        ;; syntax              ; tasing you for every semicolon you forget
-       (syntax +childframe)
-       ;; (spell +flyspell) ; tasing you for misspelling mispelling
-       (spell +hunspell) ; tasing you for misspelling mispelling
+       (syntax +icons) ;TODO test if childframe needed and difference in behaviour
+       ;; (spell +hunspell) ; tasing you for misspelling mispelling
        ;; spell
-       grammar           ; tasing grammar mistake every you make
+       ;; grammar           ; tasing grammar mistake every you make
 #+end_src
 
-*** spell
-=+aspell=
-Use aspell as a backend for correcting words.
 
-=+enchant=
-Use enchant-2 as a backend for correcting words.
-
-=+everywhere=
-Spell check in programming modes as well (in comments).
-
-=+flyspell=
-Use flyspell instead of spell-fu. It’s significantly slower, but supports multiple languages and dictionaries.
-
-=+hunspell=
-Use hunspell as a backend for correcting words.
-*** syntax
-
-=+childframe=
-Enables displaying completion candidates in a child frame, rather than an overlay or tooltip (among with other UI enhancements).
+if not using +flyspell need aspell(and a dictionary)a whether or not you have +hunspell/+enchant
+  this is because spell-fu only supports aspell as of yet
 
 ** tools
 #+begin_src emacs-lisp :tangle init.el
@@ -250,7 +241,7 @@ Enables displaying completion candidates in a child frame, rather than an overla
        magit
        ;; make              ; run make tasks from Emacs
        pdf               ; pdf enhancements
-       rgb ; create color str
+       ;; rgb ; create color str
        tree-sitter       ; syntax and parsing, sitting in a tree...
        ;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
        ;;ein               ; tame Jupyter notebooks with emacs
@@ -348,7 +339,7 @@ This module integrates taskrunner into Doom Emacs, which scraps runnable tasks f
        (org +roam2 +brain +dragndrop +pandoc +pretty)
        (python +lsp +pyright +conda)            ; beautiful is better than ugly
        ;; web               ; the tubes
-       (sh +lsp)                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +lsp +powershell +tree-sitter)                ; she sells {ba,z,fi}sh shells on the C xor
 #+end_src
 
 org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty

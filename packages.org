@@ -15,6 +15,7 @@
 (package! tldr)
 (package! lsp-pyright)
 (package! elpy)
+(package! jupyter)
 (package! org-auto-tangle)
 (package! drag-stuff) ;TODO desc
 (package! all-the-icons) ;TODO add desc
@@ -26,6 +27,17 @@
 ;; (package! ob-hide-markers) ;TODO test if this is wooorking using work around for now
 #+end_src
 
+* justinVC-tech :justin:
+#+begin_src emacs-lisp :tangle yes
+(package! random-splash-image
+          :recipe (:host github :repo "kakakaya/random-splash-image"))
+
+;; (package! gptel)
+;; (package! gptel-quick :recipe (:host github :repo  "karthink/gptel-quick"))
+
+(package! elcord)
+(package! wttrin :recipe (:local-repo "lisp/wttrin"))
+#+end_src
 * DOCS
 ** install pkg
 

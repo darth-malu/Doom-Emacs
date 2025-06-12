@@ -45,9 +45,20 @@
 *** python-mode
 #+begin_src emacs-lisp :tangle yes
 (use-package! python
-  ;; :ensure nil
   ;; :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
   ;; (python-shell-interpreter "python3")
+  :config
+  ;;; jupytter
+  ;; (setq python-shell-interpreter "jupyter"
+  ;;       python-shell-interpreter-args "console --simple-prompt"
+  ;;       python-shell-prompt-detect-failure-warning nil
+  ;;       )
+  ;; (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
+
+  ;;; ipython
+  (setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "-i --simple-prompt")
+
   :hook
   (python-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
@@ -61,7 +72,17 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 #+begin_src emacs-lisp :tangle yes
 (use-package! elpy
   :defer t
-  :init (advice-add 'python-mode :before 'elpy-enable))
+  :init
+  (advice-add 'python-mode :before 'elpy-enable))
+;; :custom
+;; (elpy-folding-fringe-indicators t)
+;; (elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide (ANNOYING)
+;; :config
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(after! elpy
+  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide (ANNOYING)
 #+end_src
 
 |---------+--------------------------------------------------------|
@@ -94,7 +115,7 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   ;;;imenu
   (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
   ;; (lsp-ui-imenu-refresh-delay) ;FIXME Does not exists?
-  ;; (lsp-ui-imenu-buffer-position 'left)
+  (lsp-ui-imenu-buffer-position 'left)
 
   ;;;Sideline
   ;; (lsp-ui-sideline-enable nil)
@@ -186,17 +207,25 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'medium )
     doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-unicode-font
+    doom-serif-font
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
 #+end_src
 
+=Ligatures=
+#FIXME Make this work for org
+#+begin_src emacs-lisp :tangle no
+(set-font-ligatures! '(org-mode) ">>=" ">>-")
+#+end_src
 ** modeline
 
-works !!...height tooo small thought :height 0.9
+works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :size 19 )
-  '(mode-line-inactive :family "Quicksand" :size 17))
+  ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
+  '(mode-line-inactive :family "SpaceMono Nerd Font" :size 16))
 #+end_src
 
 =Nice Fonts=
@@ -218,7 +247,7 @@ works !!...height tooo small thought :height 0.9
 (provide 'start-mode)
 #+end_src
 
-** keybinds
+** keybindings
 #+begin_src emacs-lisp :tangle no
 ;; (keymap-global-set "M-;" 'save-buffer) ;easier saving
 ;; (keymap-global-set "U" 'evil-redo) ;easier redo :)
@@ -226,22 +255,31 @@ works !!...height tooo small thought :height 0.9
 ** emacs sane
 #+begin_src elisp :tangle yes
 (use-package! emacs
+  :init
+  ;;;drag stuff
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys)
+
   :custom
   ;;; Editor
   (tab-width 2) ; TODO differentiate see custom-set-variable
-  (evil-shift-width 2)
   (display-line-numbers-type 'relative)
-
-  ;;;uniquify
-  (uniquify-buffer-name-style 'post-forward)
-  (uniquify-separator " || ")
-
-  ;;; misc
+  (auto-save-default t)
+  ;; (undo-limit 80000000)
+  (delete-by-moving-to-trash t) ; use system trash can
+  (x-stretch-cursor t)
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
   ;; (electric-pair-mode 1)
-  (global-auto-revert-mode t)
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
+  (inhibit-startup-message t)
+  (doom-fallback-buffer-name "Doom Emacs") ; *doom*
+  (+doom-dashboard-name "Doom Emacs Dashboard")
+
+  ;;;EVIL
+  (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
+  (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
+  (evil-shift-width 2)
 
   ;;user
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
@@ -250,22 +288,36 @@ works !!...height tooo small thought :height 0.9
   ;;scroll
   (scroll-margin 18) ; Adjust the number as needed
   (scroll-conservatively 101) ; TODO test usefulness
-  (inhibit-startup-message t)
 
   :config
   (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
+  ;; (global-auto-revert-mode t)
+  (display-time-mode 1)                             ; Enable time in the mode-line
+
+  :hook
+  (after-init . global-auto-revert-mode)
 
   :bind
   (:map evil-normal-state-map
+        ;;;misc
         ("M-;" . save-buffer)
+        ("C-M-o" . consult-outline)
+
+        ;;; EOL, BOL
+        ;; ("M-l" . end-of-line) ; clash with other settings
+        ;; ("M-h" . beginning-of-line-text)
+        ("M-S-l" . end-of-visual-line)
+        ("M-S-h" . beginning-of-visual-line)
+
+        ;;; insert newline below/above
         ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)
-        ;; ("U" . evil-redo)
-        ))
+        ("M-O" . +evil/insert-newline-above)))
+;; ("U" . evil-redo)
 #+end_src
 
-#+begin_src elisp :tangle no
-(customize-set-variable 'tab-width 2)
+#+begin_src emacs-lisp :tangle yes
+(customize-set-variable 'uniquify-buffer-name-style 'post-forward)
+(customize-set-variable 'uniquify-separator " || ")
 #+end_src
 
 + =Docs=
@@ -278,6 +330,24 @@ works !!...height tooo small thought :height 0.9
   Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
     + Viewing log files that are constantly being updated.
     + Keeping your Emacs buffer synchronized with files modified by other applications.
+** buffer location in window
+#+begin_src emacs-lisp :tangle no
+(setq display-buffer-alist
+      '(
+        ;; Anatomy of an entry
+        ;; ( BUFFER-MATCHER
+        ;;  LIST-OF-DISPLAY-FUNCTIONS
+        ;;  &optional PARAMETERS)
+
+        ("\\*Occur\\*"
+        (display-buffer-reuse-mode-window
+         display-buffer-below-selected)
+
+        (window-height . fit-window-to-buffer)
+        (dedicated . t)
+
+        )))
+#+end_src
 
 ** experiment
 *** initial buffer
@@ -286,6 +356,8 @@ works !!...height tooo small thought :height 0.9
  #+end_src
 
 *** witchmacs stuff
+
+https://github.com/snackon/Witchmacs/
 
 =Witchmacs= :witch:
 #+begin_src emacs-lisp :tangle no
@@ -412,6 +484,37 @@ Also see tab-first-completion.
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
+** spelling
+https://www.gnu.org/software/emacs/manual/html_node/emacs/Spelling.html
+*** ispell
+Dictionary is set by ispell-dictionary variable. Can be changed locally with the function ispell-change-dictionary.
+
+#+begin_src emacs-lisp :tangle no
+;; (setq ispell-program-name "hunspell")
+(setq ispell-dictionary "en_US")
+;; Or, for local dictionary settings:
+(setq ispell-local-dictionary "en_US")
+#+end_src
+
+*** spell-fu
+#+begin_src emacs-lisp :tangle yes
+(after! spell-fu
+  (setq spell-fu-idle-delay 0.5))  ; default is 0.25
+#+end_src
+
+=Exclude faces=
+#+begin_src emacs-lisp :tangle no
+(setf (alist-get 'markdown-mode +spell-excluded-faces-alist)
+      '(markdown-code-face
+	markdown-reference-face
+	markdown-link-face
+	markdown-url-face
+	markdown-markup-face
+	markdown-html-attr-value-face
+	markdown-html-attr-name-face
+	markdown-html-tag-name-face))
+#+end_src
+
 ** Async
 #+begin_src emacs-lisp :tangle no
 (use-package! async
@@ -422,15 +525,26 @@ e.g., c-tab-always-indent, and do not respect this variable.
 
 ** company
 #+begin_src elisp :tangle yes
+;; (after! company
 (use-package! company
-  :defer t
+  ;; :after lsp-mode
+  :hook
+  (lsp-mode . company-mode)
+  ;; (evil-normal-state-entry #'company-abort )
+  ;; :defer t
   :custom
-  (company-idle-delay
-        (lambda () (if (company-in-string-or-comment) nil 0.3))) ; delay in seconds
-  (company-minimum-prefix-length 3)
+  ;; (company-idle-delay
+  ;;  (lambda () (if (company-in-string-or-comment) nil 1.0))) ; delay in seconds 0.3;;
+  ;; (company-idle-delay 0.3)
+  (company-minimum-prefix-length 2) ; 3;;
   (company-selection-wrap-around t)
+  (company-show-numbers t)
+  (company-idle-delay 0.0)
   (company-require-match 'never) ; dont need to pick a choice
-  (company-tooltip-limit 10))
+  (company-tooltip-limit 10)
+  :bind
+  (:map company-active-map
+        ("<tab>" . company-complete-selection)))
 #+end_src
 
 Company is a text and code completion framework for Emacs. The name stands for "complete anything".
@@ -452,25 +566,25 @@ usage:
 | =M-x: company-complete= | to initiate completion manually                      |
 |-----------------------+------------------------------------------------------|
 source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
+
 ** centaur tabs
 #+begin_src elisp :tangle yes
 (use-package! centaur-tabs
-  ;; :defer t
-  :demand
-  :init
+  :defer t
+  ;; :demand ; for when you need it immediately
+  ;; :init
   ;; (setq centaur-tabs-mode nil)
   ;; (centaur-tabs-change-fonts "arial" 112)
-  (centaur-tabs-headline-match) ; headline face
+  ;; (centaur-tabs-headline-match) ; FIXME does not work causes error
   ;; (require 'projectile)
   ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
   :config
-  (setq centaur-tabs-set-bar nil ; left, over
-        centaur-tabs-style 'slant ;alternate, bar, box(x) FIXME...slant does not work
+  (setq centaur-tabs-set-bar 'nil ; left, over, under
+        centaur-tabs-style 'bar ;alternate, bar, box(x), wave, zigzag, chamfer FIXME...slant does not work
         centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
         centaur-tabs-set-icons t
-        ;; centaur-tabs-plain-icons t
-        centaur-tabs-set-bar 'left
         ;; centaur-tabs-close-button "X"
+        ;; centaur-tabs-modified-marker "•" - Also
         ;; centaur-tabs-set-close-button nil
         ;; centaur-tabs-plain-icons t ; for same color as text
         ;; centaur-tabs-show-navigation-buttons t
@@ -487,16 +601,8 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
         ("g T" . centaur-tabs-backward)))
 #+end_src
 
-centaur-tabs-gray-out-icons 'buffer ; grey icons for unselected buffer
-centaur-tabs-height 18 ; 22;;
-centaur-tabs-style "bar" : https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
-centaur-tabs-modified-marker "•" - Also
   there are two faces to customize the close button string: centaur-tabs-modified-marker-unselected and centaur-tabs-modified-marker-selected
 
-centaur-tabs-set-bar:
-- left': displays the bar at the left of the currently selected tab.
-- under': displays the bar under the currently selected tab.
-- over': displays the bar over the currently selected tab.
 
 =Projectile integration=
 You can group your tabs by Projectile’s project. Just use the following function in your configuration:
@@ -511,6 +617,7 @@ You can make the headline face match the centaur-tabs-default face. This makes t
 
 see also:
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#buffer-groups
++ https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
 
 ** org-auto-tangle
 #+begin_src emacs-lisp :tangle yes
@@ -529,7 +636,7 @@ see also:
 minor mode for emacs. when drag-stuff-define-keys t
 moves text around
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! drag-stuff
   :init
   (drag-stuff-global-mode 1)
@@ -646,12 +753,174 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   (dashboard-setup-startup-hook))
 #+end_src
 
+* Justin-VC tech :justin:
+** dashboard / misc
+#+begin_src emacs-lisp :tangle no
+(defun +doom-dashboard-setup-modified-keymap ()
+  (setq +doom-dashboard-mode-map (make-sparse-keymap))
+  (map! :map +doom-dashboard-mode-map
+        :desc "Find file" :ne "f" #'find-file
+        :desc "Recent files" :ne "r" #'consult-recent-file
+        :desc "Config dir" :ne "C" #'doom/open-private-config
+        :desc "Open config.org" :ne "c" (cmd! (find-file (expand-file-name "config.org" doom-private-dir)))
+        :desc "Notes (roam)" :ne "n" #'org-roam-node-find
+        :desc "Search (roam)" :ne "N" #'justin/org-roam-rg-search
+        :desc "Switch buffer" :ne "b" #'+vertico/switch-workspace-buffer
+        :desc "Switch buffers (all)" :ne "B" #'consult-buffer
+        :desc "IBuffer" :ne "i" #'ibuffer
+        :desc "Agenda"  :ne "o" #'org-agenda
+        :desc "Previous buffer" :ne "p" #'previous-buffer
+        :desc "Set theme" :ne "t" #'consult-theme
+        :desc "Quit" :ne "Q" #'save-buffers-kill-terminal
+        :desc "Show keybindings" :ne "h" (cmd! (which-key-show-keymap '+doom-dashboard-mode-map))))
+
+(add-transient-hook! #'+doom-dashboard-mode (+doom-dashboard-setup-modified-keymap))
+(add-transient-hook! #'+doom-dashboard-mode :append (+doom-dashboard-setup-modified-keymap))
+(add-hook! 'doom-init-ui-hook :append (+doom-dashboard-setup-modified-keymap))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(map! :n [mouse-8] #'better-jumper-jump-backward
+      :n [mouse-9] #'better-jumper-jump-forward)
+#+end_src
+
+** splash images
+#+begin_src emacs-lisp :tangle no
+(use-package random-splash-image
+  :config
+  (setq random-splash-image-dir (concat (getenv "HOME") "/.doom.d/misc/splash-images"))
+  (unless (file-directory-p random-splash-image-dir)
+  (make-directory random-splash-image-dir t))
+  (random-splash-image-set))
+#+end_src
+** eval better eros
+#+begin_src emacs-lisp :tangle yes
+(setq eros-eval-result-prefix "⟹ ") ; default =>
+#+end_src
+** GPT things
+#+begin_src emacs-lisp :tangle no
+(use-package! gptel
+  :config
+  (setq gptel-model "llama3:latest"
+        gptel-org-branching-context t)
+
+  (setq gptel-backend
+        (gptel-make-ollama "Ollama"
+                           :host "192.168.1.9:11434"
+                           :stream t
+                           :models '("llama3:latest"))))
+
+(use-package! gptel-quick
+  :after gptel
+  :config
+  ;; Add any gptel-quick specific configuration here
+  )
+
+;; Key bindings
+(map! :leader
+      (:prefix ("l" . "LLM")
+       :desc "Quick GPTel" "q" #'gptel-quick
+       :desc "Start GPTel" "s" #'gptel
+       :desc "Send to GPTel" "S" #'gptel-send))
+#+end_src
+** Emojify
+#+begin_src emacs-lisp :tangle yes
+(customize-set-variable 'emojify-emoji-set "twemoji-v2")
+#+end_src
+
++ "emojione-v2.2.6-22"
+** maginalia changes
+#+begin_src emacs-lisp :tangle yes
+(after! marginalia
+  (setq marginalia-censor-variables nil)
+
+  (defadvice! +marginalia--anotate-local-file-colorful (cand)
+    "Just a more colourful version of `marginalia--anotate-local-file'."
+    :override #'marginalia--annotate-local-file
+    (when-let (attrs (file-attributes (substitute-in-file-name
+                                       (marginalia--full-candidate cand))
+                                      'integer))
+      (marginalia--fields
+       ((marginalia--file-owner attrs)
+        :width 12 :face 'marginalia-file-owner)
+       ((marginalia--file-modes attrs))
+       ((+marginalia-file-size-colorful (file-attribute-size attrs))
+        :width 7)
+       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
+        :width 12))))
+
+  (defun +marginalia--time-colorful (time)
+    (let* ((seconds (float-time (time-subtract (current-time) time)))
+           (color (doom-blend
+                   (face-attribute 'marginalia-date :foreground nil t)
+                   (face-attribute 'marginalia-documentation :foreground nil t)
+                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
+      ;; 1 - log(3 + 1/(days + 1)) % grey
+      (propertize (marginalia--time time) 'face (list :foreground color))))
+
+  (defun +marginalia-file-size-colorful (size)
+    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
+           (color (if (< size-index 10000000) ; 10m
+                      (doom-blend 'orange 'green size-index)
+                    (doom-blend 'red 'orange (- size-index 1)))))
+      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
+#+end_src
+** weather
+#+begin_src emacs-lisp :tangle no
+(use-package! wttrin
+  :commands wttrin
+  :config
+  wttrin-default-cities '("Nairobi" ))
+#+end_src
+** elcord
+#+begin_src emacs-lisp :tangle yes
+(use-package! elcord
+  :commands elcord-mode
+  :config
+  (setq elcord-use-major-mode-as-main-icon t))
+#+end_src
+** FIXME org-modern
+#+begin_src emacs-lisp :tangle no
+(use-package! org-modern
+  :hook (org-mode . org-modern-mode)
+  :config
+  (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
+        org-modern-table-vertical 1
+        org-modern-table-horizontal 0.2
+        org-modern-list '((43 . "➤")
+                          (45 . "–")
+                          (42 . "•"))
+        org-modern-todo-faces
+        '(("TODO" :inverse-video t :inherit org-todo)
+          ("PROJ" :inverse-video t :inherit +org-todo-project)
+          ("STRT" :inverse-video t :inherit +org-todo-active)
+          ("[-]"  :inverse-video t :inherit +org-todo-active)
+          ("HOLD" :inverse-video t :inherit +org-todo-onhold)
+          ("WAIT" :inverse-video t :inherit +org-todo-onhold)
+          ("[?]"  :inverse-video t :inherit +org-todo-onhold)
+          ("KILL" :inverse-video t :inherit +org-todo-cancel)
+          ("NO"   :inverse-video t :inherit +org-todo-cancel))
+        org-modern-footnote
+        (cons nil (cadr org-script-display))
+  )
+  (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
+
+(setq org-modern-priority t)
+
+(after! spell-fu
+  (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
+#+end_src
+
 * Terminal Modes
 ** ESHELL
-Eshell cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
+Cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
 
 I recommend using eshell for light cli work, and using your external terminal emulator of choice for heavier tasks
-** term-mode
+** FIXME term-mode
 #+begin_src elisp :tangle no
 (use-package! term
   :ensure nil
@@ -675,9 +944,10 @@ I recommend using eshell for light cli work, and using your external terminal em
   (org-mode . (lambda ()
                 (vi-tilde-fringe-mode -1)
                 (display-line-numbers-mode -1)
+                ;; (spell-fu-mode -1)
                 (diff-hl-mode -1)))
   :custom
-  (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
+  ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done 'note) ;task done with note prompted to user
   (org-hide-emphasis-markers t)
@@ -748,7 +1018,6 @@ I recommend using eshell for light cli work, and using your external terminal em
                       :weight 'bold)
 #+end_src
 
-**** convert md to org
 **** FIXME Preserve Indentation On Org-Babel-Tangle
 #+begin_src emacs-lisp :tangle no
 (setq org-src-preserve-indentation t)
@@ -784,6 +1053,15 @@ org-bullets-face-name
 #+end_src
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
+*** shortcurts
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| command              | keymap          | does                                                                       |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
+| org-capture-finalize | =C-c C-c=         |                                                                            |
+| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
+| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
+|----------------------+-----------------+----------------------------------------------------------------------------|
 *** my org-capture-template
 
 #+begin_src emacs-lisp :tangle yes
@@ -793,22 +1071,12 @@ Capture lets you quickly store notes with no workflow interruption
   ;; (require 'prot-org)
   (setq org-capture-templates
         '(
-        ;;; MY STUFF
-          ;; ("m" "Movies template" plain
-          ;;   (file+headline "bucket-list.org" "Movies to watch");relative to ~/org DIR
-          ;;   "- [ ] %?")
-          ;; try entry, plain
-
           ("e" "EMACs" plain
            (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
            "+ [ ] %?")
 
           ("n" "nixOs" plain
            (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
-           "+ [ ] %?")
-
-          ("t" "TESt" checkitem
-           (file+olp "test.org" "Heading" "2 test")
            "+ [ ] %?")
 
           ("b" "Bucket List [ movies books ]") ; group 'em up
@@ -870,8 +1138,24 @@ characters only  eg. 'a' or 'ab'
 | table-line | A new line in the first table at the target location. see more     |
 | plain      | text inserted as i                                                 |
 |------------+--------------------------------------------------------------------|
+*** escape codes
+|------------------+-----------------------------------------------------------|
+| special =%= escape | does                                                      |
+|------------------+-----------------------------------------------------------|
+| =%a=               | annotation, normally the link created with org-store-link |
+| =%i=               | with active region selected, insert it at point           |
+| =%t=  =%T=           | timestamp, date only, or date and time                    |
+| =%^t=              | prompt for timestamp                                      |
+| =%u=  =%U=           | like above, but inactive timestamps                       |
+| =%?=               | after completing the template, position point here        |
+| =%^=               | input/prompt                                              |
+|------------------+-----------------------------------------------------------|
+**** time management
+dont have to select manually you can:
++ relative time +3d
 
-*** howardism
+*** inspo
+**** howardism
 
 org capture template consists of 3 parts:
 + a key binding
@@ -880,7 +1164,7 @@ org capture template consists of 3 parts:
 
 source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
 
-*** prot tech :prot:
+**** prot tech :prot:
 #+begin_src elisp :tangle no
 (use-package! org-capture
   :ensure nil
@@ -964,33 +1248,8 @@ source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturi
   ;;               (in-mode . "notmuch-tree-mode")))))
   )
 #+end_src
-*** escape codes
-|------------------+-----------------------------------------------------------|
-| special =%= escape | does                                                      |
-|------------------+-----------------------------------------------------------|
-| =%a=               | annotation, normally the link created with org-store-link |
-| =%i=               | with active region selected, insert it at point           |
-| =%t=  =%T=           | timestamp, date only, or date and time                    |
-| =%^t=              | prompt for timestamp                                      |
-| =%u=  =%U=           | like above, but inactive timestamps                       |
-| =%?=               | after completing the template, position point here        |
-| =%^=               | input/prompt                                              |
-|------------------+-----------------------------------------------------------|
-**** time management
-dont have to select manually you can:
-+ relative time +3d
-
-*** shortcurts
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| command              | keymap          | does                                                                       |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
-| org-capture-finalize | =C-c C-c=         |                                                                            |
-| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
-| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-*** templates
-**** thoughtbot guy
+**** templates
+***** thoughtbot guy
 #+begin_src emacs-lisp :tangle no
 (setq org-capture-templates
       `(("t"    ;hotkey
@@ -1002,7 +1261,7 @@ dont have to select manually you can:
          )))
 #+end_src
 
-**** source?? - nice stuff
+***** source?? - nice stuff
 # default location for capture mode?
 #+begin_src emacs-lisp :tangle no
 (setq org-agenda-files (list "inbox.org"))
@@ -1015,7 +1274,7 @@ then we can setup a specific capture template for inbox:
         ,(concat "* TODO %?\n"
                  "/Entered on/ %U"))))
 #+end_src
-**** capture templates :prot:
+***** capture templates :prot:
 more: manual
 
 You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
@@ -1039,7 +1298,7 @@ If you then press =t= from the capture menu, Org will prepare the template for y
 
 Doom Emacs sets (org-agenda-start-day "-3d").
 
-*** pro tech :prot:
+*** pro tech - my agenda :prot:
 #+begin_src emacs-lisp :tangle yes
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
@@ -1282,8 +1541,6 @@ For neater/shorter presentation
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
 #+end_src
-* sources:
-https://github.com/snackon/Witchmacs/
 
 * DOCS
 ** docs | old
