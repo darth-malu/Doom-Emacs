@@ -101,11 +101,11 @@ https://github.com/emacs-lsp/lsp-ui
 By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
 
 #+begin_src emacs-lisp :tangle no
-(use-package! lsp-ui
+(after! lsp-ui
   :custom
   ;; (lsp-ui-doc-show 'bottom)
   ;; (lsp-ui-doc-position 'top)
-  (lsp-ui-doc-enable t) ; on hover dialogs
+  (lsp-ui-doc-enable nil) ; use K
   ;; (lsp-ui-doc-show-with-cursor t)
   (lsp-ui-doc-show-with-mouse t)
 
@@ -122,6 +122,7 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   (lsp-ui-sideline-show-code-actions t)
   (lsp-enable-symbol-highlighting nil) ; symbol eg. print in python highlight
   (lsp-ui-sideline-show-hover nil) ; hide only hover symbols
+  (lsp-ui-sideline-enable nil)
   ;; (lsp-ui-sideline-show-diagnostics nil) ;hide only errors
 
   ;;; eldoc
@@ -151,12 +152,16 @@ https://emacs-lsp.github.io/lsp-ui/
 
 
 https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
-
-
 *** lsp treemacs
 #+begin_src emacs-lisp :tangle yes
 (use-package lsp-treemacs
   :after lsp)
+#+end_src
+*** lsp-mode
+#+begin_src emacs-lisp :tangle yes
+(after! lsp-mode
+  (setq lsp-enable-symbol-highlighting nil
+        lsp-enable-suggest-server-download nil))
 #+end_src
 
 ** nix
@@ -207,8 +212,8 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'medium )
     doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-unicode-font
-    doom-serif-font
+    ;; doom-unicode-font
+    ;; doom-serif-font
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
 #+end_src
 
@@ -226,6 +231,11 @@ works !!...height too small thought :height 0.9
   '(mode-line :family "Mononoki Nerd Font" :size 19 )
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "SpaceMono Nerd Font" :size 16))
+
+;;; ui
+(setq doom-modeline-modal nil
+      doom-modeline-check-simple-format t)
+
 #+end_src
 
 =Nice Fonts=
@@ -255,47 +265,45 @@ works !!...height too small thought :height 0.9
 ** emacs sane
 #+begin_src elisp :tangle yes
 (use-package! emacs
-  :init
-  ;;;drag stuff
-  (drag-stuff-global-mode 1)
-  (drag-stuff-define-keys)
+  ;; :init
 
   :custom
-  ;;; Editor
   (tab-width 2) ; TODO differentiate see custom-set-variable
-  (display-line-numbers-type 'relative)
+  (display-line-numbers-type nil) ;relative , - perfomance enhance...turn on if needed
   (auto-save-default t)
+  ;; (auto-save-interval 300)
   ;; (undo-limit 80000000)
   (delete-by-moving-to-trash t) ; use system trash can
-  (x-stretch-cursor t)
+  ;; (x-stretch-cursor t) ; see if needed really
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
   ;; (electric-pair-mode 1)
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
-  (inhibit-startup-message t)
+  ;; (inhibit-startup-message t)
+
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Doom Emacs Dashboard")
 
-  ;;;EVIL
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
   (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
   (evil-shift-width 2)
 
-  ;;user
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
 
-  ;;scroll
   (scroll-margin 18) ; Adjust the number as needed
   (scroll-conservatively 101) ; TODO test usefulness
 
   :config
   (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer.
-  ;; (global-auto-revert-mode t)
-  (display-time-mode 1)                             ; Enable time in the mode-line
-
-  :hook
-  (after-init . global-auto-revert-mode)
+  (global-auto-revert-mode t)
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys)
+  (display-time-mode 1)                             ; Enable time in the line-mode
+  (vi-tilde-fringe-mode -1)
+  ;; :hook
+  ;; (after-init . ((global-auto-revert-mode)
+  ;;                (display-time-mode 1)))
 
   :bind
   (:map evil-normal-state-map
@@ -304,7 +312,7 @@ works !!...height too small thought :height 0.9
         ("C-M-o" . consult-outline)
 
         ;;; EOL, BOL
-        ;; ("M-l" . end-of-line) ; clash with other settings
+        ;; ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
         ;; ("M-h" . beginning-of-line-text)
         ("M-S-l" . end-of-visual-line)
         ("M-S-h" . beginning-of-visual-line)
@@ -317,7 +325,7 @@ works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
-(customize-set-variable 'uniquify-separator " || ")
+(customize-set-variable 'uniquify-separator " 💎 ")
 #+end_src
 
 + =Docs=
@@ -437,6 +445,18 @@ unneeded since we use ws-butler which:
 )
 #+end_src
 **** TODO see if its fixed/works
+** Henrik lissner tech
+#+begin_src emacs-lisp :tangle no
+;; Prevents some cases of Emacs flickering.
+(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+#+end_src
+** dashboard
+#+begin_src emacs-lisp :tangle yes
+;;; :ui doom-dashboard
+(setq fancy-splash-image (file-name-concat doom-user-dir "gorl.jpg"))
+;; Hide the menu for as minimalistic a startup screen as possible.
+(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
+#+end_src
 * Packages
 ** dired
 #+begin_src emacs-lisp :tangle no
@@ -461,26 +481,33 @@ unneeded since we use ws-butler which:
 ** corfu
 not sure if after! init works lul
 
-#+begin_src elisp
+#+begin_src elisp :tangle yes
 (use-package! corfu
-  :config
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete) ; try complete if indent is off
+  ;; :config
+  :custom
+  (tabs-always-indent 'complete)
+  (tabs-first-completion 'word-or-paren-or-punct)
+  (corfu-auto nil))
+#+end_src
+
   ;; (text-mode-ispell-word-completion nil)
     ;; Hide commands in M-x which do not apply to the current mode.  Corfu
   ;; commands are hidden, since they are not used via M-x. This setting is
   ;; useful beyond Corfu.
   ;; (read-extended-command-predicate #'command-completion-default-include-p)
-  )
-#+end_src
+
+=tabs-always-indent=
+Enable indentation+completion using the TAB key.
+`completion-at-point' is often bound to M-TAB.
+(setq tab-always-indent 'complete) ; try complete if indent is off
+
 - If t, hitting TAB always just indents the current line.
 - If nil, hitting TAB indents the current line if point is at the left margin
  or in the line's indentation, otherwise it inserts a "real" TAB character.
 - If complete, TAB first tries to indent the current line, and if the line
 was already indented, then try to complete the thing at point.
 
-Also see tab-first-completion.
+Also see =tab-first-completion.=
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
@@ -529,22 +556,27 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 (use-package! company
   ;; :after lsp-mode
   :hook
-  (lsp-mode . company-mode)
-  ;; (evil-normal-state-entry #'company-abort )
-  ;; :defer t
+  ;; (lsp-mode . company-mode)
+  (evil-normal-state-entry #'company-abort )
+  :defer t
   :custom
   ;; (company-idle-delay
   ;;  (lambda () (if (company-in-string-or-comment) nil 1.0))) ; delay in seconds 0.3;;
   ;; (company-idle-delay 0.3)
-  (company-minimum-prefix-length 2) ; 3;;
+  (company-minimum-prefix-length 4) ; 3;;
   (company-selection-wrap-around t)
   (company-show-numbers t)
   (company-idle-delay 0.0)
   (company-require-match 'never) ; dont need to pick a choice
-  (company-tooltip-limit 10)
+  (company-tooltip-limit 6)
   :bind
   (:map company-active-map
-        ("<tab>" . company-complete-selection)))
+        ;; ("<tab>" . company-complete-selection)
+        ("<tab>" . company-select-next-or-abort)
+        ;; ("<tab>" . company-select-next)
+        ("backtab" . company-select-previous)
+        ("RET" . company-select-previous)
+        ("<escape>" . company-abort)))
 #+end_src
 
 Company is a text and code completion framework for Emacs. The name stands for "complete anything".
@@ -632,19 +664,8 @@ see also:
 
 [[github:yilkalargaw/org-auto-tangle]]
 
-** Drag stuff
-minor mode for emacs. when drag-stuff-define-keys t
-moves text around
-
-#+begin_src emacs-lisp :tangle no
-(use-package! drag-stuff
-  :init
-  (drag-stuff-global-mode 1)
-  (drag-stuff-define-keys))
-#+end_src
-
 ** highlight TODO
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
 (use-package! hl-todo
   :hook (org-mode . hl-todo-mode)
   :config
@@ -949,6 +970,7 @@ I recommend using eshell for light cli work, and using your external terminal em
   :custom
   ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
+  ;; (org-log-done-with-time nil)
   ;; (org-log-done 'note) ;task done with note prompted to user
   (org-hide-emphasis-markers t)
   (org-tag-alist
@@ -1036,10 +1058,10 @@ org-bullets-face-name
 
 ** org-roam
 #+begin_src emacs-lisp :tangle yes
-;; (setq org-roam-directory "~/org/org-roam")
-(use-package! org-roam
-  :init
-  (setq org-roam-directory (file-truename "~/org/roam")))
+;; (setq org-roam-directory (file-truename "~/org/roam"))
+(setq org-roam-directory (file-truename "~/org/roam")
+      org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
+      org-roam-dailies-directory "journal/") ;
   ;; :custom
   ;; (org-roam-completion-everywhere t) ;default t
   ;; :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1053,24 +1075,14 @@ org-bullets-face-name
 #+end_src
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
-*** shortcurts
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| command              | keymap          | does                                                                       |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
-| org-capture-finalize | =C-c C-c=         |                                                                            |
-| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
-| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
-|----------------------+-----------------+----------------------------------------------------------------------------|
 *** my org-capture-template
 
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
-  :config
+  :custom
   ;; (require 'prot-org)
-  (setq org-capture-templates
-        '(
+  (org-capture-templates '(
           ("e" "EMACs" plain
            (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
            "+ [ ] %?")
@@ -1095,10 +1107,19 @@ Capture lets you quickly store notes with no workflow interruption
            :prepend t)
           ("di" "idioms [i]" plain
            (file+headline "diction.org" "Idioms")
-           "+ %?")
+           "+ %?"
+           :empty-lines 1
+           :prepend t)
+          ("dq" "quotes [q]" plain
+           (file+headline "diction.org" "Quotes")
+           " %?"
+           :empty-lines 1
+           :prepend t)
           ("dp" "phrases [p]" plain
            (file+headline "diction.org" "Phrases")
-           "+ %?"))))
+           "+ %?"
+           :empty-lines 1
+           :prepend t))))
 #+end_src
 
 **** old template
@@ -1138,6 +1159,59 @@ characters only  eg. 'a' or 'ab'
 | table-line | A new line in the first table at the target location. see more     |
 | plain      | text inserted as i                                                 |
 |------------+--------------------------------------------------------------------|
+*** shortcurts
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| command              | keymap          | does                                                                       |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
+| org-capture-finalize | =C-c C-c=         |                                                                            |
+| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
+| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
+|----------------------+-----------------+----------------------------------------------------------------------------|
+*** org-roam-capture-template :hils:
+#+begin_src emacs-lisp :tangle no
+(after! org-roam
+  (setq org-roam-capture-templates
+        `(("n" "note" plain
+           ,(format "#+title: ${title}\n%%[%s/template/note.org]" org-roam-directory)
+           :target (file "note/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("r" "thought" plain
+           ,(format "#+title: ${title}\n%%[%s/template/thought.org]" org-roam-directory)
+           :target (file "thought/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("t" "topic" plain
+           ,(format "#+title: ${title}\n%%[%s/template/topic.org]" org-roam-directory)
+           :target (file "topic/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("c" "contact" plain
+           ,(format "#+title: ${title}\n%%[%s/template/contact.org]" org-roam-directory)
+           :target (file "contact/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("p" "project" plain
+           ,(format "#+title: ${title}\n%%[%s/template/project.org]" org-roam-directory)
+           :target (file "project/%<%Y%m%d>-${slug}.org")
+           :unnarrowed t)
+          ("i" "invoice" plain
+           ,(format "#+title: %%<%%Y%%m%%d>-${title}\n%%[%s/template/invoice.org]" org-roam-directory)
+           :target (file "invoice/%<%Y%m%d>-${slug}.org")
+           :unnarrowed t)
+          ("f" "ref" plain
+           ,(format "#+title: ${title}\n%%[%s/template/ref.org]" org-roam-directory)
+           :target (file "ref/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("w" "works" plain
+           ,(format "#+title: ${title}\n%%[%s/template/works.org]" org-roam-directory)
+           :target (file "works/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("s" "secret" plain "#+title: ${title}\n\n"
+           :target (file "secret/%<%Y%m%d%H%M%S>-${slug}.org.gpg")
+           :unnarrowed t))
+        ;; Use human readable dates for dailies titles
+        org-roam-dailies-capture-templates
+        `(("d" "default" plain ""
+           :target (file+head "%<%Y-%m-%d>.org" ,(format "%%[%s/template/journal.org]" org-roam-directory))))))
+#+end_src
 *** escape codes
 |------------------+-----------------------------------------------------------|
 | special =%= escape | does                                                      |
