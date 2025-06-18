@@ -63,6 +63,7 @@
   (python-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
                    (require 'lsp-pyright)
+                   (setq +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 #+end_src
@@ -210,11 +211,12 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
 #+begin_src emacs-lisp :tangle yes
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono Nerd Font" :size 15 :weight 'medium )
+    doom-font (font-spec :family "JetBrains Mono" :size 15 :weight 'medium )
+    ;; doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'medium )
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     ;; doom-unicode-font
     ;; doom-serif-font
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14)) ; TODO test this further .
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14))
 #+end_src
 
 =Ligatures=
@@ -228,19 +230,20 @@ works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
-  '(mode-line :family "Mononoki Nerd Font" :size 19 )
+  ;; '(mode-line :family "Iosevka Comfy" :size 15)
+  '(mode-line :family "Mononoki Nerd Font" :size 15)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "SpaceMono Nerd Font" :size 16))
 
 ;;; ui
-(setq doom-modeline-modal nil
+(setq
+      ;; doom-modeline-modal nil
       doom-modeline-check-simple-format t)
-
 #+end_src
 
 =Nice Fonts=
-+ SpaceMono Nerd Font
 + Mononoki Nerd Font
++ SpaceMono Nerd Font
 + VictorMono Nerd Font
  
 ** custom start mode
@@ -300,10 +303,7 @@ works !!...height too small thought :height 0.9
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
   (display-time-mode 1)                             ; Enable time in the line-mode
-  (vi-tilde-fringe-mode -1)
-  ;; :hook
-  ;; (after-init . ((global-auto-revert-mode)
-  ;;                (display-time-mode 1)))
+  ;; (vi-tilde-fringe-mode -1)
 
   :bind
   (:map evil-normal-state-map
@@ -312,8 +312,8 @@ works !!...height too small thought :height 0.9
         ("C-M-o" . consult-outline)
 
         ;;; EOL, BOL
-        ;; ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-        ;; ("M-h" . beginning-of-line-text)
+        ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
+        ("M-h" . beginning-of-line-text)
         ("M-S-l" . end-of-visual-line)
         ("M-S-h" . beginning-of-visual-line)
 
@@ -325,7 +325,7 @@ works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
-(customize-set-variable 'uniquify-separator " 💎 ")
+(customize-set-variable 'uniquify-separator " || ") ;💎
 #+end_src
 
 + =Docs=
@@ -338,6 +338,10 @@ works !!...height too small thought :height 0.9
   Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
     + Viewing log files that are constantly being updated.
     + Keeping your Emacs buffer synchronized with files modified by other applications.
+** format +onsave disabled modes
+#+begin_src emacs-lisp :tangle yes
+(customize-set-variable '+format-on-save-disabled-modes '(nxml-mode))
+#+end_src
 ** buffer location in window
 #+begin_src emacs-lisp :tangle no
 (setq display-buffer-alist
@@ -437,6 +441,15 @@ Turn off the weird indenting that Emacs does by default.
 unneeded since we use ws-butler which:
 + only on modified lines
 + replaces trailing whitespace with virtual whitespace
+*** delete spaces, tabs, newline
+#+begin_src emacs-lisp :tangle yes
+(setq backward-delete-char-untabify-method 'all)
+#+end_src
+
++ all - all whitespace - tabs, spaces, \n
++ hungry - all whitespace - tabs, spaces
++ untabify - turn a tab into many spaces, then delete one space at a time
+ 
 *** default workspace behaviour fix
 #+begin_src emacs-lisp :tangle no
 (after! persp-mode
@@ -551,31 +564,30 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 #+end_src
 
 ** company
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 ;; (after! company
 (use-package! company
   ;; :after lsp-mode
-  :hook
+  ;; :hook
   ;; (lsp-mode . company-mode)
-  (evil-normal-state-entry #'company-abort )
+  ;; (evil-normal-state-entry #'company-abort )
+  ;; (after-init 'global-company-mode)
   :defer t
   :custom
-  ;; (company-idle-delay
-  ;;  (lambda () (if (company-in-string-or-comment) nil 1.0))) ; delay in seconds 0.3;;
-  ;; (company-idle-delay 0.3)
-  (company-minimum-prefix-length 4) ; 3;;
+  (company-idle-delay (lambda () (if (company-in-string-or-comment) nil 0.3))) ; delay in seconds 0.3;;
+  ;; (company-idle-delay 0.0)
+  (company-minimum-prefix-length 2)
   (company-selection-wrap-around t)
   (company-show-numbers t)
-  (company-idle-delay 0.0)
   (company-require-match 'never) ; dont need to pick a choice
   (company-tooltip-limit 6)
   :bind
   (:map company-active-map
         ;; ("<tab>" . company-complete-selection)
-        ("<tab>" . company-select-next-or-abort)
+        ;; ("<tab>" . company-select-next-or-abort)
         ;; ("<tab>" . company-select-next)
-        ("backtab" . company-select-previous)
-        ("RET" . company-select-previous)
+        ;; ("backtab" . company-select-previous)
+        ("RET" . company-complete-selection)
         ("<escape>" . company-abort)))
 #+end_src
 
@@ -849,7 +861,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
        :desc "Send to GPTel" "S" #'gptel-send))
 #+end_src
 ** Emojify
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (customize-set-variable 'emojify-emoji-set "twemoji-v2")
 #+end_src
 
@@ -963,7 +975,7 @@ I recommend using eshell for light cli work, and using your external terminal em
         org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . (lambda ()
-                (vi-tilde-fringe-mode -1)
+                ;; (vi-tilde-fringe-mode -1)
                 (display-line-numbers-mode -1)
                 ;; (spell-fu-mode -1)
                 (diff-hl-mode -1)))

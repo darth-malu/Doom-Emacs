@@ -2,7 +2,6 @@
 #+auto_tangle: t
 #+startup: indent content
 
-* init.el
 + loads early before anything else, after the Doom core is loaded
 + enabled in both interactive and non-interactive sessions
 This file controls what Doom modules are enabled and what order they load in. Remember to run 'doom sync' after modifying it!
@@ -33,7 +32,7 @@ Alternatively, press =gd= on a module to browse its
 ** completion
 #+begin_src emacs-lisp :tangle init.el
 :completion
-       ;; (company +tng +childframe)           ; the ultimate code completion backend
+       ;; (company +tng +childframe)           ; the ultimate code completion backend ;NOTE deprecated in favor of corfu
        (corfu +orderless +icons)  ; complete with cap(f), cape and a flying feather!
        ;; (helm +childframe +icons +fuzzy )              ; the *other* search engine for love and life
        ;; ido               ; the other *other* search engine...
@@ -42,7 +41,6 @@ Alternatively, press =gd= on a module to browse its
        (vertico +icons)           ; the search engine of the future
 #+end_src
 *** vertico
-=Flags=: +icons
 The search engine for life and love
 - This module enhances the Emacs search and completion experience, and also provides a united interface for project search and replace, powered by ripgrep.
 
@@ -52,29 +50,8 @@ The search engine for life and love
  - Embark, which provides a set of minibuffer actions
  - Marginalia, which provides annotations to completion candidates
  - Orderless, which provides better filtering methods
-*** helm
-
-=+childframe#=
-Display Helm popups in a floating frame rather than in the pop up window at the bottom.
-
-=+fuzzy=
-Enable fuzzy completion for Helm searches.
-
-=+icons=
-Enable icons (supports both all-the-icons and treemacs icons).
-
-*** ivy
-=+childframe=
-Cause Ivy to display in a floating child frame, over Emacs.
-
-=+fuzzy=
-Enable fuzzy completion for Ivy searches.
-
-=+icons=
-Enable file icons for switch-{buffer,project}/find-file counsel commands.
-
-=+prescient=
-Enable prescient filtering and sorting for Ivy searches.
+*** corfu
++icons +orderless
 
 ** ui
 #+begin_src emacs-lisp :tangle init.el
@@ -96,11 +73,11 @@ Enable prescient filtering and sorting for Ivy searches.
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
        tabs              ; a tab bar for Emacs
        (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
-       unicode           ; extended unicode support for various languages
+       ;; unicode           ; extended unicode support for various languages
        (vc-gutter +pretty) ; vcs diff in the fringe
-       vi-tilde-fringe   ; fringe tildes to mark beyond EOB
-       (window-select +switch-window +numbers)     ; visually switch windows
-       ;; window-select
+       ;; vi-tilde-fringe   ; fringe tildes to mark beyond EOB
+       ;; (window-select +switch-window +numbers)     ; visually switch windows
+       window-select
        workspaces        ; tab emulation, persistence & separate workspaces ;persp-mode
        ;;zen               ; distraction-free coding or writing
 #+end_src
@@ -142,12 +119,13 @@ It also provides numbered windows and selection with the =winum= package, if des
 Enable numbered windows and window selection (using =winum=).
 
 ** editor
+see evil +everywhere
 #+begin_src emacs-lisp :tangle init.el
 :editor
-       (evil +everywhere); come to the dark side, we have cookies
+       evil; come to the dark side, we have cookies
        file-templates    ; auto-snippets for empty files
        fold              ; (nigh) universal code folding
-       (format +onsave)  ; automated prettiness
+       (format +onsave +lsp)  ; automated prettiness
        ;;god               ; run Emacs commands without modifier keys
        ;;lispy             ; vim for lisp, for people who don't like vim
        multiple-cursors  ; editing in many places at once
@@ -210,7 +188,7 @@ This module augments Emacs builtin version control support and provides better i
 :term
        eshell            ; the elisp shell that works everywhere
        shell             ; simple shell REPL for Emacs
-       term              ; basic terminal emulator for Emacs
+       ;; term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
 #+end_src
 
@@ -221,7 +199,7 @@ I think hunspell increases startup time
 #+begin_src emacs-lisp :tangle init.el
 :checkers
        ;; syntax              ; tasing you for every semicolon you forget
-       (syntax +icons) ;TODO test if childframe needed and difference in behaviour
+       (syntax +icons +childframe) ;TODO test if childframe needed and difference in behaviour
        ;; (spell +hunspell) ; tasing you for misspelling mispelling
        ;; spell
        ;; grammar           ; tasing grammar mistake every you make
@@ -329,10 +307,10 @@ This module integrates taskrunner into Doom Emacs, which scraps runnable tasks f
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML
        yaml              ; JSON, but readable
-       (java +lsp)       ; the poster child for carpal tunnel syndrome
+       java       ; the poster child for carpal tunnel syndrome
        ;; (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
        ;; latex             ; writing papers in Emacs has never been so fun
-       (lua +lsp)               ; one-based indices? one-based indices
+       lua               ; one-based indices? one-based indices
        (markdown +grip)          ; writing docs for people to ignore
        (nix +lsp)               ; I hereby declare "nix geht mehr!"
        (org +roam2 +brain +dragndrop +pandoc +pretty)
