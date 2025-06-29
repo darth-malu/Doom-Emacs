@@ -169,17 +169,13 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
 https://github.com/NixOS/nix-mode
 *** nil lsp
 nil: An incremental analysis assistant for writing in Nix.
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 (use-package! lsp-nix
   ;; :ensure lsp-mode
   :after (lsp-mode)
   :demand t
   :custom
   (lsp-nix-nil-formatter ["nixfmt"]))
-
-(use-package! nix-mode
-  :hook (nix-mode . lsp-deferred)
-  :ensure nil)
 #+end_src
 
 *** nixd
@@ -272,6 +268,8 @@ works !!...height too small thought :height 0.9
 
   :custom
   (tab-width 2) ; TODO differentiate see custom-set-variable
+  (tab-always-indent 'complete)
+  (tab-first-completion 'word-or-paren-or-punct)
   (display-line-numbers-type nil) ;relative , - perfomance enhance...turn on if needed
   (auto-save-default t)
   ;; (auto-save-interval 300)
@@ -288,7 +286,7 @@ works !!...height too small thought :height 0.9
   (+doom-dashboard-name "Doom Emacs Dashboard")
 
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
-  (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
+  ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
   (evil-shift-width 2)
 
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
@@ -325,7 +323,7 @@ works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
-(customize-set-variable 'uniquify-separator " || ") ;💎
+(customize-set-variable 'uniquify-separator " 🧿 ") ;💎
 #+end_src
 
 + =Docs=
@@ -494,15 +492,16 @@ unneeded since we use ws-butler which:
 ** corfu
 not sure if after! init works lul
 
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 (use-package! corfu
   ;; :config
   :custom
-  (tabs-always-indent 'complete)
-  (tabs-first-completion 'word-or-paren-or-punct)
   (corfu-auto nil))
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+(customize-set-variable 'corfu-auto nil)
+#+end_src
   ;; (text-mode-ispell-word-completion nil)
     ;; Hide commands in M-x which do not apply to the current mode.  Corfu
   ;; commands are hidden, since they are not used via M-x. This setting is
@@ -1103,12 +1102,15 @@ Capture lets you quickly store notes with no workflow interruption
            (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
            "+ [ ] %?")
 
-          ("b" "Bucket List [ movies books ]") ; group 'em up
+          ("b" "Bucket List [ movies books youtube]") ; group 'em up
           ("bm" "movies" plain
            (file+headline "bucket-list.org" "Movies")
            "+ [ ] %?")
           ("bb" "books" plain
            (file+headline "bucket-list.org" "Books")
+           "+ [ ] %?")
+          ("by" "youtube" plain
+           (file+headline "bucket-list.org" "YouTube")
            "+ [ ] %?")
 
           ("d" "Life's Morsels")

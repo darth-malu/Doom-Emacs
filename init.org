@@ -13,7 +13,6 @@ doom! block
 
 Alternatively, press =gd= on a module to browse its
 
-** start - lexical binding
 #+begin_src emacs-lisp :tangle init.el
 ;;; init.el -*- lexical-binding: t; -*-
 ;;      directory (for easy access to its source code).
@@ -40,23 +39,10 @@ Alternatively, press =gd= on a module to browse its
        ;; (ivy +childframe +icons)
        (vertico +icons)           ; the search engine of the future
 #+end_src
-*** vertico
-The search engine for life and love
-- This module enhances the Emacs search and completion experience, and also provides a united interface for project search and replace, powered by ripgrep.
-
-- It does this with several modular packages focused on enhancing the built-in completing-read interface, rather than replacing it with a parallel ecosystem like ivy and helm do. The primary packages are:
- - Vertico, which provides the vertical completion user interface
- - Consult, which provides a suite of useful commands using completing-read
- - Embark, which provides a set of minibuffer actions
- - Marginalia, which provides annotations to completion candidates
- - Orderless, which provides better filtering methods
-*** corfu
-+icons +orderless
-
 ** ui
 #+begin_src emacs-lisp :tangle init.el
 :ui
-       ;; deft              ; notational velocity for Emacs
+       deft              ; notational velocity for Emacs
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
@@ -82,47 +68,11 @@ The search engine for life and love
        ;;zen               ; distraction-free coding or writing
 #+end_src
 
-*** docs
-**** deft - major mode
-**** ligatures
-This module enables ligatures and arbitrary symbol substitutions with mac-auto-operator-composition-mode (on supported macOS systems) or composition tables (harfbuzz on Emacs 28), falling back on =prettify-symbols-mode= otherwise.
-
-**** emoji
-=+ascii=
-Enable plain text emojis like :).
-=+github=
-Enable Github-style emojis like :smile:.
-=+unicode=
-Enable unicode emojis like 🙂.
-**** popup
-[[doom-module:ui/popup]]
-+extra
-Enable extra symbol substitutions in certain modes, for example lambda in lisps are replaced with λ
-modeline can be disabled in popups
-**** treemacs
-***** TODO treemacs-git-mode
-+lsp .
-**** window-seclect
-***** + switch-window
-This module provides several methods for selecting windows without the use of the mouse or spatial navigation (e.g. =C-w {h,j,k,l}=).
-
-The command other-window is remapped to either =switch-window= or =ace-window=, depending on which backend you’ve enabled. It is bound to =C-x o= (and =C-w C-w= for evil users).
-
-It also provides numbered windows and selection with the =winum= package, if desired. Evil users can jump to window N in =C-w <N>= (where N is a number between 0 and 9). Non evil users have =C-x w <N>= instead.
-
-|-----------------------------+-----------------------------|
-| =C-w <N>=                     | go to window number =<N>=     |
-| =C-w C-w= or =C-x o= (non-evil) | winum pkg                   |
-| =C-w {h,j,k,l}=               | switch-window or ace-window |
-|-----------------------------+-----------------------------|
-***** + numbers
-Enable numbered windows and window selection (using =winum=).
-
 ** editor
-see evil +everywhere
+evil +everywhere - essential for minibuffer evil-collections, also jumping between headers. and adding new headers
 #+begin_src emacs-lisp :tangle init.el
 :editor
-       evil; come to the dark side, we have cookies
+       (evil +everywhere); come to the dark side, we have cookies
        file-templates    ; auto-snippets for empty files
        fold              ; (nigh) universal code folding
        (format +onsave +lsp)  ; automated prettiness
@@ -136,25 +86,18 @@ see evil +everywhere
        word-wrap         ; soft wrapping with language-aware indent
 #+end_src
 
-*** explainer
-+ parinfer
- 
+=parinfer=
   Parinfer is a minor mode that aids the writing of Lisp code. It automatically infers parenthesis matching and indentation alignment, keeping your code balanced and beautiful.
 
   Parinfer is a proof-of-concept editor mode for Lisp programming languages.
   It simplifies the way we write Lisp by auto-adjusting parens when indentation changes and vice versa. The hope is to make basic Lisp-editing easier for newcomers and experts alike
   
-  a. source:[[https://shaunlebron.github.io/parinfer/]]
+  [[https://shaunlebron.github.io/parinfer/]]
 
-+ =file-templates= - This module adds file templates for blank files, powered by yasnippet.
-+ =fold= - This module marries hideshow, vimish-fold, and outline-minor-mode to bring you marker, indent and syntax-based code folding for as many languages as possible.
-+ The o/O keys will respect and continue commented lines (can be disabled by setting ~+evil-want-o/O-to-continue-comments~ to nil).
-+ in visual mode =#= =*= search for the selection instead of just the word under cursor
- 
 =objed=
   This modules adds objed, a global minor-mode for navigating and manipulating text objects.
   It combines the ideas of versor-mode and other editors like Vim or Kakoune and tries to align them with regular Emacs conventions.
-  +manual
+  =+manual=:
   Do not activate objed automatically. The user is responsible for calling objed-activate (bound to M-SPC if using the default Emacs bindings).
 
 ** emacs
@@ -168,20 +111,6 @@ see evil +everywhere
        (undo +tree)      ; persistent, smarter undo for your inevitable mistakes
        vc                ; version-control and Emacs, sitting in a tree
 #+end_src
-
-*** ibuffer
-+ Adds project-based grouping of buffers
-+ Support for file-type icons
-+ Uses human-readable file-size
-*** dired
-=+icons=
-Enable file type icons in dired buffers, using all-the-icons.
-
-=+ranger=
-Make dired behave like ranger.
-
-*** git
-This module augments Emacs builtin version control support and provides better integration with git.
 
 ** term
 #+begin_src emacs-lisp :tangle init.el
@@ -212,86 +141,33 @@ if not using +flyspell need aspell(and a dictionary)a whether or not you have +h
 ** tools
 #+begin_src emacs-lisp :tangle init.el
 :tools
-       editorconfig      ; let someone else argue about tabs vs spaces TODO test this
-       (eval +overlay)     ; run code, run (also, repls) TODO test this
-       (lookup +dictionary +offline)              ; navigate your code and its documentation
-       (lsp +peek)               ; M-x vscode
-       magit
-       ;; make              ; run make tasks from Emacs
-       pdf               ; pdf enhancements
-       rgb ; create color str
-       tree-sitter       ; syntax and parsing, sitting in a tree...
-       ;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
-       ;;ein               ; tame Jupyter notebooks with emacs
-       ;; upload            ; map local to remote projects via ssh/ftp
-       ;; pass              ; password manager for nerds
-       ;;prodigy           ; FIXME managing external services & code builders
-       ;;terraform         ; infrastructure as code
-       ;; tmux              ; an API for interacting with tmux
-       ;;ansible
-       ;;biblio            ; Writes a PhD for you (citation needed)
-       ;;collab            ; buffers with friends
-       ;; ( debugger +lsp)          ; FIXME stepping through code, to help you add bugs
-       ;;direnv
-       ;;docker
+editorconfig      ; let someone else argue about tabs vs spaces TODO test this
+(eval +overlay)     ; run code, run (also, repls) TODO test this
+(lookup +dictionary +offline)              ; navigate your code and its documentation
+(lsp +peek)               ; M-x vscode
+magit
+;; make              ; run make tasks from Emacs
+pdf               ; pdf enhancements
+rgb ; create color str
+tree-sitter       ; syntax and parsing, sitting in a tree...
 #+end_src
 
-*** docs
-**** eval
-This modules adds inline code evaluation support to Emacs and a universal interface for opening and interacting with REPLs.
-
-*flags*
-
-+overlay
-+ Display evaluation results in an overlay at point rather than the minibuffer. That is, unless the results are too big (<5 lines), in which case it falls back to the minibuffer/popup buffer.
-  packages: quickrun
-
-**** lookup
-Navigate your labyrinthine code and docs
-
-=+dictionary=
-Enable word definition and thesaurus lookup functionality.
-defineword, powerthesaurus
-
-=+docsets=
-Enable integration with Dash.app docsets.
-dashdocs
-
-=+offline=
-Prefer offline dictionary and thesaurus. Requires =+dictionary=.
-wordnut, synosaurus
-
-
-This module adds code navigation and documentation lookup tools to help you quickly look up definitions, references, documentation, dictionary definitions or synonyms.
-
-a. Jump-to-definition and find-references implementations that just work.
-b. Powerful xref integration for languages that support it.
-c. Search online providers like devdocs.io, stackoverflow, google, duckduckgo or youtube (duckduckgo and google have live suggestions).
-d. Integration with Dash.app docsets.
-e. Support for online (and offline) dictionaries and thesauruses.
-
-**** lsp
-+ +eglot (use instead of default lsp-mode ) - minimal
-+ +peek (use lsp-ui-peek)
-  Use =lsp-ui-peek= when looking up definitions and references with functionality from the =:tools lookup= module.
-
-To get LSP working, you’ll need to do three things:
-+ Enable this module,
-+ Install a language server appropriate for your targeted language(s) (a table mapping languages to supported servers can be found in lsp-mode’s README).
-+ Enable the +lsp flag on the :lang modules you want to enable LSP support for. If your language’s module doesn’t have LSP support, and you know it can (or should), please let us know! In the meantime, you must configure it yourself (described in the Configuration section).
-**** make
-This module adds commands for executing Makefile targets.
-
-**** pdf
-This module improves support for reading and interacting with PDF files in Emacs.
-
-It uses pdf-tools, which is a replacement for the built-in doc-view-mode for PDF files. The key difference being pages are not pre-rendered, but instead rendered on-demand and stored in memory; a much faster approach, especially for larger PDFs.
-
-Displaying PDF files is just one function of pdf-tools. See its project website for details and videos.
-**** rgb
-Highlights color hex values and names with the color itself, and provides tools to easily modify color values or formats.
-**** taskrunner
-This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
+*** defaults
+#+begin_src emacs-lisp :tangle init.el
+;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
+;;ein               ; tame Jupyter notebooks with emacs
+;; upload            ; map local to remote projects via ssh/ftp
+;; pass              ; password manager for nerds
+;;prodigy           ; FIXME managing external services & code builders
+;;terraform         ; infrastructure as code
+;; tmux              ; an API for interacting with tmux
+;;ansible
+;;biblio            ; Writes a PhD for you (citation needed)
+;;collab            ; buffers with friends
+;; ( debugger +lsp)          ; FIXME stepping through code, to help you add bugs
+;;direnv
+;;docker
+#+end_src
 
 ** os
 #+begin_src emacs-lisp :tangle init.el
@@ -378,83 +254,6 @@ pyenv:[[github:shellbj/pyenv.el]]
 
 #+end_src
 
-*** docs
-**** python
-Flags: *+conda +cython +lsp +poetry +pyenv +pyright*
-This module adds Python support to Doom Emacs.
-
-- Syntax checking (flycheck)
-- Snippets
-- Run tests (nose, pytest)
-- Auto-format (with =black=, requires :editor format)
-- LSP integration (mspyls, pyls, or pyright)
-
- if +lsp and :tools lsp
- if +pyright
-  - lsp-pyright
- else
-  - lsp-python-ms
-
-**** web
-
-|---------------------------------------------------------+---------------------------------------------------------------|
-| major mode                                              | default language server                                       |
-|---------------------------------------------------------+---------------------------------------------------------------|
-| web-mode, css-mode, scss-mode, sass-mode, less-css-mode | vscode-css-languageserver-bin, vscode-html-languageserver-bin |
-|---------------------------------------------------------+---------------------------------------------------------------|
-This module adds support for various web languages, including HTML5, CSS, SASS/SCSS, Pug/Jade/Slim, and HAML, as well as various web frameworks, like ReactJS, Wordpress, Jekyll, Phaser, AngularJS, Djano, and more.
-
-**** nix
-This module adds support for the Nix language to Doom Emacs, along with tools for managing Nix(OS).
-
-Including:
-- Syntax highlighting
-- Completion through company and/or helm
-- Nix option lookup
-- Formatting (nixfmt)
-
-**** org
-***** Module flags
-+brain#
-Enable org-brain integration.
-
-+dragndrop#
-Enable drag-and-drop support for images and files; inserts inline previews for images and an icon+link for other media types.
-
-+gnuplot#
-Install gnuplot and gnuplot-mode, which enables rendering images from gnuplot src blocks or plotting tables with org-plot/gnuplot (bound to <localleader> b p, by default).
-
-+hugo#
-Enables integration with hugo to export from Emacs well-formed (blackfriday) markdown.
-
-- +journal#
-  - Enable org-journal integration.
-- +jupyter#
-  - Enable Jupyter integration for babel.
-- +noter
-  - Enable org-noter integration. Keeps notes in sync with a document. Requires pdf-tools (:tools pdf), DocView, or nov.el to be enabled.
-- +pandoc
-- +pomodoro
-- +present
-  - Enable integration with reveal.js, beamer and org-tree-slide, so Emacs can be used for presentations. It automatically downloads reveal.js.
-- +pretty
-  - Enables pretty unicode symbols for bullets and priorities, and better syntax highlighting for latex. Keep in mind: this can be expensive. If org becomes too slow, it’d be wise to disable this flag.
-- +roam2
-  - Enables integration with org-roam v2. Requires sqlite3 on your system. Incompatible with +roam. This flag will replace +roam in mid-2022.
-
-**** markdown
-+grip#
-Enables grip support (on <localleader> p), to provide live github-style previews of your markdown (or org) files.
-***** TODO test grip
-**** data
-This module adds Emacs support for CSV and XML files.
-**** java lsp
-Install the eclipse server by executing M-x lsp-install-server and selecting jdtls. After that any newly opened java files should start the LSP server automatically.
-
-To update the server, perform SPC u M-x lsp-install-server.
-
-Note that if you change Java version you may need to remove the LSP server and install it again. You can do this with M-x +lsp/uninstall-server followed by M-x lsp-install-server.
-
 ** email
 #+begin_src emacs-lisp :tangle init.el
 
@@ -478,8 +277,8 @@ Note that if you change Java version you may need to remove the LSP server and i
 :app
        calendar
        ;; twitter ; TODO never works?
-       emms
-       everywhere        ; *leave* Emacs!? You must be joking
+       ;; emms
+       ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader
 #+end_src
