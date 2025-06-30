@@ -492,14 +492,16 @@ unneeded since we use ws-butler which:
 ** corfu
 not sure if after! init works lul
 
-#+begin_src elisp :tangle no
+#+begin_src elisp :tangle yes
 (use-package! corfu
   ;; :config
-  :custom
-  (corfu-auto nil))
+  ;; :custom
+  :init
+  (customize-set-variable 'corfu-auto nil))
+  ;; (corfu-auto nil))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (customize-set-variable 'corfu-auto nil)
 #+end_src
   ;; (text-mode-ispell-word-completion nil)
