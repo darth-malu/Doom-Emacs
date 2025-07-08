@@ -15,16 +15,12 @@
 (package! tldr)
 (package! lsp-pyright)
 (package! elpy)
-(package! jupyter)
+;; (package! jupyter)
 (package! org-auto-tangle)
-(package! drag-stuff) ;TODO desc
+(package! drag-stuff)
 (package! all-the-icons) ;TODO add desc
-;;(package! git-timemachine) ;TODO investigate further
 ;; (package! spotify)
 ;; (package! emms-player-spotify)
-;;(package! grip-mode) ;; needs to be in nixpkgs
-;; (package! nixfmt) ; TODO test if this is what is making me slow
-;; (package! ob-hide-markers) ;TODO test if this is wooorking using work around for now
 #+end_src
 
 * justinVC-tech :justin:
