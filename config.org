@@ -239,9 +239,11 @@ works !!...height too small thought :height 0.9
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
 
-(if (string= (system-name) "tangier")
-    (setq doom-modeline-battery t)
-  (setq doom-modeline-battery nil))
+(if (string= (system-name) "tangier") ;; battery on TANGIER
+    (progn
+      (setq doom-modeline-battery t)
+      (display-battery-mode 1))
+    (setq doom-modeline-battery nil))
 #+end_src
 
 =Nice Fonts=
