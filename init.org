@@ -197,7 +197,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
        (nix +lsp)               ; I hereby declare "nix geht mehr!"
        (org +present +roam2 +pomodoro +jupyter +journal +brain +dragndrop +pandoc +pretty)
        (python +lsp +pyright)            ; beautiful is better than ugly
-       ;; web               ; the tubes
+       (web +lsp +tree-sitter)               ; the tubes
        (sh +lsp +tree-sitter)                ; she sells {ba,z,fi}sh shells on the C xor
        (csharp +dotnet +lsp +tree-sitter)            ; unity, .NET, and mono shenanigans
        qt                ; the 'cutest' gui framework ever

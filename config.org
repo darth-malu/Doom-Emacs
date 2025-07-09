@@ -215,7 +215,9 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
 #+begin_src emacs-lisp :tangle yes
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono" :size 15 :weight 'medium )
+    doom-font (font-spec :family "JetBrains Mono"
+                         :size (if (string-equal (system-name) "tangier") 16 15)
+                         :weight 'medium )
     ;; doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'medium )
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     ;; doom-unicode-font
@@ -301,6 +303,8 @@ works !!...height too small thought :height 0.9
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
   (display-time-mode 1)                             ; Enable time in the line-mode
+  ;; (display-time-format "%H:%M")
+  (display-time-default-load-average nil)
   ;; (display-time-day-and-date 1)
 
   :config
