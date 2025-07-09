@@ -94,10 +94,8 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 | =C-c C-d= | display documentation for the thing under cursor       |
 |---------+--------------------------------------------------------|
 ** Lsp Mode
-*** lsp ui :ATTACH:
-:PROPERTIES:
-:ID:       a0d63e63-721c-484a-b913-c440463e72d1
-:END:
+*** lsp ui
+
 https://github.com/emacs-lsp/lsp-ui
 
 By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
@@ -240,6 +238,10 @@ works !!...height too small thought :height 0.9
   '(mode-line :family "Mononoki Nerd Font")
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
+
+(if (string= (system-name) "tangier")
+    (setq doom-modeline-battery t)
+  (setq doom-modeline-battery nil))
 #+end_src
 
 =Nice Fonts=
