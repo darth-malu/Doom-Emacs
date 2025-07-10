@@ -25,7 +25,7 @@
 #+end_src
 
 * justinVC-tech :justin:
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (package! random-splash-image
           :recipe (:host github :repo "kakakaya/random-splash-image"))
 
@@ -37,10 +37,6 @@
 #+end_src
 * DOCS
 ** install pkg
-
-To install a package with Doom you must declare them here and run ='doom sync'=
-on the command line, then restart Emacs for the changes to take effect
-
 *** melpa
 To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 #+begin_src elisp

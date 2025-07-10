@@ -1036,8 +1036,6 @@ I recommend using eshell for light cli work, and using your external terminal em
 * ORG
 ** ORG specific settings
 
-[[https://orgmode.org/orgguide.html#Properties]]
-
 #+begin_src emacs-lisp :tangle yes
 (use-package! org
   :init
@@ -1077,6 +1075,8 @@ I recommend using eshell for light cli work, and using your external terminal em
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 #+end_src
+
+[[https://orgmode.org/orgguide.html#Properties]]
 
 *** experiments
 **** zaiste
