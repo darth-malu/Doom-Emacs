@@ -8,3 +8,4 @@ tmp/
 # init.el
 
 *.el
+*.html

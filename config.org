@@ -43,26 +43,27 @@
 #+end_src
 ** python
 *** python-mode
+
+  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
+  (python-shell-interpreter "python3")
+  :config
+
+=jupytter=
+  (setq python-shell-interpreter "jupyter"
+        python-shell-interpreter-args "console --simple-prompt"
+        python-shell-prompt-detect-failure-warning nil
+        )
+  (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
+
 #+begin_src emacs-lisp :tangle yes
 (use-package! python
-  ;; :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
-  ;; (python-shell-interpreter "python3")
   :config
-  ;;; jupytter
-  ;; (setq python-shell-interpreter "jupyter"
-  ;;       python-shell-interpreter-args "console --simple-prompt"
-  ;;       python-shell-prompt-detect-failure-warning nil
-  ;;       )
-  ;; (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
-
-  ;;; ipython
   (setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt")
-
+      python-shell-interpreter-args "-i --simple-prompt --no-color-info" )
   :hook
   (python-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                   (require 'lsp-pyright)
+                   ;; (require 'lsp-pyright)
                    (setq +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
@@ -289,7 +290,7 @@ works !!...height too small thought :height 0.9
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
   ;; (electric-pair-mode 1)
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
-  ;; (inhibit-startup-message t)
+  (inhibit-startup-message t)           ;Hide th startup message
 
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Doom Dashboard")
@@ -1022,7 +1023,6 @@ I recommend using eshell for light cli work, and using your external terminal em
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
-
 #+end_src
 
 *** experiments
@@ -1684,16 +1684,16 @@ One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
 
 **** favs
 ***** dark
+- dracula (python) -> cool purple
+- monokai-octagon (python)
 - solarized-dark
 - one
 - horizon - nice red accents and purple
-- dracula
 - solarized-dark-high-contrast
 - ayu-mirage
-- snazzy
 - moonlight
 - material - nice purple dotts and cursor
-- monokai-octagon
+- snazzy
 
 ***** light
 - doom-solarized-light
