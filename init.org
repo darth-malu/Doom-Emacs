@@ -277,7 +277,7 @@ org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty
 ** email
 #+begin_src emacs-lisp :tangle init.el
 :email
-       (mu4e +org +gmail)
+       (mu4e +mbsync +org +gmail)
        ;;notmuch
        ;;(wanderlust +gmail)
 
