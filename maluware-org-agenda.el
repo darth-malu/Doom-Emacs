@@ -1,4 +1,3 @@
-;;; maluware-org-agenda.el -*- lexical-binding: t; -*-
 (defvar maluware-custom-org-daily-agenda
   `((tags-todo "*"
      ((org-agenda-skip-function '(org-agenda-skip-if nil '(timestamp)))
