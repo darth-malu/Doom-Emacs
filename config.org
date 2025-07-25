@@ -237,7 +237,7 @@ works !!...height too small thought :height 0.9
 #+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
-  '(mode-line :family "Mononoki Nerd Font")
+  '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
 
