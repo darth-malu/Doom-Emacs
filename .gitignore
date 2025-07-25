@@ -2,10 +2,8 @@
 .idea
 *.log
 tmp/
-
-# config.el
-# packages.el
-# init.el
-
-*.el
 *.html
+/config.el
+/init.el
+/.dir-locals.el
+/packages.el

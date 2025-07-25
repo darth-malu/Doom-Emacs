@@ -175,6 +175,7 @@ nil: An incremental analysis assistant for writing in Nix.
   :after (lsp-mode)
   :demand t
   :custom
+  (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 #+end_src
 
@@ -252,20 +253,6 @@ works !!...height too small thought :height 0.9
 + SpaceMono Nerd Font
 + VictorMono Nerd Font
  
-** custom start mode
-
-#+begin_src emacs-lisp :tangle no
-(define-minor-mode start-mode
-  "Provide functions for custom start page"
-  :lighter " start"
-  :keymap (let ((map (make-sparse-keymap)))
-                (evil-define-key 'normal start-mode-map
-                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
-                map))
-;;(add-hook! 'start-mode-hook 'read-only-mode) ;;make start org read only
-(provide 'start-mode)
-#+end_src
-
 ** keybindings
 #+begin_src emacs-lisp :tangle no
 ;; (keymap-global-set "M-;" 'save-buffer) ;easier saving
@@ -288,7 +275,6 @@ works !!...height too small thought :height 0.9
   ;; (x-stretch-cursor t) ; see if needed really
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
-  ;; (electric-pair-mode 1)
   (backup-directory-alist '((".*" . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
   (inhibit-startup-message t)           ;Hide th startup message
 
@@ -302,8 +288,9 @@ works !!...height too small thought :height 0.9
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
 
-  (scroll-margin 18) ; Adjust the number as needed
-  (scroll-conservatively 101) ; TODO test usefulness
+  ;;; using ultra scroll block now
+  ;; (scroll-margin 18) ; Adjust the number as needed
+  ;; (scroll-conservatively 101) ; TODO test usefulness
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
@@ -376,11 +363,50 @@ works !!...height too small thought :height 0.9
         )))
 #+end_src
 
+** delete spaces, tabs, newline
+#+begin_src emacs-lisp :tangle yes
+(setq backward-delete-char-untabify-method 'all)
+#+end_src
+
++ all - all whitespace - tabs, spaces, \n
++ hungry - all whitespace - tabs, spaces
++ untabify - turn a tab into many spaces, then delete one space at a time
+
+** creating a new window switches cursor to it
+#+begin_src emacs-lisp :tangle yes
+ (defun split-and-follow-horizontally ()
+	(interactive)
+	(split-window-below)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+ (defun split-and-follow-vertically ()
+	(interactive)
+	(split-window-right)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+end_src
 ** experiment
 *** initial buffer
  #+begin_src emacs-lisp :tangle no
 (setq initial-buffer-choice "~/.doom.d/config.org") ;
  #+end_src
+
+*** custom start mode
+
+#+begin_src emacs-lisp :tangle no
+(define-minor-mode start-mode
+  "Provide functions for custom start page"
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+                (evil-define-key 'normal start-mode-map
+                  (kbd "1") '(lambda () (interactive) (find-file "~/.doom.d/packages.org")))
+                map))
+;;(add-hook! 'start-mode-hook 'read-only-mode) ;;make start org read only
+(provide 'start-mode)
+#+end_src
 
 *** witchmacs stuff
 
@@ -405,45 +431,18 @@ see plugin options
                       :foreground background-color
                       :background background-color))
 #+end_src
-*** sane defaults
-**** select and type
+*** select and type
+useful in vanilla emacs?
 #+begin_src emacs-lisp :tangle no
 (delete-selection-mode 1)
+(setq delete-selection-mode t) ;;TODO test if this works
 #+end_src
-***** TODO see if works/needed
-**** weird emacs indent?
-Turn off the weird indenting that Emacs does by default.
-#+begin_src emacs-lisp :tangle yes
-(setq electric-pair-pairs '(
-                            (?\{ . ?\})
-                            (?\( . ?\))
-                            (?\[ . ?\])
-                            (?\" . ?\")
-                            ))
-;; (electric-indent-mode -1)
-#+end_src
-***** TODO test further
-**** creating a new window switches cursor to it
-#+begin_src emacs-lisp :tangle yes
- (defun split-and-follow-horizontally ()
-	(interactive)
-	(split-window-below)
-	(balance-windows)
-	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
-
- (defun split-and-follow-vertically ()
-	(interactive)
-	(split-window-right)
-	(balance-windows)
-	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
-#+end_src
-**** turn yes-or-no questions into y or no
+**** TODO see if works/needed
+*** turn yes-or-no questions into y or no
 #+begin_src emacs-lisp :tangle no
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
-**** defer load most packages for quick startup
+*** defer load most packages for quick startup
 #+begin_src emacs-lisp :tangle no
 (setq use-package!-always-defer t)
 #+end_src
@@ -456,15 +455,6 @@ Turn off the weird indenting that Emacs does by default.
 unneeded since we use ws-butler which:
 + only on modified lines
 + replaces trailing whitespace with virtual whitespace
-*** delete spaces, tabs, newline
-#+begin_src emacs-lisp :tangle yes
-(setq backward-delete-char-untabify-method 'all)
-#+end_src
-
-+ all - all whitespace - tabs, spaces, \n
-+ hungry - all whitespace - tabs, spaces
-+ untabify - turn a tab into many spaces, then delete one space at a time
- 
 *** default workspace behaviour fix
 #+begin_src emacs-lisp :tangle no
 (after! persp-mode
@@ -472,7 +462,6 @@ unneeded since we use ws-butler which:
    `(+workspace-current-name))
 )
 #+end_src
-**** TODO see if its fixed/works
 ** Henrik lissner tech
 #+begin_src emacs-lisp :tangle no
 ;; Prevents some cases of Emacs flickering.
@@ -542,6 +531,18 @@ Also see =tab-first-completion.=
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
+** electric
+#+begin_src emacs-lisp :tangle yes
+(setq electric-pair-pairs '(
+                            (?\{ . ?\})
+                            (?\( . ?\))
+                            (?\[ . ?\])
+                            (?\" . ?\")
+                            ))
+;; (electric-indent-mode -1) ; on::
+  ;; (electric-pair-mode 1) ; on by default
+#+end_src
+***** TODO test further
 ** spelling
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Spelling.html
 *** ispell
@@ -718,18 +719,22 @@ see also:
 (use-package! all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 #+end_src
-** old | phased out
-*** ultra-scroll
-#+begin_src emacs-lisp :tangle no
+** ultra-scroll
+
+#+begin_src emacs-lisp :tangle yes
 (use-package! ultra-scroll
-  ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
+  :ensure nil
+  ;:vc (:url "https://github.com/jdtsmith/ultra-scroll") ; if desired (emacs>=v30)
+  :init
+  (setq scroll-conservatively 101 ; or whatever value you prefer, since v0.4
+        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
   :config
-  (ultra-scroll-mode 1)
-  :recipe (:host github :repo "https://github.com/jdtsmith/ultra-scroll"))
+  (ultra-scroll-mode 1))
 #+end_src
 
-Do you need this?
+https://github.com/jdtsmith/ultra-scroll
 
+Do you need this?
 If you don't scroll with a high-speed device (modern mouse or track-pad), no. If you do, but aren't sure, here's a good test to try:
 
 Open a heavy emacs buffer full screen on your largest monitor.
@@ -738,6 +743,7 @@ Shouldn't emacs be like this?
 
 If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
 
+** old | phased out
 *** obsidian
 #+begin_src emacs-lisp :tangle no
 (setq obsidian-directory "~/OBSIDIAN")
@@ -848,7 +854,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   (make-directory random-splash-image-dir t))
   (random-splash-image-set))
 #+end_src
-** eval better eros
+** eval better arrows
 #+begin_src emacs-lisp :tangle yes
 (setq eros-eval-result-prefix "⟹ ") ; default =>
 #+end_src
@@ -885,7 +891,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
 
 + "emojione-v2.2.6-22"
 ** maginalia changes
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (after! marginalia
   (setq marginalia-censor-variables nil)
 
@@ -928,7 +934,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   wttrin-default-cities '("Nairobi" ))
 #+end_src
 ** elcord
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! elcord
   :commands elcord-mode
   :config
@@ -982,13 +988,16 @@ I recommend using eshell for light cli work, and using your external terminal em
 #+end_src
 * MU4E
 #+begin_src elisp :tangle yes
+(defvar my-mu4e-path
+  (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
+
 (use-package mu4e
   :ensure nil
   ;; :load-path "/usr/share/emacs/site-lisp/mu4e/"
   ;; :load-path "/nix/store/*share/emacs/site-lisp/mu4e/"
   ;; :load-path "/nix/store/lfa1mdkbj5m06nvaxh8minq2lvxdi4z4-mu-1.12.9-mu4e/share/emacs/site-lisp/mu4e/"
-  :load-path (car (file-expand-wildcards "/nix/store/*mu4e/share/emacs/site-lisp/mu4e"))
-;; :defer 20 ; Wait until 20 seconds after startup
+  :load-path my-mu4e-path
+  :defer 20 ; Wait until 20 seconds after startup
   :config
 
   ;; This is set to 't' to avoid mail syncing issues when using mbsync
@@ -999,7 +1008,6 @@ I recommend using eshell for light cli work, and using your external terminal em
   (setq mu4e-get-mail-command "mbsync -a")
   (setq mu4e-maildir "~/Documents/Mail")
 
-    (mu4e-compose-signature . "---\nYours truly\nThe Baz"))
   (setq mu4e-drafts-folder "/[Gmail]/Drafts")
   (setq mu4e-sent-folder   "/[Gmail]/Sent Mail")
   (setq mu4e-refile-folder "/[Gmail]/All Mail")
@@ -1013,6 +1021,18 @@ I recommend using eshell for light cli work, and using your external terminal em
         ("/[Gmail]/All Mail"  . ?a))))
 #+end_src
 
+#+begin_src elisp :tangle no
+  (set-email-account! "justinmalu@gmail.com"
+    '((mu4e-sent-folder       . "/bar.com/Sent Mail")
+      (mu4e-drafts-folder . "/[Gmail]/Drafts")
+      (mu4e-sent-folder . "/[Gmail]/Sent Mail")
+      (mu4e-refile-folder . "/[Gmail]/All Mail")
+      (mu4e-trash-folder  . "/[Gmail]/Trash")
+      ;; (smtpmail-smtp-user     . "foo@bar.com")
+      (user-mail-address      . "justinmalu@gmail.com")    ;; only needed for mu < 1.4
+      (mu4e-compose-signature . "---\nYours truly\nJustin Malu"))
+    t)
+#+end_src
 * ORG
 ** ORG specific settings
 

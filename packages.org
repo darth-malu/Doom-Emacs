@@ -15,6 +15,7 @@
 (package! tldr)
 (package! lsp-pyright)
 (package! elpy)
+(package! olivetti)
 ;; (package! jupyter)
 (package! org-auto-tangle)
 (package! drag-stuff)

@@ -65,6 +65,7 @@ Alternatively, press =gd= on a module to browse its
        ;; (window-select +switch-window +numbers)     ; visually switch windows
        window-select
        workspaces        ; tab emulation, persistence & separate workspaces ;persp-mode
+       (smooth-scroll +interpolate)
        ;;zen               ; distraction-free coding or writing
 #+end_src
 ** editor
