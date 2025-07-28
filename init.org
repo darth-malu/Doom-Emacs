@@ -46,7 +46,7 @@ Alternatively, press =gd= on a module to browse its
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
-       (emoji +unicode +ascii)  ; 🙂
+       (emoji +unicode)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
        (ligatures +extra)         ; ligatures and symbols to make your code pretty again
@@ -65,7 +65,7 @@ Alternatively, press =gd= on a module to browse its
        ;; (window-select +switch-window +numbers)     ; visually switch windows
        window-select
        workspaces        ; tab emulation, persistence & separate workspaces ;persp-mode
-       (smooth-scroll +interpolate)
+       ;; (smooth-scroll +interpolate)
        ;;zen               ; distraction-free coding or writing
 #+end_src
 ** editor
@@ -297,7 +297,7 @@ org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty
 :app
        calendar
        ;; twitter ; TODO never works?
-       ;; emms
+       emms
        ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader

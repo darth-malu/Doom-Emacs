@@ -88,12 +88,6 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
   (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide (ANNOYING)
 #+end_src
 
-|---------+--------------------------------------------------------|
-| =C-c C-c= | evaluate current script                                |
-| =C-RET=   | evaluate current statement (plus nested lines)         |
-| =C-c C-z= | switches between your script and the interactive shell |
-| =C-c C-d= | display documentation for the thing under cursor       |
-|---------+--------------------------------------------------------|
 ** Lsp Mode
 *** lsp ui
 
@@ -217,7 +211,7 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
                          :size (if (string-equal (system-name) "tangier") 14 15)
-                         :weight (if (string-equal (system-name) "tangier") 'light 'regular)) ;medium
+                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14))
 #+end_src
@@ -231,7 +225,6 @@ doom-serif-font
 (set-font-ligatures! '(org-mode) ">>=" ">>-")
 #+end_src
 ** modeline
-
 works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
@@ -281,16 +274,17 @@ works !!...height too small thought :height 0.9
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Doom Dashboard")
 
-  (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
+  (setq +evil-want-o/O-to-continue-comments t) ; o/O does not continue comment to next new line 😸
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
+
   (evil-shift-width 2)
 
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
 
   ;;; using ultra scroll block now
-  ;; (scroll-margin 18) ; Adjust the number as needed
-  ;; (scroll-conservatively 101) ; TODO test usefulness
+  (scroll-margin 18) ; Adjust the number as needed
+  (scroll-conservatively 101) ; TODO test usefulness
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
@@ -573,7 +567,16 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 	markdown-html-attr-name-face
 	markdown-html-tag-name-face))
 #+end_src
-
+** emms
+#+begin_src elisp :tangle yes
+(emms-all)
+(emms-add-directory-tree "/home/malu/Music/")
+(setq emms-player-list '(emms-player-mpv)
+      emms-info-functions '(emms-info-native
+                            ;; emms-info-metaflac ;FIXME not found
+                            ;; emms-info-ogginfo
+                            ))
+#+end_src
 ** Async
 #+begin_src emacs-lisp :tangle no
 (use-package! async
@@ -721,7 +724,7 @@ see also:
 #+end_src
 ** ultra-scroll
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! ultra-scroll
   :ensure nil
   ;:vc (:url "https://github.com/jdtsmith/ultra-scroll") ; if desired (emacs>=v30)
@@ -1736,16 +1739,23 @@ One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
 
 **** favs
 ***** dark
-- dracula (python) -> cool purple
-- monokai-octagon (python)
-- solarized-dark
-- one
-- horizon - nice red accents and purple
-- solarized-dark-high-contrast
-- ayu-mirage
-- moonlight
-- material - nice purple dotts and cursor
-- snazzy
++ moonlight
++ ayu-mirage
++ dracula (python) -> cool purple
++ gruvbox
++ tokyonight
++ doom miramare
++ horizon - nice red accents and purple
++ bluloco-dark
++ oksolar-dark
++ solarized-dark
++ one
++ solarized-dark-high-contrast
++ material - nice purple dotts and cursor
++ snazzy
+
+=Python=
++ monokai-octagon (python)
 
 ***** light
 - doom-solarized-light
@@ -1755,8 +1765,8 @@ One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
 - ayu light
 - one light
 ***** pastel
-- ephemeral
-- nord-aurora
++ ephemeral
++ nord-aurora
 *** nerd font experiement
 **** mononoki
 kinda nice and kawaii
