@@ -44,22 +44,22 @@
 ** python
 *** python-mode
 
-  :custom (lsp-pyright-langserver-command "pyright") ;; pyright or basedpyright
-  (python-shell-interpreter "python3")
-  :config
+=ipython=
+#+begin_src elisp :tangle no
+  (setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "-i --simple-prompt --no-color-info" )
+#+end_src
 
-=jupytter=
+=jupyter=
+#+begin_src emacs-lisp :tangle yes
+(use-package! python
+  :config
   (setq python-shell-interpreter "jupyter"
         python-shell-interpreter-args "console --simple-prompt"
         python-shell-prompt-detect-failure-warning nil
         )
   (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
 
-#+begin_src emacs-lisp :tangle yes
-(use-package! python
-  :config
-  (setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt --no-color-info" )
   :hook
   (python-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
@@ -589,6 +589,12 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
                             ;; emms-info-ogginfo
                             ))
 #+end_src
+** evil-nerd-commenter | better comments
+#+begin_src elisp
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+#+end_src
+
 ** Async
 #+begin_src emacs-lisp :tangle no
 (use-package! async
@@ -1049,7 +1055,7 @@ I recommend using eshell for light cli work, and using your external terminal em
     t)
 #+end_src
 * ORG
-** ORG specific settings
+** my settings
 
 #+begin_src emacs-lisp :tangle yes
 (use-package! org
@@ -1074,11 +1080,9 @@ I recommend using eshell for light cli work, and using your external terminal em
         ("@home" . ?H)
         ("@school" . ?S)
         ("@babe" . ?B)
-
         ;;devices
         ("@carthage" . ?C)
         ("@tangier" . ?T)
-
         ;;activites
         ("@work" . ?W)
         ("@pyrple" . ?P)
@@ -1170,6 +1174,20 @@ org-bullets-face-name
   ;; :config
   ;; (org-roam-db-autosync-enable))
 #+end_src
+** org-structure-template
+#+begin_src elisp :tangle no
+(add-to-list 'org-structure-template-alist
+             '("ss" . "src emacs-lisp")) ;FIXME deprecated approach find new way to do this
+#+end_src
+
+#+begin_src elisp :tangle no
+(with-eval-after-load 'org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist
+               '("se" . "src emacs-lisp")))
+
+#+end_src
+
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
 *** my org-capture-template

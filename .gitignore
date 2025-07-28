@@ -7,3 +7,4 @@ tmp/
 /init.el
 /.dir-locals.el
 /packages.el
+/custom.el
