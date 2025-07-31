@@ -568,7 +568,7 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 	markdown-html-tag-name-face))
 #+end_src
 ** emms
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 (emms-all)
 (emms-add-directory-tree "/home/malu/Music/")
 (setq emms-player-list '(emms-player-mpv)
