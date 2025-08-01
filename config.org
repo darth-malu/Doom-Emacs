@@ -158,6 +158,18 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 #+end_src
+** c
+#+begin_src elisp
+(after! lsp-clangd
+  (setq lsp-clients-clangd-args
+        '("-j=3"
+          "--background-index"
+          "--clang-tidy"
+          "--completion-style=detailed"
+          "--header-insertion=never"
+          "--header-insertion-decorators=0"))
+  (set-lsp-priority! 'clangd 2))
+#+end_src
 
 ** nix
 https://github.com/NixOS/nix-mode
@@ -336,7 +348,7 @@ works !!...height too small thought :height 0.9
 
 ** format +onsave disabled modes
 #+begin_src emacs-lisp :tangle yes
-(customize-set-variable '+format-on-save-disabled-modes '(nxml-mode))
+(customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
 #+end_src
 ** buffer location in window
 #+begin_src emacs-lisp :tangle no
