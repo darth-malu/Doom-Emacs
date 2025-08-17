@@ -8,3 +8,4 @@ tmp/
 /.dir-locals.el
 /packages.el
 /custom.el
+/practice_agenda.el

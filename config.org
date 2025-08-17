@@ -223,7 +223,7 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
                          :size (if (string-equal (system-name) "tangier") 14 15)
-                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
+                         :weight (if (string-equal (system-name) "tangier") 'regular 'normal)) ;medium
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14))
 #+end_src
@@ -305,7 +305,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Doom Dashboard")
 
-  (setq +evil-want-o/O-to-continue-comments t) ; o/O does not continue comment to next new line 😸
+  (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
 
   (evil-shift-width 2)
@@ -556,18 +556,6 @@ Also see =tab-first-completion.=
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
-** electric
-#+begin_src emacs-lisp :tangle yes
-(setq electric-pair-pairs '(
-                            (?\{ . ?\})
-                            (?\( . ?\))
-                            (?\[ . ?\])
-                            (?\" . ?\")
-                            ))
-;; (electric-indent-mode -1) ; on::
-  ;; (electric-pair-mode 1) ; on by default
-#+end_src
-***** TODO test further
 ** spelling
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Spelling.html
 *** ispell
@@ -682,7 +670,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   ;; (require 'projectile)
   ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
   :config
-  (setq centaur-tabs-set-bar 'nil ; left, over, under
+  (setq centaur-tabs-set-bar nil ; left, over, under
         centaur-tabs-style 'bar ;alternate, bar, box(x), wave, zigzag, chamfer FIXME...slant does not work
         centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
         centaur-tabs-set-icons t
@@ -749,16 +737,18 @@ see also:
                                 ("NOTE"       success bold)
                                 ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
-** all the icons
-#+begin_src elisp :tangle yes
-(use-package! all-the-icons
-  :if (display-graphic-p))
-#+end_src
-
+** electric
 #+begin_src emacs-lisp :tangle no
-(use-package! all-the-icons-dired
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+(setq electric-pair-pairs '(
+                            (?\{ . ?\})
+                            (?\( . ?\))
+                            (?\[ . ?\])
+                            (?\" . ?\")
+                            ))
+;; (electric-indent-mode -1) ; on::
+  ;; (electric-pair-mode 1) ; on by default
 #+end_src
+***** TODO test further
 ** ultra-scroll
 
 #+begin_src emacs-lisp :tangle no
@@ -783,6 +773,28 @@ Shouldn't emacs be like this?
 
 If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
 
+** elcord
+#+begin_src emacs-lisp :tangle yes
+(use-package! elcord
+  :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t
+        ))
+#+end_src
+** all the icons
+#+begin_src elisp :tangle yes
+(use-package! all-the-icons
+  :if (display-graphic-p))
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package! all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
 ** old | phased out
 *** obsidian
 #+begin_src emacs-lisp :tangle no
@@ -972,13 +984,6 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   :commands wttrin
   :config
   wttrin-default-cities '("Nairobi" ))
-#+end_src
-** elcord
-#+begin_src emacs-lisp :tangle no
-(use-package! elcord
-  :commands elcord-mode
-  :config
-  (setq elcord-use-major-mode-as-main-icon t))
 #+end_src
 ** FIXME org-modern
 #+begin_src emacs-lisp :tangle no
