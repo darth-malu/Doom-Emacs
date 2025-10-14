@@ -222,10 +222,10 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
-                         :size (if (string-equal (system-name) "tangier") 16 15)
+                         :size (if (string-equal (system-name) "tangier") 17 15)
                          :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
     doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14))
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
 #+end_src
 
 doom-unicode-font
@@ -237,6 +237,7 @@ doom-serif-font
 (set-font-ligatures! '(org-mode) ">>=" ">>-")
 #+end_src
 ** modeline
+*** Active | Inactive
 works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
@@ -245,18 +246,22 @@ works !!...height too small thought :height 0.9
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
-
-(if (string= (system-name) "tangier") ;; battery on TANGIER
-    (progn
-      (setq doom-modeline-battery t)
-      (display-battery-mode 1))
-    (setq doom-modeline-battery nil))
 #+end_src
 
 =Nice Fonts=
 + Mononoki Nerd Font
 + SpaceMono Nerd Font
 + VictorMono Nerd Font
+
+*** battery
+#+begin_src emacs-lisp :tangle yes
+(if (string= (system-name) "tangier") ;; battery on TANGIER
+    (progn
+      (setq doom-modeline-battery t)
+      (display-battery-mode 1))
+  (setq doom-modeline-battery nil))
+#+end_src
+
 ** folder clean up
 Projectile, lsp-mode, and other packages create their own files to store variables and state!
 
@@ -785,8 +790,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   :config
   ;; (elcord-mode 1)
   (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t
-        ))
+        elcord-use-major-mode-as-main-icon t))
 #+end_src
 
 ** all the icons
