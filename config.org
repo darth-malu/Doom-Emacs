@@ -248,13 +248,16 @@ works !!...height too small thought :height 0.9
   '(mode-line-inactive :family "Iosevka Comfy"))
 #+end_src
 
+#+RESULTS:
+: -1
+
 =Nice Fonts=
 + Mononoki Nerd Font
 + SpaceMono Nerd Font
 + VictorMono Nerd Font
 
 *** battery
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (if (string= (system-name) "tangier") ;; battery on TANGIER
     (progn
       (setq doom-modeline-battery t)
@@ -324,9 +327,9 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
-  (display-time-mode 1)                             ; Enable time in the line-mode
+  ;;(display-time-mode 1)                             ; Enable time in the line-mode
   ;; (display-time-format "%H:%M")
-  (display-time-default-load-average nil)
+  ;;(display-time-default-load-average nil)
   ;; (display-time-day-and-date 1)
 
   :config
