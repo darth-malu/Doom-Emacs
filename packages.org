@@ -20,6 +20,8 @@
 (package! olivetti)
 ;; (package! jupyter)
 (package! org-auto-tangle)
+;;(package! qml-ts-mode)
+;;(package! org-present)
 (package! drag-stuff)
 (package! all-the-icons) ;TODO add desc
 ;; (package! spotify)

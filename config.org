@@ -205,6 +205,21 @@ nil: An incremental analysis assistant for writing in Nix.
          ;; enable autocompletion with company
          ;; (setq company-idle-delay 0.1))
 #+end_src
+** QML
+#+begin_src elisp :tangle no
+(use-package qml-ts-mode
+  :after lsp-mode
+  :config
+  (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
+                    :activation-fn (lsp-activate-on "qml-ts")
+                    :server-id 'qmlls))
+  (add-hook 'qml-ts-mode-hook (lambda ()
+                                (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
+                                (lsp-deferred))))
+#+end_src
+
 ** dotnet
 #+begin_src emacs-lisp :tangle no
 (use-package sharper
@@ -212,7 +227,6 @@ nil: An incremental analysis assistant for writing in Nix.
   :bind
   ("C-c n" . sharper-main-transient))
 #+end_src
-
 * DOOM functionality
 ** fonts
 
@@ -546,9 +560,13 @@ not sure if after! init works lul
 (customize-set-variable 'corfu-auto nil)
 #+end_src
   ;; (text-mode-ispell-word-completion nil)
+
     ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+
   ;; commands are hidden, since they are not used via M-x. This setting is
+
   ;; useful beyond Corfu.
+
   ;; (read-extended-command-predicate #'command-completion-default-include-p)
 
 =tabs-always-indent=
@@ -1043,7 +1061,7 @@ I recommend using eshell for light cli work, and using your external terminal em
   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 #+end_src
 * MU4E
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 (defvar my-mu4e-path
   (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
 
