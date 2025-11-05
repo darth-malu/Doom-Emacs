@@ -37,7 +37,7 @@
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
        tabs              ; a tab bar for Emacs
        (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
-       ;; unicode           ; extended unicode support for various languages
+       ;; unicode           ; extended unicode support for various languages NOTE can cause issues with ligatures
        (vc-gutter +pretty) ; vcs diff in the fringe
        ;; vi-tilde-fringe   ; fringe tildes to mark beyond EOB
        (window-select +switch-window +numbers)     ; visually switch windows
