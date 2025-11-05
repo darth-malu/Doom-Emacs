@@ -159,7 +159,8 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
         lsp-enable-suggest-server-download nil))
 #+end_src
 ** c
-#+begin_src elisp
+lsp mode with clangd
+#+begin_src elisp :tangle yes
 (after! lsp-clangd
   (setq lsp-clients-clangd-args
         '("-j=3"
