@@ -84,31 +84,19 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
-(setq
- doom-symbol-font (font-spec :family "Symbols Nerd Font")
- doom-font (font-spec :family "JetBrains Mono"
-                      :size (if (string-equal (system-name) "tangier") 15 15)
-                      :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
- doom-emoji-font (font-spec :family "Noto Color Emoji")
- doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
+  (setq
+    doom-symbol-font (font-spec :family "Symbols Nerd Font")
+    doom-font (font-spec :family "JetBrains Mono"
+                         :size (if (string-equal (system-name) "tangier") 17 15)
+                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
+    doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
 
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
-
-(setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
-      lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
-
-(setq backup-directory-alist '(("." . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
-;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs")) ;default is in .emacs dir cache
-
-;; Auto-save-mode doesn't create the path automatically!
-(make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
-
-(setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
-      auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
 
 (use-package! emacs
   ;; :init
@@ -182,19 +170,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
-(defun split-and-follow-horizontally ()
-  (interactive)
-  (split-window-below)
-  (balance-windows)
-  (other-window 1))
-(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+ (defun split-and-follow-horizontally ()
+	(interactive)
+	(split-window-below)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
-(defun split-and-follow-vertically ()
-  (interactive)
-  (split-window-right)
-  (balance-windows)
-  (other-window 1))
-(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+ (defun split-and-follow-vertically ()
+	(interactive)
+	(split-window-right)
+	(balance-windows)
+	(other-window 1))
+ (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "gorl.jpg"))
@@ -206,13 +194,10 @@
   ;; :custom
   :init
   (customize-set-variable 'corfu-auto nil))
-;; (corfu-auto nil))
+  ;; (corfu-auto nil))
 
 (after! spell-fu
   (setq spell-fu-idle-delay 0.5))  ; default is 0.25
-
-(use-package evil-nerd-commenter
-  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (use-package! centaur-tabs
   :defer t
@@ -300,106 +285,84 @@
   ;; (org-log-done 'note) ;task done with note prompted to user
   (org-hide-emphasis-markers t)
   (org-tag-alist
-   '(;;Places
-     ("@home" . ?H)
-     ("@school" . ?S)
-     ("@babe" . ?B)
-     ;;devices
-     ("@carthage" . ?C)
-     ("@tangier" . ?T)
-     ;;activites
-     ("@work" . ?W)
-     ("@pyrple" . ?P)
-     ("@emacs" . ?E)
-     ("@nix" . ?N)))
+      '(;;Places
+        ("@home" . ?H)
+        ("@school" . ?S)
+        ("@babe" . ?B)
+        ;;devices
+        ("@carthage" . ?C)
+        ("@tangier" . ?T)
+        ;;activites
+        ("@work" . ?W)
+        ("@pyrple" . ?P)
+        ("@emacs" . ?E)
+        ("@nix" . ?N)))
   (org-todo-keywords
-   '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER"))))
-;; (org-todo-keywords
-;;     '((sequence "TODO(t)" "|" "DONE(d)")
-;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
+      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER"))))
+  ;; (org-todo-keywords
+  ;;     '((sequence "TODO(t)" "|" "DONE(d)")
+  ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
 ;; (setq org-roam-directory (file-truename "~/org/roam"))
 (setq org-roam-directory (file-truename "~/org/roam")
       org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
       org-roam-dailies-directory "journal/") ;
-;; :custom
-;; (org-roam-completion-everywhere t) ;default t
-;; :bind (("C-c n l" . org-roam-buffer-toggle)
-;;        ("C-c n f" . org-roam-node-find)
-;;        ("C-c n i" . org-roam-node-insert)
-;;        ("C-c n c" . org-roam-capture)
-;; Dailies
-;; ("C-c n j" . org-roam-dailies-capture-today))
-;; :config
-;; (org-roam-db-autosync-enable))
+  ;; :custom
+  ;; (org-roam-completion-everywhere t) ;default t
+  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;;        ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ;; ("C-c n j" . org-roam-dailies-capture-today))
+  ;; :config
+  ;; (org-roam-db-autosync-enable))
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
   :custom
   ;; (require 'prot-org)
   (org-capture-templates '(
-                           ("e" "EMACs" plain
-                            (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
-                            "+ [ ] %?")
+          ("e" "EMACs" plain
+           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
+           "+ [ ] %?")
 
-                           ("n" "nixOs" plain
-                            (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
-                            "+ [ ] %?")
+          ("n" "nixOs" plain
+           (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
+           "+ [ ] %?")
 
-                           ("b" "Bucket List [ movies books youtube]") ; group 'em up
-                           ("bm" "movies" plain
-                            (file+headline "bucket-list.org" "Movies")
-                            "+ [ ] %?")
-                           ("bb" "books" plain
-                            (file+headline "bucket-list.org" "Books")
-                            "+ [ ] %?")
-                           ("by" "youtube" plain
-                            (file+headline "bucket-list.org" "YouTube")
-                            "+ [ ] %?")
+          ("b" "Bucket List [ movies books youtube]") ; group 'em up
+          ("bm" "movies" plain
+           (file+headline "bucket-list.org" "Movies")
+           "+ [ ] %?")
+          ("bb" "books" plain
+           (file+headline "bucket-list.org" "Books")
+           "+ [ ] %?")
+          ("by" "youtube" plain
+           (file+headline "bucket-list.org" "YouTube")
+           "+ [ ] %?")
 
-                           ("d" "Life's Morsels")
-                           ("dw" "words [w]" plain
-                            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
-                            "\n\n %?"
-                            :empty-lines 1
-                            :prepend t)
-                           ("di" "idioms [i]" plain
-                            (file+headline "diction.org" "Idioms")
-                            "+ %?"
-                            :empty-lines 1
-                            :prepend t)
-                           ("dq" "quotes [q]" plain
-                            (file+headline "diction.org" "Quotes")
-                            " %?"
-                            :empty-lines 1
-                            :prepend t)
-                           ("dp" "phrases [p]" plain
-                            (file+headline "diction.org" "Phrases")
-                            "+ %?"
-                            :empty-lines 1
-                            :prepend t))))
-
-;; ("d" "Demo Template" entry
-;;   (file+headline "demo.org" "Our first heading");relative to ~/org DIR
-;;   "* DEMO TEXT %?")
-
-;; ("o" "Options in prompt" entry
-;;  (file+headline "demo.org" "Our second heading")
-;;  "* %^{Select your option|ONE|TWO|THREE} %?")
-
-;;; capture region and insert into template ;; attach current time
-;; ("t" "Task with a date" entry
-;;  (file+headline "demo.org" "Scheduled tasks")
-;;  "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
-
-;; ("p" "Prompt for input: " entry
-;;     (file+headline "demo.org" "Our first +heading")
-;;     "* %^ %?")
-
-;; ("a" "A random template") ; group 'em up
-;;     ("at" "submenu - option [t]" entry
-;;      (file+headline "demo.org" "Scheduled tasks")
-;;      "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+          ("d" "Life's Morsels")
+          ("dw" "words [w]" plain
+           (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
+           "\n\n %?"
+           :empty-lines 1
+           :prepend t)
+          ("di" "idioms [i]" plain
+           (file+headline "diction.org" "Idioms")
+           "+ %?"
+           :empty-lines 1
+           :prepend t)
+          ("dq" "quotes [q]" plain
+           (file+headline "diction.org" "Quotes")
+           " %?"
+           :empty-lines 1
+           :prepend t)
+          ("dp" "phrases [p]" plain
+           (file+headline "diction.org" "Phrases")
+           "+ %?"
+           :empty-lines 1
+           :prepend t))))
 
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
@@ -408,16 +371,16 @@
         ("D" "Today's view"
          ((todo "WAIT"
                 ((org-agenda-overriding-header "Tasks on hold\n")))
-          (agenda ""
-                  ((org-agenda-block-separator nil) ;"*"
-                   (org-agenda-span 1) ;7:: how many days should it span
-                   (org-deadline-warning-days 0) ; remove warnings for events not for today
-                   ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
-                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
-                   ;; (org-agenda-fontify-priorities nil)
-                   (org-agenda-start-day nil)
-                   (org-agenda-overriding-header "\nDaily agenda view\n")))
-          ))
+         (agenda ""
+                 ((org-agenda-block-separator nil) ;"*"
+                  (org-agenda-span 1) ;7:: how many days should it span
+                  (org-deadline-warning-days 0) ; remove warnings for events not for today
+                  ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                  ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
+                  ;; (org-agenda-fontify-priorities nil)
+                  (org-agenda-start-day nil)
+                  (org-agenda-overriding-header "\nDaily agenda view\n")))
+         ))
         ("P" "Protesilaos"
          ,maluware-custom-org-daily-agenda)
         ))
