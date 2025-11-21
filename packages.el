@@ -1,20 +1,31 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
-;; (package! org-modern) ; TODO test if this necessary/workss
-;; (package! prettier)
 ;; (package! obsidian)
 (package! tldr)
-;; (package! lsp-pyright)
-(package! elpy)
+(package! all-the-icons) ;TODO add desc
 (package! elcord)
 ;; (package! wttrin)
+
+;;; ORG
 (package! olivetti)
+(package! org-super-agenda)
 ;; (package! jupyter)
 (package! org-auto-tangle)
-;;(package! qml-ts-mode)
+;; (package! qml-ts-mode)
 ;;(package! org-present)
 (package! drag-stuff)
-(package! all-the-icons) ;TODO add desc
+
+
+;;; LSP
+(package! elpy)
+;; (package! lsp-pyright)                  ;
+(package! blacken)
+;; (package! ein)
+;; (package! py-autopep8)
+(package! qml-ts-mode
+  :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
+;; (package! direnv)
+;; (package! prettier)
 ;; (package! spotify)
 ;; (package! emms-player-spotify)

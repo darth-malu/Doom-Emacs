@@ -8,6 +8,8 @@
 #+end_src
 
 * language major modes
+NOTE: if treesitter available the mode has an appended -ts-mode eg python-ts-mode
+
 ** emacs lsp booster
 #+begin_src emacs-lisp :tangle yes
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
@@ -41,52 +43,59 @@
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
-** python
-*** python-mode
-
-=ipython=
-#+begin_src elisp :tangle no
-  (setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt --no-color-info" )
+** python mode
+https://renzmann.github.io/posts/006_emacs_2_python/
+*** elpy
+#+begin_src emacs-lisp :tangle yes
+(use-package! elpy
+  :defer t
+  :init
+  (advice-add 'python-ts-mode :before 'elpy-enable)
+  :config
+  ;; (elpy-folding-fringe-indicators t)
+  ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide
+  ;; (elpy-mode . flycheck-mode)
+  ;;; Enable Flycheck
 #+end_src
 
-=jupyter=
-#+begin_src emacs-lisp :tangle yes
+*** ipython
+#+begin_src elisp :tangle yes
+(use-package! python
+  :custom
+  (python-shell-interpreter "ipython")
+  ;; (python-shell-interpreter-args "-i --simple-prompt" ) ; --no-color-info
+  ;; (python-shell-prompt-detect-failure-warning nil)
+  ;; :config
+  ;; (setq +python-ipython-repl-args '("-i" "--simple-prompt" "--no-color-info"))
+  ;; (setq +python-jupyter-repl-args '("--simple-prompt"))
+  :hook
+  (python-ts-mode . (lambda ()
+                   (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
+                   (setq +format-with 'black)
+                   (lsp-deferred)
+                   (local-set-key (kbd "C-c r") 'python-shell-send-region))))
+
+(setq lsp-pyright-langserver-command "basedpyright")
+#+end_src
+
+*** jupyter
+#+begin_src emacs-lisp :tangle no
 (use-package! python
   :config
   (setq python-shell-interpreter "jupyter"
         python-shell-interpreter-args "console --simple-prompt"
-        python-shell-prompt-detect-failure-warning nil
-        )
+        python-shell-prompt-detect-failure-warning nil)
   (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
-
   :hook
-  (python-mode . (lambda ()
+  (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                   ;; (require 'lsp-pyright)
                    (setq +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 #+end_src
 
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
-
-*** elpy
-#+begin_src emacs-lisp :tangle yes
-(use-package! elpy
-  :defer t
-  :init
-  (advice-add 'python-mode :before 'elpy-enable))
-;; :custom
-;; (elpy-folding-fringe-indicators t)
-;; (elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide (ANNOYING)
-;; :config
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(after! elpy
-  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide (ANNOYING)
-#+end_src
 
 ** Lsp Mode
 *** lsp ui
@@ -150,7 +159,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
 *** lsp treemacs
 #+begin_src emacs-lisp :tangle yes
 (use-package lsp-treemacs
-  :after lsp)
+  :after lsp)                           ; TODO check if need lsp or lsp-mode
 #+end_src
 *** lsp-mode
 #+begin_src emacs-lisp :tangle yes
@@ -159,8 +168,16 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
         lsp-enable-suggest-server-download nil))
 #+end_src
 ** c
-lsp mode with clangd
+*** ccls - ❄️
 #+begin_src elisp :tangle yes
+(after! ccls
+  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
+  (set-lsp-priority! 'ccls 1))
+#+end_src
+
+*** clang
+lsp mode with clangd
+#+begin_src elisp :tangle no
 (after! lsp-clangd
   (setq lsp-clients-clangd-args
         '("-j=3"
@@ -207,7 +224,9 @@ nil: An incremental analysis assistant for writing in Nix.
          ;; (setq company-idle-delay 0.1))
 #+end_src
 ** QML
-#+begin_src elisp :tangle no
+Quickshell site
+
+#+begin_src elisp :tangle yes
 (use-package qml-ts-mode
   :after lsp-mode
   :config
@@ -228,21 +247,30 @@ nil: An incremental analysis assistant for writing in Nix.
   :bind
   ("C-c n" . sharper-main-transient))
 #+end_src
+** direnv
+#+begin_src elisp :tangle no
+(use-package direnv
+ :config
+ (direnv-mode))
+#+end_src
 * DOOM functionality
 ** fonts
-
-change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly:][Link to my notes]]
+change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
 
 #+begin_src emacs-lisp :tangle yes
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
-                         :size (if (string-equal (system-name) "tangier") 15 15)
-                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
+                         :size 15
+                         :weight 'regular)
     doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 #+end_src
 
+=Useful conditionals=
+(if (string-equal (system-name) "tangier") 'regular 'regular))
+
+=Investigate=
 doom-unicode-font
 doom-serif-font
 
@@ -310,10 +338,14 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 #+begin_src elisp :tangle yes
 (use-package! emacs
   ;; :init
+  ;; Put Emacs auto-generated junk in a separate file
+  ;; (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  ;; (org-super-agenda-mode t)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion 'word-or-paren-or-punct)
+  (tab-first-completion 'word) ;'word-or-paren-or-punct)
+  ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
   ;; (auto-save-timeout 10)
@@ -545,30 +577,42 @@ unneeded since we use ws-butler which:
     (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
 )
 #+end_src
+** projectile
+#+begin_src elisp
+(use-package! projectile
+  :init
+  (setq projectile-projecect-search-path '(
+                                           "~/.code/PySide6"
+                                           "~/.code/GIT"
+                                           "~/.code/c"
+                                           "~/.code/scratch"))
+  :config
+  (setq projectile-auto-cleanup-known-projects nil) ;set to t to cleanup automatically
+  )
+
+#+end_src
 ** corfu
 not sure if after! init works lul
 
 #+begin_src elisp :tangle yes
 (use-package! corfu
-  ;; :config
-  ;; :custom
   :init
   (customize-set-variable 'corfu-auto nil))
-  ;; (corfu-auto nil))
 #+end_src
 
 #+begin_src emacs-lisp :tangle no
 (customize-set-variable 'corfu-auto nil)
 #+end_src
-  ;; (text-mode-ispell-word-completion nil)
 
-    ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+(text-mode-ispell-word-completion nil)
 
-  ;; commands are hidden, since they are not used via M-x. This setting is
+Hide commands in M-x which do not apply to the current mode.  Corfu
 
-  ;; useful beyond Corfu.
+commands are hidden, since they are not used via M-x. This setting is
 
-  ;; (read-extended-command-predicate #'command-completion-default-include-p)
+useful beyond Corfu.
+
+(read-extended-command-predicate #'command-completion-default-include-p)
 
 =tabs-always-indent=
 Enable indentation+completion using the TAB key.
@@ -597,10 +641,43 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 (setq ispell-local-dictionary "en_US")
 #+end_src
 
-*** spell-fu
-#+begin_src emacs-lisp :tangle yes
-(after! spell-fu
-  (setq spell-fu-idle-delay 0.5))  ; default is 0.25
+*** TODO spell-fu
+always activating in org mode...keep it as hook in [[ORG]]
+#+begin_src emacs-lisp :tangle no
+;; (after! spell-fu
+;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
+;;   ;; (setq spell-fu-faces nil)
+;;   (setq spell-fu-ignore-modes (list 'org-mode) )
+;;   )
+
+(use-package! spell-fu
+  ;;:defer t
+  :custom
+  (spell-fu-ignore-modes (list 'org-mode))
+  (spell-fu-global-ignore-buffer (lambda (buf)
+                                   (buffer-local-value 'buffer-read-only buf)))
+  :config
+  (spell-fu-global-mode -1)
+
+  :hook
+  ;; (emacs-lisp-mode . (lambda () (spell-fu-mode)))
+  (org-mode . (lambda ()
+              (setq-local spell-fu-faces-exclude
+                '(org-block-begin-line
+                  org-block-end-line
+                  org-code
+                  org-date
+                  org-drawer org-document-info-keyword
+                  org-ellipsis
+                  org-link
+                  org-meta-line
+                  org-properties
+                  org-properties-value
+                  org-special-keyword
+                  org-src
+                  org-tag
+                  org-verbatim))
+                  )))
 #+end_src
 
 =Exclude faces=
@@ -688,7 +765,7 @@ usage:
 source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 
 ** centaur tabs
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 (use-package! centaur-tabs
   :defer t
   ;; :demand ; for when you need it immediately
@@ -764,6 +841,8 @@ see also:
                                 ("FIXME"      error bold)
                                 ("NEVERDO"    warning bold)
                                 ("HACK"       font-lock-constant-face bold)
+                                ("SEEKGOD"       font-lock-constant-face bold)
+                                ("KESHO"       font-lock-constant-face bold)
                                 ("REVIEW"     font-lock-keyword-face bold)
                                 ("NOTE"       success bold)
                                 ("DEPRECATED" font-lock-doc-face bold))))
@@ -1117,19 +1196,22 @@ I recommend using eshell for light cli work, and using your external terminal em
   :init
   (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
         ;; org-default-notes-file (concat org-directory "/notes.org")
+        org-agenda-files (list org-directory)
         org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . (lambda ()
                 ;; (vi-tilde-fringe-mode -1)
-                (display-line-numbers-mode -1)
-                ;; (spell-fu-mode -1)
+                ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
+                (spell-fu-mode -1)
                 (diff-hl-mode -1)))
   :custom
   ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
   ;; (org-log-done 'note) ;task done with note prompted to user
+  (org-log-into-drawer t)
   (org-hide-emphasis-markers t)
+
   (org-tag-alist
       '(;;Places
         ("@home" . ?H)
@@ -1141,10 +1223,12 @@ I recommend using eshell for light cli work, and using your external terminal em
         ;;activites
         ("@work" . ?W)
         ("@pyrple" . ?P)
+        ("youtubr" . ?Y)
         ("@emacs" . ?E)
         ("@nix" . ?N)))
+
   (org-todo-keywords
-      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
@@ -1245,6 +1329,22 @@ org-bullets-face-name
 
 ** org-capture
 Capture lets you quickly store notes with no workflow interruption
+*** escape codes
+|------------------+-----------------------------------------------------------|
+| special =%= escape | does                                                      |
+|------------------+-----------------------------------------------------------|
+| =%a=               | annotation, normally the link created with org-store-link |
+| =%i=               | with active region selected, insert it at point           |
+| =%t=  =%T=           | timestamp, date only, or date and time                    |
+| =%^t=              | prompt for timestamp                                      |
+| =%u=  =%U=           | like above, but inactive timestamps                       |
+| =%?=               | after completing the template, position point here        |
+| =%^=               | input/prompt                                              |
+|------------------+-----------------------------------------------------------|
+**** time management
+dont have to select manually you can:
++ relative time +3d
+
 *** my org-capture-template
 
 #+begin_src emacs-lisp :tangle yes
@@ -1254,24 +1354,45 @@ Capture lets you quickly store notes with no workflow interruption
   ;; (require 'prot-org)
   (org-capture-templates '(
           ("e" "EMACs" plain
-           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
+           (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
            "+ [ ] %?")
 
+          ;; NixOs
           ("n" "nixOs" plain
-           (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
+           (file+headline "nixTODO.org" "TODO nixOs")
+           "+ [ ] %?"
+           :prepend t)
+
+          ("a" "App Ideas" plain
+           (file+headline "appsTODO.org" "TODO App Ideas")
+           "+ [ ] %?"
+           :prepend t)
+
+          ;; Quickshell
+          ("Q" "Quickshell + QML")
+          ("QQ" "Quickshell" plain
+           (file+headline "QuickshellTODO.org" "TODO Quickshell")
+           "+ [ ] %?")
+          ("QM" "QML" plain
+           (file+headline "QuickshellTODO.org" "TODO QML")
            "+ [ ] %?")
 
+          ;; Bucket List
           ("b" "Bucket List [ movies books youtube]") ; group 'em up
           ("bm" "movies" plain
            (file+headline "bucket-list.org" "Movies")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
           ("bb" "books" plain
            (file+headline "bucket-list.org" "Books")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
           ("by" "youtube" plain
            (file+headline "bucket-list.org" "YouTube")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
 
+          ;; Life's Morsels
           ("d" "Life's Morsels")
           ("dw" "words [w]" plain
            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
@@ -1385,22 +1506,6 @@ characters only  eg. 'a' or 'ab'
         `(("d" "default" plain ""
            :target (file+head "%<%Y-%m-%d>.org" ,(format "%%[%s/template/journal.org]" org-roam-directory))))))
 #+end_src
-*** escape codes
-|------------------+-----------------------------------------------------------|
-| special =%= escape | does                                                      |
-|------------------+-----------------------------------------------------------|
-| =%a=               | annotation, normally the link created with org-store-link |
-| =%i=               | with active region selected, insert it at point           |
-| =%t=  =%T=           | timestamp, date only, or date and time                    |
-| =%^t=              | prompt for timestamp                                      |
-| =%u=  =%U=           | like above, but inactive timestamps                       |
-| =%?=               | after completing the template, position point here        |
-| =%^=               | input/prompt                                              |
-|------------------+-----------------------------------------------------------|
-**** time management
-dont have to select manually you can:
-+ relative time +3d
-
 *** inspo
 **** howardism
 
@@ -1510,8 +1615,12 @@ source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturi
 
 ***** source?? - nice stuff
 # default location for capture mode?
-#+begin_src emacs-lisp :tangle no
-(setq org-agenda-files (list "inbox.org"))
+#+begin_src emacs-lisp :tangle yes
+(setq org-agenda-files
+      (list "~/org")
+      ;; '("~/org/agenda")
+      ;; (list "inbox.org")
+      )
 #+end_src
 then we can setup a specific capture template for inbox:
 
@@ -1545,29 +1654,105 @@ If you then press =t= from the capture menu, Org will prepare the template for y
 
 Doom Emacs sets (org-agenda-start-day "-3d").
 
-*** pro tech - my agenda :prot:
+*** custom agenda / maluware-org-agenda :prot:
 #+begin_src emacs-lisp :tangle yes
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
+
+;; (setq org-agenda-files (list "inbox.org"))
 
 (setq org-agenda-custom-commands
       `(
         ("D" "Today's view"
          ((todo "WAIT"
                 ((org-agenda-overriding-header "Tasks on hold\n")))
-         (agenda ""
-                 ((org-agenda-block-separator nil) ;"*"
-                  (org-agenda-span 1) ;7:: how many days should it span
-                  (org-deadline-warning-days 0) ; remove warnings for events not for today
-                  ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
-                  ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
-                  ;; (org-agenda-fontify-priorities nil)
-                  (org-agenda-start-day nil)
-                  (org-agenda-overriding-header "\nDaily agenda view\n")))
-         ))
+          (agenda ""
+                  ((org-agenda-block-separator nil) ;"*"
+                   (org-agenda-span 1) ;7:: how many days should it span
+                   (org-deadline-warning-days 0) ; remove warnings for events not for today
+                   ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
+                   ;; (org-agenda-fontify-priorities nil)
+                   (org-agenda-start-day nil)
+                   (org-agenda-overriding-header "\nDaily agenda view\n")))
+          ))
         ("P" "Protesilaos"
          ,maluware-custom-org-daily-agenda)
         ))
 #+end_src
+
+*** olivetti-mode
+#+begin_src emacs-lisp :tangle yes
+;; Function to be run when org-agenda is opened
+(defun org-agenda-open-hook()
+  "Hook to be run when org-agenda is opened"
+  (olivetti-mode))
+
+;; Adds hooks to org agenda mode, making follow mode active in org agenda
+(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
+#+end_src
+
+*** librephoenix
+
+#+begin_src elisp :tangle no
+;; Add icons!
+(setq org-agenda-category-icon-alist
+      `(("Teaching.p" ,(list (all-the-icons-faicon "graduation-cap" :height 0.8)) nil nil :ascent center)
+        ("Family.s" ,(list (all-the-icons-faicon "home" :v-adjust 0.005)) nil nil :ascent center)
+        ("Producer.p" ,(list (all-the-icons-faicon "youtube-play" :height 0.9)) nil nil :ascent center)
+        ("Bard.p" ,(list (all-the-icons-faicon "music" :height 0.9)) nil nil :ascent center)
+        ("Stories.s" ,(list (all-the-icons-faicon "book" :height 0.9)) nil nil :ascent center)
+        ("Author.p" ,(list (all-the-icons-faicon "pencil" :height 0.9)) nil nil :ascent center)
+        ("Gamedev.s" ,(list (all-the-icons-faicon "gamepad" :height 0.9)) nil nil :ascent center)
+        ("Knowledge.p" ,(list (all-the-icons-faicon "database" :height 0.8)) nil nil :ascent center)
+        ("Personal.p" ,(list (all-the-icons-material "person" :height 0.9)) nil nil :ascent center)
+))
+#+end_src
+
+=org super agenda=
+#+begin_src elisp :tangle no
+(setq org-super-agenda-groups
+       '(;; Each group has an implicit boolean OR operator between its selectors.
+
+         ;; This is the first filter, anything found here
+         ;; will be placed in this group
+         ;; even if it matches following groups
+         (:name " Overdue" ; Name
+                :scheduled past ; Filter criteria
+                :order 2 ; Order it should appear in agenda view
+                :face 'error) ; Font face used for text
+
+         ;; This is the second filter, anything not found
+         ;; from the first filter, but found here,
+         ;; will be placed in this group
+         ;; even if it matches following groups
+         (:name "Personal" ; Name
+                :file-path "Personal" ; Filter criteria
+                :order 3 ; Order it should appear in the agenda view
+                :face 'error) ; Font faced used for text
+
+         ;; Third filter..
+         (:name "Work"  ; Name
+                :file-path "Work" ; Filter criteria
+                :order 3 ; Order it should appear in the agenda view
+                :face 'error) ; Font face used for text
+
+         ;; Fourth filter..
+         (:name " Today "  ; Optionally specify section name
+                :time-grid t ; Use the time grid
+                :date today ; Filter criteria
+                :scheduled today ; Another filter criteria
+                :order 1 ; Order it should appear in the agenda view
+                :face 'warning) ; Font face used for text
+        )
+)
+#+end_src
+
++ start day defaults: "-3d".
++ today is '+0d'
++ org-agenda-span: 10::
+
+  org-agenda-date-today
+
 *** external variable files
 For neater/shorter presentation
 **** defvar maluware-org-custom-daily-agenda
@@ -1787,6 +1972,20 @@ For neater/shorter presentation
   (interactive)
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
+#+end_src
+** org-babel
+#+begin_src emacs-lisp :tangle yes
+(after! org
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (jupyter . t))))
+#+end_src
+* Deft
+#+begin_src elisp :tangle no
+(setq deft-directory "~/org/deft"
+      ;; deft-recursive t
+      deft-extensions '("org" "txt"))
 #+end_src
 * DOCS
 ** docs | old

@@ -31,50 +31,44 @@
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
-(use-package! python
+(use-package! elpy
+  :defer t
+  :init
+  (advice-add 'python-ts-mode :before 'elpy-enable)
   :config
-  (setq python-shell-interpreter "jupyter"
-        python-shell-interpreter-args "console --simple-prompt"
-        python-shell-prompt-detect-failure-warning nil
-        )
-  (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
+  ;; (elpy-folding-fringe-indicators t)
+  ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide
+  ;; (elpy-mode . flycheck-mode)
+  ;;; Enable Flycheck
 
+(use-package! python
+  :custom
+  (python-shell-interpreter "ipython")
+  ;; (python-shell-interpreter-args "-i --simple-prompt" ) ; --no-color-info
+  ;; (python-shell-prompt-detect-failure-warning nil)
+  ;; :config
+  ;; (setq +python-ipython-repl-args '("-i" "--simple-prompt" "--no-color-info"))
+  ;; (setq +python-jupyter-repl-args '("--simple-prompt"))
   :hook
-  (python-mode . (lambda ()
+  (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                   ;; (require 'lsp-pyright)
                    (setq +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
-(use-package! elpy
-  :defer t
-  :init
-  (advice-add 'python-mode :before 'elpy-enable))
-;; :custom
-;; (elpy-folding-fringe-indicators t)
-;; (elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide (ANNOYING)
-;; :config
-
-(after! elpy
-  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide (ANNOYING)
+(setq lsp-pyright-langserver-command "basedpyright")
 
 (use-package lsp-treemacs
-  :after lsp)
+  :after lsp)                           ; TODO check if need lsp or lsp-mode
 
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 
-(after! lsp-clangd
-  (setq lsp-clients-clangd-args
-        '("-j=3"
-          "--background-index"
-          "--clang-tidy"
-          "--completion-style=detailed"
-          "--header-insertion=never"
-          "--header-insertion-decorators=0"))
-  (set-lsp-priority! 'clangd 2))
+(after! ccls
+  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
+  (set-lsp-priority! 'ccls 1))
 
 (use-package! lsp-nix
   ;; :ensure lsp-mode
@@ -84,13 +78,25 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
+(use-package qml-ts-mode
+  :after lsp-mode
+  :config
+  (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
+                    :activation-fn (lsp-activate-on "qml-ts")
+                    :server-id 'qmlls))
+  (add-hook 'qml-ts-mode-hook (lambda ()
+                                (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
+                                (lsp-deferred))))
+
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
-                         :size (if (string-equal (system-name) "tangier") 15 15)
-                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
+                         :size 15
+                         :weight 'regular)
     doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
@@ -100,10 +106,14 @@
 
 (use-package! emacs
   ;; :init
+  ;; Put Emacs auto-generated junk in a separate file
+  ;; (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  ;; (org-super-agenda-mode t)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion 'word-or-paren-or-punct)
+  (tab-first-completion 'word) ;'word-or-paren-or-punct)
+  ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
   ;; (auto-save-timeout 10)
@@ -190,47 +200,8 @@
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
 (use-package! corfu
-  ;; :config
-  ;; :custom
   :init
   (customize-set-variable 'corfu-auto nil))
-  ;; (corfu-auto nil))
-
-(after! spell-fu
-  (setq spell-fu-idle-delay 0.5))  ; default is 0.25
-
-(use-package! centaur-tabs
-  :defer t
-  ;; :demand ; for when you need it immediately
-  ;; :init
-  ;; (setq centaur-tabs-mode nil)
-  ;; (centaur-tabs-change-fonts "arial" 112)
-  ;; (centaur-tabs-headline-match) ; FIXME does not work causes error
-  ;; (require 'projectile)
-  ;; (centaur-tabs-group-by-projectile-project) ; group tabs by projectile
-  :config
-  (setq centaur-tabs-set-bar nil ; left, over, under
-        centaur-tabs-style 'bar ;alternate, bar, box(x), wave, zigzag, chamfer FIXME...slant does not work
-        centaur-tabs-icon-type 'all-the-icons ; or nerd-icons
-        centaur-tabs-set-icons t
-        ;; centaur-tabs-close-button "X"
-        ;; centaur-tabs-modified-marker "•" - Also
-        ;; centaur-tabs-set-close-button nil
-        ;; centaur-tabs-plain-icons t ; for same color as text
-        ;; centaur-tabs-show-navigation-buttons t
-        centaur-tabs-gray-out-icons 'buffer
-        centaur-tabs-cycle-scope 'tabs ; default::, tabs , groups
-        centaur-tabs-height 15)
-  :hook (
-         ;; (nix-mode  . centaur-tabs-mode)
-         ;; (python-mode  . centaur-tabs-mode)
-         ;; (prog-mode  . centaur-tabs-mode)
-         (pdf-view-mode . centaur-tabs-local-mode)
-         (org-mode . centaur-tabs-local-mode)) ; no centaur tabs on org documents
-  :bind
-  (:map evil-normal-state-map
-        ("g t" . centaur-tabs-forward)
-        ("g T" . centaur-tabs-backward)))
 
 (use-package! org-auto-tangle
   :defer t
@@ -248,6 +219,8 @@
                                 ("FIXME"      error bold)
                                 ("NEVERDO"    warning bold)
                                 ("HACK"       font-lock-constant-face bold)
+                                ("SEEKGOD"       font-lock-constant-face bold)
+                                ("KESHO"       font-lock-constant-face bold)
                                 ("REVIEW"     font-lock-keyword-face bold)
                                 ("NOTE"       success bold)
                                 ("DEPRECATED" font-lock-doc-face bold))))
@@ -273,19 +246,22 @@
   :init
   (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
         ;; org-default-notes-file (concat org-directory "/notes.org")
+        org-agenda-files (list org-directory)
         org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . (lambda ()
                 ;; (vi-tilde-fringe-mode -1)
-                (display-line-numbers-mode -1)
-                ;; (spell-fu-mode -1)
+                ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
+                (spell-fu-mode -1)
                 (diff-hl-mode -1)))
   :custom
   ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
   ;; (org-log-done 'note) ;task done with note prompted to user
+  (org-log-into-drawer t)
   (org-hide-emphasis-markers t)
+
   (org-tag-alist
       '(;;Places
         ("@home" . ?H)
@@ -297,10 +273,12 @@
         ;;activites
         ("@work" . ?W)
         ("@pyrple" . ?P)
+        ("youtubr" . ?Y)
         ("@emacs" . ?E)
         ("@nix" . ?N)))
+
   (org-todo-keywords
-      '((sequence "TODO" "WORKING"  "|" "DONE" "CONSIDER"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
@@ -326,24 +304,45 @@
   ;; (require 'prot-org)
   (org-capture-templates '(
           ("e" "EMACs" plain
-           (file+headline "EmacsTODO.org" "TONEVERDO list - emacs [/]")
+           (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
            "+ [ ] %?")
 
+          ;; NixOs
           ("n" "nixOs" plain
-           (file+headline "nixTODO.org" "TONEVERDO nixOs [/]")
+           (file+headline "nixTODO.org" "TODO nixOs")
+           "+ [ ] %?"
+           :prepend t)
+
+          ("a" "App Ideas" plain
+           (file+headline "appsTODO.org" "TODO App Ideas")
+           "+ [ ] %?"
+           :prepend t)
+
+          ;; Quickshell
+          ("Q" "Quickshell + QML")
+          ("QQ" "Quickshell" plain
+           (file+headline "QuickshellTODO.org" "TODO Quickshell")
+           "+ [ ] %?")
+          ("QM" "QML" plain
+           (file+headline "QuickshellTODO.org" "TODO QML")
            "+ [ ] %?")
 
+          ;; Bucket List
           ("b" "Bucket List [ movies books youtube]") ; group 'em up
           ("bm" "movies" plain
            (file+headline "bucket-list.org" "Movies")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
           ("bb" "books" plain
            (file+headline "bucket-list.org" "Books")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
           ("by" "youtube" plain
            (file+headline "bucket-list.org" "YouTube")
-           "+ [ ] %?")
+           "+ [ ] %?"
+           :prepend t)
 
+          ;; Life's Morsels
           ("d" "Life's Morsels")
           ("dw" "words [w]" plain
            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
@@ -366,23 +365,45 @@
            :empty-lines 1
            :prepend t))))
 
+(setq org-agenda-files
+      (list "~/org")
+      ;; '("~/org/agenda")
+      ;; (list "inbox.org")
+      )
+
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
+
+;; (setq org-agenda-files (list "inbox.org"))
 
 (setq org-agenda-custom-commands
       `(
         ("D" "Today's view"
          ((todo "WAIT"
                 ((org-agenda-overriding-header "Tasks on hold\n")))
-         (agenda ""
-                 ((org-agenda-block-separator nil) ;"*"
-                  (org-agenda-span 1) ;7:: how many days should it span
-                  (org-deadline-warning-days 0) ; remove warnings for events not for today
-                  ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
-                  ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
-                  ;; (org-agenda-fontify-priorities nil)
-                  (org-agenda-start-day nil)
-                  (org-agenda-overriding-header "\nDaily agenda view\n")))
-         ))
+          (agenda ""
+                  ((org-agenda-block-separator nil) ;"*"
+                   (org-agenda-span 1) ;7:: how many days should it span
+                   (org-deadline-warning-days 0) ; remove warnings for events not for today
+                   ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
+                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
+                   ;; (org-agenda-fontify-priorities nil)
+                   (org-agenda-start-day nil)
+                   (org-agenda-overriding-header "\nDaily agenda view\n")))
+          ))
         ("P" "Protesilaos"
          ,maluware-custom-org-daily-agenda)
         ))
+
+;; Function to be run when org-agenda is opened
+(defun org-agenda-open-hook()
+  "Hook to be run when org-agenda is opened"
+  (olivetti-mode))
+
+;; Adds hooks to org agenda mode, making follow mode active in org agenda
+(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
+
+(after! org
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (jupyter . t))))

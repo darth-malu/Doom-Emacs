@@ -19,7 +19,7 @@
        (vertico +icons)           ; the search engine of the future
 
 :ui
-       deft              ; notational velocity for Emacs
+       ;; deft              ; notational velocity for Emacs
        doom              ; what makes DOOM look the way it does
        doom-dashboard    ; a nifty splash screen for Emacs
        ;; doom-quit         ; DOOM quit-message prompts when you quit Emacs
@@ -35,7 +35,7 @@
        ;; neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on ; TODO read further
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
-       tabs              ; a tab bar for Emacs
+       ;; tabs              ; a tab bar for Emacs
        (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
        ;; unicode           ; extended unicode support for various languages NOTE can cause issues with ligatures
        (vc-gutter +pretty) ; vcs diff in the fringe
@@ -75,11 +75,9 @@
        vterm             ; the best terminal emulation in Emacs
 
 :checkers
-       ;; syntax              ; tasing you for every semicolon you forget
-       (syntax +icons +childframe) ;TODO test if childframe needed and difference in behaviour
-       ;; (spell +hunspell) ; tasing you for misspelling mispelling
-       ;; spell
-       ;; grammar           ; tasing grammar mistake every you make
+       (syntax +icons +childframe) ; tasing you for every semicolon you forget ;TODO test if childframe needed and difference in behaviour
+       (spell +aspell)
+       grammar           ; tasing grammar mistake every you make
 
 :tools
 ;;editorconfig      ; let someone else argue about tabs vs spaces TODO test this
@@ -126,7 +124,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
        ;; lua               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML
-       qt                ; the 'cutest' gui framework ever
+       (qt +lsp +tree-sitter)                ; the 'cutest' gui framework ever
        yaml              ; JSON, but readable
 
 :email
