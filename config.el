@@ -38,9 +38,14 @@
   :config
   ;; (elpy-folding-fringe-indicators t)
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide
-  ;; (elpy-mode . flycheck-mode)
-  ;;; Enable Flycheck
+  ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
+  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (setq elpy-modules (cl-set-difference
+                      elpy-modules
+                      '(elpy-module-highlight-indentation
+                        elpy-module-flymake)))
+  :hook
+  (elpy-mode . flycheck-mode))
 
 (use-package! python
   :custom
@@ -60,7 +65,7 @@
 (setq lsp-pyright-langserver-command "basedpyright")
 
 (use-package lsp-treemacs
-  :after lsp)                           ; TODO check if need lsp or lsp-mode
+  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
@@ -98,11 +103,43 @@
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
+(defun darth-select-window (window)
+    "NOTE Docuementation expects a window arg"
+    (select-window window))
+
+(add-to-list 'display-buffer-alist '(
+        ;; List of display functions (Emacs will use the first successful one)
+        ("\\*Occur\\*"
+        (display-buffer-reuse-mode-window
+         display-buffer-below-selected)
+        ;; Parameters
+        (window-height . fit-window-to-buffer)
+        (dedicated . t)
+        (body-function . darth-select-window))
+
+        ;; ((derived-mode . notmuch-hello-mode)
+         ;; List of functions
+         ;; Parameters
+         ;; )
+))
+
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
+
+(setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
+      lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
+
+(setq backup-directory-alist '(("." . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
+;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs")) ;default is in .emacs dir cache
+
+;; Auto-save-mode doesn't create the path automatically!
+(make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
+
+(setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
+      auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
 
 (use-package! emacs
   ;; :init
@@ -112,7 +149,7 @@
   ;; (org-super-agenda-mode t)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion 'word) ;'word-or-paren-or-punct)
+  (tab-first-completion 'word) ;; word 'word-or-paren-or-punct)
   ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
@@ -155,7 +192,8 @@
   ;; (vi-tilde-fringe-mode -1)
 
   :bind
-  (:map evil-normal-state-map
+  ((
+   :map evil-normal-state-map
         ;;;misc
         ("M-;" . save-buffer)
         ("<mouse-8>" . previous-buffer)
@@ -170,7 +208,11 @@
 
         ;;; insert newline below/above
         ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)))
+        ("M-O" . +evil/insert-newline-above)
+    :map doom-leader-map ("to" . hl-todo-occur)
+    ) ; bind conses
+    ); end bind
+  )
 ;; ("U" . evil-redo)
 
 (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
@@ -199,9 +241,18 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
+(use-package! projectile
+  :init
+  (setq projectile-project-search-path '("~/.code/"))
+  :custom
+  (projectile-auto-cleanup-known-projects nil))
+
 (use-package! corfu
   :init
   (customize-set-variable 'corfu-auto nil))
+
+(use-package! evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (use-package! org-auto-tangle
   :defer t
@@ -238,10 +289,6 @@
 (use-package! all-the-icons
   :if (display-graphic-p))
 
-(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
-
-(setq eros-eval-result-prefix "⟹ ") ; default =>
-
 (use-package! org
   :init
   (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
@@ -252,8 +299,13 @@
   (org-mode . (lambda ()
                 ;; (vi-tilde-fringe-mode -1)
                 ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
+                (abbrev-mode)
                 (spell-fu-mode -1)
                 (diff-hl-mode -1)))
+  :config
+  (defun my-current-time ()
+    (insert (format-time-string "%A,%B %e%t%T")))
+  (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
   :custom
   ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
@@ -303,67 +355,79 @@
   :custom
   ;; (require 'prot-org)
   (org-capture-templates '(
-          ("e" "EMACs" plain
-           (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
-           "+ [ ] %?")
+                           ("e" "EMACs" plain
+                            (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
+                            "+ [ ] %?")
 
-          ;; NixOs
-          ("n" "nixOs" plain
-           (file+headline "nixTODO.org" "TODO nixOs")
-           "+ [ ] %?"
-           :prepend t)
+                           ;; NixOs
+                           ("n" "nixOs" plain
+                            (file+headline "nixTODO.org" "TODO nixOs")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ("a" "App Ideas" plain
-           (file+headline "appsTODO.org" "TODO App Ideas")
-           "+ [ ] %?"
-           :prepend t)
+                           ("a" "App Ideas" plain
+                            (file+headline "appsTODO.org" "TODO App Ideas")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ;; Quickshell
-          ("Q" "Quickshell + QML")
-          ("QQ" "Quickshell" plain
-           (file+headline "QuickshellTODO.org" "TODO Quickshell")
-           "+ [ ] %?")
-          ("QM" "QML" plain
-           (file+headline "QuickshellTODO.org" "TODO QML")
-           "+ [ ] %?")
+                           ;; Quickshell
+                           ("Q" "Quickshell + QML")
+                           ("QQ" "Quickshell" plain
+                            (file+headline "QuickshellTODO.org" "TODO Quickshell")
+                            "+ [ ] %?")
+                           ("QM" "QML" plain
+                            (file+headline "QuickshellTODO.org" "TODO QML")
+                            "+ [ ] %?")
 
-          ;; Bucket List
-          ("b" "Bucket List [ movies books youtube]") ; group 'em up
-          ("bm" "movies" plain
-           (file+headline "bucket-list.org" "Movies")
-           "+ [ ] %?"
-           :prepend t)
-          ("bb" "books" plain
-           (file+headline "bucket-list.org" "Books")
-           "+ [ ] %?"
-           :prepend t)
-          ("by" "youtube" plain
-           (file+headline "bucket-list.org" "YouTube")
-           "+ [ ] %?"
-           :prepend t)
+                           ;; Bucket List
+                           ("b" "Bucket List [ movies books youtube]") ; group 'em up
+                           ("bm" "movies" plain
+                            (file+headline "bucket-list.org" "Movies")
+                            "+ [ ] %?"
+                            :prepend t)
+                           ("bb" "books" plain
+                            (file+headline "bucket-list.org" "Books")
+                            "+ [ ] %?"
+                            :prepend t)
+                           ("by" "youtube" plain
+                            (file+headline "bucket-list.org" "YouTube")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ;; Life's Morsels
-          ("d" "Life's Morsels")
-          ("dw" "words [w]" plain
-           (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
-           "\n\n %?"
-           :empty-lines 1
-           :prepend t)
-          ("di" "idioms [i]" plain
-           (file+headline "diction.org" "Idioms")
-           "+ %?"
-           :empty-lines 1
-           :prepend t)
-          ("dq" "quotes [q]" plain
-           (file+headline "diction.org" "Quotes")
-           " %?"
-           :empty-lines 1
-           :prepend t)
-          ("dp" "phrases [p]" plain
-           (file+headline "diction.org" "Phrases")
-           "+ %?"
-           :empty-lines 1
-           :prepend t))))
+                           ;; Learning New Languages
+                           ("l" "Programming Languages")
+                           ("lp" "Python" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
+                            "+ [ ] %?")
+                           ("lc" "C" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO C")
+                            "+ [ ] %?")
+                           ("ln" "Nix" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
+                            "+ [ ] %?")
+
+                           ;; Life's Morsels
+                           ("d" "Life's Morsels")
+                           ("dw" "words [w]" plain
+                            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
+                            "\n\n %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("di" "idioms [i]" plain
+                            (file+headline "diction.org" "Idioms")
+                            "+ %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("dq" "quotes [q]" plain
+                            (file+headline "diction.org" "Quotes")
+                            " %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("dp" "phrases [p]" plain
+                            (file+headline "diction.org" "Phrases")
+                            "+ %?"
+                            :empty-lines 1
+                            :prepend t))))
 
 (setq org-agenda-files
       (list "~/org")
@@ -407,3 +471,7 @@
  'org-babel-load-languages
  '((emacs-lisp . t)
    (jupyter . t))))
+
+(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
+
+(setq eros-eval-result-prefix "⟹ ") ; default =>

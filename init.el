@@ -69,7 +69,7 @@
        vc                ; version-control and Emacs, sitting in a tree
 
 :term
-       ;; eshell            ; the elisp shell that works everywhere
+       eshell            ; the elisp shell that works everywhere
        ;; shell             ; simple shell REPL for Emacs
        ;; term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
@@ -119,7 +119,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
        (sh +lsp +tree-sitter)                ; she sells {ba,z,fi}sh shells on the C xor
        (web +lsp +tree-sitter)               ; the tubes
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
-       ;; data              ; config/data formats - csv/xml
+       data              ; config/data formats - csv/xml
        ;; latex             ; writing papers in Emacs has never been so fun
        ;; lua               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses

@@ -54,9 +54,14 @@ https://renzmann.github.io/posts/006_emacs_2_python/
   :config
   ;; (elpy-folding-fringe-indicators t)
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules))) ; disable elpy indentation guide
-  ;; (elpy-mode . flycheck-mode)
-  ;;; Enable Flycheck
+  ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
+  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (setq elpy-modules (cl-set-difference
+                      elpy-modules
+                      '(elpy-module-highlight-indentation
+                        elpy-module-flymake)))
+  :hook
+  (elpy-mode . flycheck-mode))
 #+end_src
 
 *** ipython
@@ -159,7 +164,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
 *** lsp treemacs
 #+begin_src emacs-lisp :tangle yes
 (use-package lsp-treemacs
-  :after lsp)                           ; TODO check if need lsp or lsp-mode
+  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 #+end_src
 *** lsp-mode
 #+begin_src emacs-lisp :tangle yes
@@ -279,6 +284,46 @@ doom-serif-font
 #+begin_src emacs-lisp :tangle no
 (set-font-ligatures! '(org-mode) ">>=" ">>-")
 #+end_src
+** Inbuilt stuff
+*** abbrev
+
+NOTE need to toggle abbrev mode
+
+abbrev mode is buffer-local
+
+#+begin_src emacs-lisp :tangle no
+(define-abbrev global-abbrev-table "meab" "This is my first abbrev")
+#+end_src
+*** buffer location in window | display-buffer-alist
+
+Anatomy of an entry
+( BUFFER-MATCHER
+LIST-OF-DISPLAY-FUNCTIONS
+&optional PARAMETERS)
+
+#+begin_src emacs-lisp :tangle yes
+(defun darth-select-window (window)
+    "NOTE Docuementation expects a window arg"
+    (select-window window))
+
+(add-to-list 'display-buffer-alist '(
+        ;; List of display functions (Emacs will use the first successful one)
+        ("\\*Occur\\*"
+        (display-buffer-reuse-mode-window
+         display-buffer-below-selected)
+        ;; Parameters
+        (window-height . fit-window-to-buffer)
+        (dedicated . t)
+        (body-function . darth-select-window))
+
+        ;; ((derived-mode . notmuch-hello-mode)
+         ;; List of functions
+         ;; Parameters
+         ;; )
+))
+#+end_src
+
+
 ** modeline
 *** Active | Inactive
 works !!...height too small thought :height 0.9
@@ -308,10 +353,10 @@ works !!...height too small thought :height 0.9
   (setq doom-modeline-battery nil))
 #+end_src
 
-** folder clean up
+** folder clean up | projectile
 Projectile, lsp-mode, and other packages create their own files to store variables and state!
 
-#+begin_src elisp
+#+begin_src elisp :tangle yes
 (setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
       lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
 
@@ -319,7 +364,7 @@ Projectile, lsp-mode, and other packages create their own files to store variabl
 ;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs")) ;default is in .emacs dir cache
 #+end_src
 
-#+begin_src elisp
+#+begin_src elisp :tangle yes
 ;; Auto-save-mode doesn't create the path automatically!
 (make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
 
@@ -344,7 +389,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (org-super-agenda-mode t)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion 'word) ;'word-or-paren-or-punct)
+  (tab-first-completion 'word) ;; word 'word-or-paren-or-punct)
   ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
@@ -387,7 +432,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (vi-tilde-fringe-mode -1)
 
   :bind
-  (:map evil-normal-state-map
+  ((
+   :map evil-normal-state-map
         ;;;misc
         ("M-;" . save-buffer)
         ("<mouse-8>" . previous-buffer)
@@ -402,7 +448,11 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 
         ;;; insert newline below/above
         ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)))
+        ("M-O" . +evil/insert-newline-above)
+    :map doom-leader-map ("to" . hl-todo-occur)
+    ) ; bind conses
+    ); end bind
+  )
 ;; ("U" . evil-redo)
 #+end_src
 
@@ -411,40 +461,10 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
 #+end_src
 
-+ =Docs=
-  Reverting a Buffer:
-  The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
-    + You've made changes in Emacs but want to discard them and return to the saved version.
-    + Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
-
-  Auto Revert Mode:
-  Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
-    + Viewing log files that are constantly being updated.
-    + Keeping your Emacs buffer synchronized with files modified by other applications.
-
 ** format +onsave disabled modes
 #+begin_src emacs-lisp :tangle yes
 (customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
 #+end_src
-** buffer location in window
-#+begin_src emacs-lisp :tangle no
-(setq display-buffer-alist
-      '(
-        ;; Anatomy of an entry
-        ;; ( BUFFER-MATCHER
-        ;;  LIST-OF-DISPLAY-FUNCTIONS
-        ;;  &optional PARAMETERS)
-
-        ("\\*Occur\\*"
-        (display-buffer-reuse-mode-window
-         display-buffer-below-selected)
-
-        (window-height . fit-window-to-buffer)
-        (dedicated . t)
-
-        )))
-#+end_src
-
 ** delete spaces, tabs, newline
 #+begin_src emacs-lisp :tangle yes
 (setq backward-delete-char-untabify-method 'all)
@@ -578,18 +598,12 @@ unneeded since we use ws-butler which:
 )
 #+end_src
 ** projectile
-#+begin_src elisp
+#+begin_src elisp :tangle yes
 (use-package! projectile
   :init
-  (setq projectile-projecect-search-path '(
-                                           "~/.code/PySide6"
-                                           "~/.code/GIT"
-                                           "~/.code/c"
-                                           "~/.code/scratch"))
-  :config
-  (setq projectile-auto-cleanup-known-projects nil) ;set to t to cleanup automatically
-  )
-
+  (setq projectile-project-search-path '("~/.code/"))
+  :custom
+  (projectile-auto-cleanup-known-projects nil))
 #+end_src
 ** corfu
 not sure if after! init works lul
@@ -703,8 +717,8 @@ always activating in org mode...keep it as hook in [[ORG]]
                             ))
 #+end_src
 ** evil-nerd-commenter | better comments
-#+begin_src elisp
-(use-package evil-nerd-commenter
+#+begin_src elisp :tangle yes
+(use-package! evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 
@@ -716,55 +730,72 @@ always activating in org mode...keep it as hook in [[ORG]]
   (dired-async-mode 1)) ;Do dired actions asynchronously.
 #+end_src
 
-** company
-#+begin_src elisp :tangle no
-;; (after! company
-(use-package! company
-  ;; :after lsp-mode
-  ;; :hook
-  ;; (lsp-mode . company-mode)
-  ;; (evil-normal-state-entry #'company-abort )
-  ;; (after-init 'global-company-mode)
+** org-auto-tangle
+#+begin_src emacs-lisp :tangle yes
+(use-package! org-auto-tangle
   :defer t
-  :custom
-  (company-idle-delay (lambda () (if (company-in-string-or-comment) nil 0.3))) ; delay in seconds 0.3;;
-  ;; (company-idle-delay 0.0)
-  (company-minimum-prefix-length 2)
-  (company-selection-wrap-around t)
-  (company-show-numbers t)
-  (company-require-match 'never) ; dont need to pick a choice
-  (company-tooltip-limit 6)
-  :bind
-  (:map company-active-map
-        ;; ("<tab>" . company-complete-selection)
-        ;; ("<tab>" . company-select-next-or-abort)
-        ;; ("<tab>" . company-select-next)
-        ;; ("backtab" . company-select-previous)
-        ("RET" . company-complete-selection)
-        ("<escape>" . company-abort)))
+  :hook (org-mode . org-auto-tangle-mode)
+  ;; :hook (org-src-mode . org-auto-tangle-mode)
+  :config
+  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
+  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
 #+end_src
 
-Company is a text and code completion framework for Emacs. The name stands for "complete anything".
+[[github:yilkalargaw/org-auto-tangle]]
 
-It uses pluggable back-ends and front-ends to retrieve and display completion candidates.
+** highlight TODO
+#+begin_src emacs-lisp :tangle yes
+(use-package! hl-todo
+  :hook (org-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces `(("TODO"       warning bold)
+                                ("FIXME"      error bold)
+                                ("NEVERDO"    warning bold)
+                                ("HACK"       font-lock-constant-face bold)
+                                ("SEEKGOD"       font-lock-constant-face bold)
+                                ("KESHO"       font-lock-constant-face bold)
+                                ("REVIEW"     font-lock-keyword-face bold)
+                                ("NOTE"       success bold)
+                                ("DEPRECATED" font-lock-doc-face bold))))
+#+end_src
+** electric
+#+begin_src emacs-lisp :tangle no
+(setq electric-pair-pairs '(
+                            (?\{ . ?\})
+                            (?\( . ?\))
+                            (?\[ . ?\])
+                            (?\" . ?\")
+                            ))
+;; (electric-indent-mode -1) ; on::
+  ;; (electric-pair-mode 1) ; on by default
+#+end_src
+***** TODO test further
+** elcord
+#+begin_src emacs-lisp :tangle yes
+(use-package! elcord
+  ;; :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  ;; (elcord-mode 1)
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t))
+#+end_src
 
-It comes with several back-ends such as Clang, Ispell, CMake, BBDB, Yasnippet, Dabbrev, Etags, Gtags, Files, Keywords and others.
-And the CAPF back-end provides a bridge to the standard completion-at-point-functions facility, and thus works with any major mode that uses the common protocol.
+** all the icons
+#+begin_src elisp :tangle yes
+(use-package! all-the-icons
+  :if (display-graphic-p))
+#+end_src
 
-To see or change the list of enabled back-ends, type M-x =customize-variable= RET company-backends. Also see its description for information on writing a back-end.
-
-Once installed, enable company-mode with M-x =company-mode=.
-
-usage:
-|-----------------------+------------------------------------------------------|
-| =C-n / C-p=             | up / down                                            |
-| =C-s C-r C-o=           | search through completions                           |
-| =M-<digit>=             | quickly complete with one of the first 10 candidates |
-| =M-x: company-complete= | to initiate completion manually                      |
-|-----------------------+------------------------------------------------------|
-source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
-
-** centaur tabs
+#+begin_src emacs-lisp :tangle no
+(use-package! all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
+** old | phased out
+*** centaur tabs
 #+begin_src elisp :tangle no
 (use-package! centaur-tabs
   :defer t
@@ -818,48 +849,7 @@ see also:
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#buffer-groups
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
 
-** org-auto-tangle
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
-  ;; :hook (org-src-mode . org-auto-tangle-mode)
-  :config
-  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
-  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
-#+end_src
-
-[[github:yilkalargaw/org-auto-tangle]]
-
-** highlight TODO
-#+begin_src emacs-lisp :tangle yes
-(use-package! hl-todo
-  :hook (org-mode . hl-todo-mode)
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces `(("TODO"       warning bold)
-                                ("FIXME"      error bold)
-                                ("NEVERDO"    warning bold)
-                                ("HACK"       font-lock-constant-face bold)
-                                ("SEEKGOD"       font-lock-constant-face bold)
-                                ("KESHO"       font-lock-constant-face bold)
-                                ("REVIEW"     font-lock-keyword-face bold)
-                                ("NOTE"       success bold)
-                                ("DEPRECATED" font-lock-doc-face bold))))
-#+end_src
-** electric
-#+begin_src emacs-lisp :tangle no
-(setq electric-pair-pairs '(
-                            (?\{ . ?\})
-                            (?\( . ?\))
-                            (?\[ . ?\])
-                            (?\" . ?\")
-                            ))
-;; (electric-indent-mode -1) ; on::
-  ;; (electric-pair-mode 1) ; on by default
-#+end_src
-***** TODO test further
-** ultra-scroll
+*** ultra-scroll
 
 #+begin_src emacs-lisp :tangle no
 (use-package! ultra-scroll
@@ -883,30 +873,54 @@ Shouldn't emacs be like this?
 
 If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
 
-** elcord
-#+begin_src emacs-lisp :tangle yes
-(use-package! elcord
-  ;; :commands elcord-mode
+*** company
+#+begin_src elisp :tangle no
+;; (after! company
+(use-package! company
+  ;; :after lsp-mode
+  ;; :hook
+  ;; (lsp-mode . company-mode)
+  ;; (evil-normal-state-entry #'company-abort )
+  ;; (after-init 'global-company-mode)
+  :defer t
   :custom
-  (elcord-display-elapsed nil)
-  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
-  :config
-  ;; (elcord-mode 1)
-  (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t))
+  (company-idle-delay (lambda () (if (company-in-string-or-comment) nil 0.3))) ; delay in seconds 0.3;;
+  ;; (company-idle-delay 0.0)
+  (company-minimum-prefix-length 2)
+  (company-selection-wrap-around t)
+  (company-show-numbers t)
+  (company-require-match 'never) ; dont need to pick a choice
+  (company-tooltip-limit 6)
+  :bind
+  (:map company-active-map
+        ;; ("<tab>" . company-complete-selection)
+        ;; ("<tab>" . company-select-next-or-abort)
+        ;; ("<tab>" . company-select-next)
+        ;; ("backtab" . company-select-previous)
+        ("RET" . company-complete-selection)
+        ("<escape>" . company-abort)))
 #+end_src
 
-** all the icons
-#+begin_src elisp :tangle yes
-(use-package! all-the-icons
-  :if (display-graphic-p))
-#+end_src
+Company is a text and code completion framework for Emacs. The name stands for "complete anything".
 
-#+begin_src emacs-lisp :tangle no
-(use-package! all-the-icons-dired
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
-#+end_src
-** old | phased out
+It uses pluggable back-ends and front-ends to retrieve and display completion candidates.
+
+It comes with several back-ends such as Clang, Ispell, CMake, BBDB, Yasnippet, Dabbrev, Etags, Gtags, Files, Keywords and others.
+And the CAPF back-end provides a bridge to the standard completion-at-point-functions facility, and thus works with any major mode that uses the common protocol.
+
+To see or change the list of enabled back-ends, type M-x =customize-variable= RET company-backends. Also see its description for information on writing a back-end.
+
+Once installed, enable company-mode with M-x =company-mode=.
+
+usage:
+|-----------------------+------------------------------------------------------|
+| =C-n / C-p=             | up / down                                            |
+| =C-s C-r C-o=           | search through completions                           |
+| =M-<digit>=             | quickly complete with one of the first 10 candidates |
+| =M-x: company-complete= | to initiate completion manually                      |
+|-----------------------+------------------------------------------------------|
+source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
+
 *** obsidian
 #+begin_src emacs-lisp :tangle no
 (setq obsidian-directory "~/OBSIDIAN")
@@ -973,161 +987,12 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
   (dashboard-setup-startup-hook))
 #+end_src
 
-* Justin-VC tech :justin:
-** dashboard / misc
-#+begin_src emacs-lisp :tangle no
-(defun +doom-dashboard-setup-modified-keymap ()
-  (setq +doom-dashboard-mode-map (make-sparse-keymap))
-  (map! :map +doom-dashboard-mode-map
-        :desc "Find file" :ne "f" #'find-file
-        :desc "Recent files" :ne "r" #'consult-recent-file
-        :desc "Config dir" :ne "C" #'doom/open-private-config
-        :desc "Open config.org" :ne "c" (cmd! (find-file (expand-file-name "config.org" doom-private-dir)))
-        :desc "Notes (roam)" :ne "n" #'org-roam-node-find
-        :desc "Search (roam)" :ne "N" #'justin/org-roam-rg-search
-        :desc "Switch buffer" :ne "b" #'+vertico/switch-workspace-buffer
-        :desc "Switch buffers (all)" :ne "B" #'consult-buffer
-        :desc "IBuffer" :ne "i" #'ibuffer
-        :desc "Agenda"  :ne "o" #'org-agenda
-        :desc "Previous buffer" :ne "p" #'previous-buffer
-        :desc "Set theme" :ne "t" #'consult-theme
-        :desc "Quit" :ne "Q" #'save-buffers-kill-terminal
-        :desc "Show keybindings" :ne "h" (cmd! (which-key-show-keymap '+doom-dashboard-mode-map))))
-
-(add-transient-hook! #'+doom-dashboard-mode (+doom-dashboard-setup-modified-keymap))
-(add-transient-hook! #'+doom-dashboard-mode :append (+doom-dashboard-setup-modified-keymap))
-(add-hook! 'doom-init-ui-hook :append (+doom-dashboard-setup-modified-keymap))
+*** Deft
+#+begin_src elisp :tangle no
+(setq deft-directory "~/org/deft"
+      ;; deft-recursive t
+      deft-extensions '("org" "txt"))
 #+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(map! :n [mouse-8] #'better-jumper-jump-backward
-      :n [mouse-9] #'better-jumper-jump-forward)
-#+end_src
-
-** splash images
-#+begin_src emacs-lisp :tangle no
-(use-package random-splash-image
-  :config
-  (setq random-splash-image-dir (concat (getenv "HOME") "/.doom.d/misc/splash-images"))
-  (unless (file-directory-p random-splash-image-dir)
-  (make-directory random-splash-image-dir t))
-  (random-splash-image-set))
-#+end_src
-** eval better arrows
-#+begin_src emacs-lisp :tangle yes
-(setq eros-eval-result-prefix "⟹ ") ; default =>
-#+end_src
-** GPT things
-#+begin_src emacs-lisp :tangle no
-(use-package! gptel
-  :config
-  (setq gptel-model "llama3:latest"
-        gptel-org-branching-context t)
-
-  (setq gptel-backend
-        (gptel-make-ollama "Ollama"
-                           :host "192.168.1.9:11434"
-                           :stream t
-                           :models '("llama3:latest"))))
-
-(use-package! gptel-quick
-  :after gptel
-  :config
-  ;; Add any gptel-quick specific configuration here
-  )
-
-;; Key bindings
-(map! :leader
-      (:prefix ("l" . "LLM")
-       :desc "Quick GPTel" "q" #'gptel-quick
-       :desc "Start GPTel" "s" #'gptel
-       :desc "Send to GPTel" "S" #'gptel-send))
-#+end_src
-** Emojify
-#+begin_src emacs-lisp :tangle no
-(customize-set-variable 'emojify-emoji-set "twemoji-v2")
-#+end_src
-
-+ "emojione-v2.2.6-22"
-** maginalia changes
-#+begin_src emacs-lisp :tangle no
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
-#+end_src
-** weather
-#+begin_src emacs-lisp :tangle no
-(use-package! wttrin
-  :commands wttrin
-  :config
-  wttrin-default-cities '("Nairobi" ))
-#+end_src
-** FIXME org-modern
-#+begin_src emacs-lisp :tangle no
-(use-package! org-modern
-  :hook (org-mode . org-modern-mode)
-  :config
-  (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
-        org-modern-table-vertical 1
-        org-modern-table-horizontal 0.2
-        org-modern-list '((43 . "➤")
-                          (45 . "–")
-                          (42 . "•"))
-        org-modern-todo-faces
-        '(("TODO" :inverse-video t :inherit org-todo)
-          ("PROJ" :inverse-video t :inherit +org-todo-project)
-          ("STRT" :inverse-video t :inherit +org-todo-active)
-          ("[-]"  :inverse-video t :inherit +org-todo-active)
-          ("HOLD" :inverse-video t :inherit +org-todo-onhold)
-          ("WAIT" :inverse-video t :inherit +org-todo-onhold)
-          ("[?]"  :inverse-video t :inherit +org-todo-onhold)
-          ("KILL" :inverse-video t :inherit +org-todo-cancel)
-          ("NO"   :inverse-video t :inherit +org-todo-cancel))
-        org-modern-footnote
-        (cons nil (cadr org-script-display))
-  )
-  (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
-
-(setq org-modern-priority t)
-
-(after! spell-fu
-  (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
-#+end_src
-
 * Terminal Modes
 ** ESHELL
 Cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
@@ -1202,8 +1067,13 @@ I recommend using eshell for light cli work, and using your external terminal em
   (org-mode . (lambda ()
                 ;; (vi-tilde-fringe-mode -1)
                 ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
+                (abbrev-mode)
                 (spell-fu-mode -1)
                 (diff-hl-mode -1)))
+  :config
+  (defun my-current-time ()
+    (insert (format-time-string "%A,%B %e%t%T")))
+  (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
   :custom
   ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
@@ -1345,79 +1215,90 @@ Capture lets you quickly store notes with no workflow interruption
 dont have to select manually you can:
 + relative time +3d
 
-*** my org-capture-template
-
+*** org-capture-template
+**** Current Template
 #+begin_src emacs-lisp :tangle yes
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
   :custom
   ;; (require 'prot-org)
   (org-capture-templates '(
-          ("e" "EMACs" plain
-           (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
-           "+ [ ] %?")
+                           ("e" "EMACs" plain
+                            (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
+                            "+ [ ] %?")
 
-          ;; NixOs
-          ("n" "nixOs" plain
-           (file+headline "nixTODO.org" "TODO nixOs")
-           "+ [ ] %?"
-           :prepend t)
+                           ;; NixOs
+                           ("n" "nixOs" plain
+                            (file+headline "nixTODO.org" "TODO nixOs")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ("a" "App Ideas" plain
-           (file+headline "appsTODO.org" "TODO App Ideas")
-           "+ [ ] %?"
-           :prepend t)
+                           ("a" "App Ideas" plain
+                            (file+headline "appsTODO.org" "TODO App Ideas")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ;; Quickshell
-          ("Q" "Quickshell + QML")
-          ("QQ" "Quickshell" plain
-           (file+headline "QuickshellTODO.org" "TODO Quickshell")
-           "+ [ ] %?")
-          ("QM" "QML" plain
-           (file+headline "QuickshellTODO.org" "TODO QML")
-           "+ [ ] %?")
+                           ;; Quickshell
+                           ("Q" "Quickshell + QML")
+                           ("QQ" "Quickshell" plain
+                            (file+headline "QuickshellTODO.org" "TODO Quickshell")
+                            "+ [ ] %?")
+                           ("QM" "QML" plain
+                            (file+headline "QuickshellTODO.org" "TODO QML")
+                            "+ [ ] %?")
 
-          ;; Bucket List
-          ("b" "Bucket List [ movies books youtube]") ; group 'em up
-          ("bm" "movies" plain
-           (file+headline "bucket-list.org" "Movies")
-           "+ [ ] %?"
-           :prepend t)
-          ("bb" "books" plain
-           (file+headline "bucket-list.org" "Books")
-           "+ [ ] %?"
-           :prepend t)
-          ("by" "youtube" plain
-           (file+headline "bucket-list.org" "YouTube")
-           "+ [ ] %?"
-           :prepend t)
+                           ;; Bucket List
+                           ("b" "Bucket List [ movies books youtube]") ; group 'em up
+                           ("bm" "movies" plain
+                            (file+headline "bucket-list.org" "Movies")
+                            "+ [ ] %?"
+                            :prepend t)
+                           ("bb" "books" plain
+                            (file+headline "bucket-list.org" "Books")
+                            "+ [ ] %?"
+                            :prepend t)
+                           ("by" "youtube" plain
+                            (file+headline "bucket-list.org" "YouTube")
+                            "+ [ ] %?"
+                            :prepend t)
 
-          ;; Life's Morsels
-          ("d" "Life's Morsels")
-          ("dw" "words [w]" plain
-           (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
-           "\n\n %?"
-           :empty-lines 1
-           :prepend t)
-          ("di" "idioms [i]" plain
-           (file+headline "diction.org" "Idioms")
-           "+ %?"
-           :empty-lines 1
-           :prepend t)
-          ("dq" "quotes [q]" plain
-           (file+headline "diction.org" "Quotes")
-           " %?"
-           :empty-lines 1
-           :prepend t)
-          ("dp" "phrases [p]" plain
-           (file+headline "diction.org" "Phrases")
-           "+ %?"
-           :empty-lines 1
-           :prepend t))))
+                           ;; Learning New Languages
+                           ("l" "Programming Languages")
+                           ("lp" "Python" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
+                            "+ [ ] %?")
+                           ("lc" "C" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO C")
+                            "+ [ ] %?")
+                           ("ln" "Nix" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
+                            "+ [ ] %?")
+
+                           ;; Life's Morsels
+                           ("d" "Life's Morsels")
+                           ("dw" "words [w]" plain
+                            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
+                            "\n\n %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("di" "idioms [i]" plain
+                            (file+headline "diction.org" "Idioms")
+                            "+ %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("dq" "quotes [q]" plain
+                            (file+headline "diction.org" "Quotes")
+                            " %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("dp" "phrases [p]" plain
+                            (file+headline "diction.org" "Phrases")
+                            "+ %?"
+                            :empty-lines 1
+                            :prepend t))))
 #+end_src
-
 **** old template
-#+begin_src elisp
+#+begin_src elisp :tangle no
 ;; ("d" "Demo Template" entry
 ;;   (file+headline "demo.org" "Our first heading");relative to ~/org DIR
 ;;   "* DEMO TEXT %?")
@@ -1981,15 +1862,10 @@ For neater/shorter presentation
  '((emacs-lisp . t)
    (jupyter . t))))
 #+end_src
-* Deft
-#+begin_src elisp :tangle no
-(setq deft-directory "~/org/deft"
-      ;; deft-recursive t
-      deft-extensions '("org" "txt"))
-#+end_src
-* DOCS
-** docs | old
-*** fonts
+* Inspo / Docs
+** DOCS
+*** docs | old
+**** fonts
 source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
 ‘slant’
 One of ‘italic’, ‘oblique’, or ‘roman’.
@@ -2013,16 +1889,16 @@ One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
    - used in websites? eww?
    - headers?
 
-*** theme
-**** load theme
+**** theme
+***** load theme
 
  There are =two ways= to load a theme. Both assume the theme is installed and
  available.
 
  You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
 
-**** favs
-***** dark
+***** favs
+****** dark
 + moonlight
 + ayu-mirage
 + dracula (python) -> cool purple
@@ -2041,102 +1917,102 @@ One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
 =Python=
 + monokai-octagon (python)
 
-***** light
+****** light
 - doom-solarized-light
 - earl grey
-***** really light white light
+****** really light white light
 - doom-winter-is-coming-light
 - ayu light
 - one light
-***** pastel
+****** pastel
 + ephemeral
 + nord-aurora
-*** nerd font experiement
-**** mononoki
+**** nerd font experiement
+***** mononoki
 kinda nice and kawaii
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
 #+end_src
-**** iosevka
-***** comfy
+***** iosevka
+****** comfy
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
 #+end_src
-***** term
+****** term
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
 #+end_src
 
-**** zed mono
+***** zed mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
 #+end_src
 
-**** martian mono
+***** martian mono
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
 #+end_src
 
-**** caskaydia
-***** code
+***** caskaydia
+****** code
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
 #+end_src
-***** mono
+****** mono
 kinda nice
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
 #+end_src
 
-**** lilex
+***** lilex
 nice l and i
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
 #+end_src
 
-**** fira
+***** fira
 nice defaults
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-**** shure
+***** shure
 boxy nice stuff 😃
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
 #+end_src
 
-**** lekton
+***** lekton
 nice little font actually :)
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
 #+end_src
 
-**** space mono
+***** space mono
 use with rofi as well...clean cut font but kinda thin and no semibold
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
 #+end_src
 
-**** Monofur
+***** Monofur
 kawaii - but does not look nice for ide maybe for ui?
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
 #+end_src
 
-**** SauceCode Pro
+***** SauceCode Pro
 #+begin_src emacs-lisp :tangle no
 (setq
  doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
 #+end_src
 
-**** Geist
+***** Geist
 sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
 #+begin_src emacs-lisp :tangle no
 (setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
 #+end_src
 
-**** monaspace
+***** monaspace
 one family, 5 fonts, 3 variable axes
 
 
@@ -2155,10 +2031,184 @@ one family, 5 fonts, 3 variable axes
 (setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
 #+end_src
 
-*** options
+**** options
 - var:doom-font: the primary font for Emacs to use.
 - var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
 - var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
 - var:doom-symbol-font: used for rendering symbols.
 - var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
 - var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
+*** Revert Buffer
+
+  Reverting a Buffer:
+  The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
+    + You've made changes in Emacs but want to discard them and return to the saved version.
+    + Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
+
+  Auto Revert Mode:
+  Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
+    + Viewing log files that are constantly being updated.
+    + Keeping your Emacs buffer synchronized with files modified by other applications.
+*** KeyBinds
+**** Keybindings in lcoal keymaps
+Only bound after the pkg is loaded
+:map <mode> ( "" . <function> )
+#+begin_src elisp :tangle no
+(use-package helm
+  :bind (:map helm-command-map
+         ("C-c h" . helm-execute-persistent-action)))
+#+end_src
+** Justin-VC tech :justin:
+*** dashboard / misc
+#+begin_src emacs-lisp :tangle no
+(defun +doom-dashboard-setup-modified-keymap ()
+  (setq +doom-dashboard-mode-map (make-sparse-keymap))
+  (map! :map +doom-dashboard-mode-map
+        :desc "Find file" :ne "f" #'find-file
+        :desc "Recent files" :ne "r" #'consult-recent-file
+        :desc "Config dir" :ne "C" #'doom/open-private-config
+        :desc "Open config.org" :ne "c" (cmd! (find-file (expand-file-name "config.org" doom-private-dir)))
+        :desc "Notes (roam)" :ne "n" #'org-roam-node-find
+        :desc "Search (roam)" :ne "N" #'justin/org-roam-rg-search
+        :desc "Switch buffer" :ne "b" #'+vertico/switch-workspace-buffer
+        :desc "Switch buffers (all)" :ne "B" #'consult-buffer
+        :desc "IBuffer" :ne "i" #'ibuffer
+        :desc "Agenda"  :ne "o" #'org-agenda
+        :desc "Previous buffer" :ne "p" #'previous-buffer
+        :desc "Set theme" :ne "t" #'consult-theme
+        :desc "Quit" :ne "Q" #'save-buffers-kill-terminal
+        :desc "Show keybindings" :ne "h" (cmd! (which-key-show-keymap '+doom-dashboard-mode-map))))
+
+(add-transient-hook! #'+doom-dashboard-mode (+doom-dashboard-setup-modified-keymap))
+(add-transient-hook! #'+doom-dashboard-mode :append (+doom-dashboard-setup-modified-keymap))
+(add-hook! 'doom-init-ui-hook :append (+doom-dashboard-setup-modified-keymap))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(map! :n [mouse-8] #'better-jumper-jump-backward
+      :n [mouse-9] #'better-jumper-jump-forward)
+#+end_src
+
+*** splash images
+#+begin_src emacs-lisp :tangle no
+(use-package random-splash-image
+  :config
+  (setq random-splash-image-dir (concat (getenv "HOME") "/.doom.d/misc/splash-images"))
+  (unless (file-directory-p random-splash-image-dir)
+  (make-directory random-splash-image-dir t))
+  (random-splash-image-set))
+#+end_src
+*** eval better arrows
+#+begin_src emacs-lisp :tangle yes
+(setq eros-eval-result-prefix "⟹ ") ; default =>
+#+end_src
+*** GPT things
+#+begin_src emacs-lisp :tangle no
+(use-package! gptel
+  :config
+  (setq gptel-model "llama3:latest"
+        gptel-org-branching-context t)
+
+  (setq gptel-backend
+        (gptel-make-ollama "Ollama"
+                           :host "192.168.1.9:11434"
+                           :stream t
+                           :models '("llama3:latest"))))
+
+(use-package! gptel-quick
+  :after gptel
+  :config
+  ;; Add any gptel-quick specific configuration here
+  )
+
+;; Key bindings
+(map! :leader
+      (:prefix ("l" . "LLM")
+       :desc "Quick GPTel" "q" #'gptel-quick
+       :desc "Start GPTel" "s" #'gptel
+       :desc "Send to GPTel" "S" #'gptel-send))
+#+end_src
+*** Emojify
+#+begin_src emacs-lisp :tangle no
+(customize-set-variable 'emojify-emoji-set "twemoji-v2")
+#+end_src
+
++ "emojione-v2.2.6-22"
+*** maginalia changes
+#+begin_src emacs-lisp :tangle no
+(after! marginalia
+  (setq marginalia-censor-variables nil)
+
+  (defadvice! +marginalia--anotate-local-file-colorful (cand)
+    "Just a more colourful version of `marginalia--anotate-local-file'."
+    :override #'marginalia--annotate-local-file
+    (when-let (attrs (file-attributes (substitute-in-file-name
+                                       (marginalia--full-candidate cand))
+                                      'integer))
+      (marginalia--fields
+       ((marginalia--file-owner attrs)
+        :width 12 :face 'marginalia-file-owner)
+       ((marginalia--file-modes attrs))
+       ((+marginalia-file-size-colorful (file-attribute-size attrs))
+        :width 7)
+       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
+        :width 12))))
+
+  (defun +marginalia--time-colorful (time)
+    (let* ((seconds (float-time (time-subtract (current-time) time)))
+           (color (doom-blend
+                   (face-attribute 'marginalia-date :foreground nil t)
+                   (face-attribute 'marginalia-documentation :foreground nil t)
+                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
+      ;; 1 - log(3 + 1/(days + 1)) % grey
+      (propertize (marginalia--time time) 'face (list :foreground color))))
+
+  (defun +marginalia-file-size-colorful (size)
+    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
+           (color (if (< size-index 10000000) ; 10m
+                      (doom-blend 'orange 'green size-index)
+                    (doom-blend 'red 'orange (- size-index 1)))))
+      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
+#+end_src
+*** weather
+#+begin_src emacs-lisp :tangle no
+(use-package! wttrin
+  :commands wttrin
+  :config
+  wttrin-default-cities '("Nairobi" ))
+#+end_src
+*** FIXME org-modern
+#+begin_src emacs-lisp :tangle no
+(use-package! org-modern
+  :hook (org-mode . org-modern-mode)
+  :config
+  (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
+        org-modern-table-vertical 1
+        org-modern-table-horizontal 0.2
+        org-modern-list '((43 . "➤")
+                          (45 . "–")
+                          (42 . "•"))
+        org-modern-todo-faces
+        '(("TODO" :inverse-video t :inherit org-todo)
+          ("PROJ" :inverse-video t :inherit +org-todo-project)
+          ("STRT" :inverse-video t :inherit +org-todo-active)
+          ("[-]"  :inverse-video t :inherit +org-todo-active)
+          ("HOLD" :inverse-video t :inherit +org-todo-onhold)
+          ("WAIT" :inverse-video t :inherit +org-todo-onhold)
+          ("[?]"  :inverse-video t :inherit +org-todo-onhold)
+          ("KILL" :inverse-video t :inherit +org-todo-cancel)
+          ("NO"   :inverse-video t :inherit +org-todo-cancel))
+        org-modern-footnote
+        (cons nil (cadr org-script-display))
+  )
+  (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
+
+(setq org-modern-priority t)
+
+(after! spell-fu
+  (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
+#+end_src

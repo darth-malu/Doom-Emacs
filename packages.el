@@ -16,12 +16,12 @@
 ;;(package! org-present)
 (package! drag-stuff)
 
-
 ;;; LSP
 (package! elpy)
-;; (package! lsp-pyright)                  ;
+(package! lsp-pyright)
 (package! blacken)
-;; (package! ein)
+(package! ein)
+(package! tmr)
 ;; (package! py-autopep8)
 (package! qml-ts-mode
   :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
