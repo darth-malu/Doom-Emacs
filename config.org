@@ -237,7 +237,7 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
   (setq
     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
-                         :size (if (string-equal (system-name) "tangier") 17 15)
+                         :size (if (string-equal (system-name) "tangier") 15 15)
                          :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
     doom-emoji-font (font-spec :family "Noto Color Emoji")
     doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))

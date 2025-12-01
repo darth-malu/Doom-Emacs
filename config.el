@@ -84,19 +84,31 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size (if (string-equal (system-name) "tangier") 17 15)
-                         :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size (if (string-equal (system-name) "tangier") 15 15)
+                       :weight (if (string-equal (system-name) "tangier") 'regular 'regular)) ;medium
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 17))
 
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
   '(mode-line-inactive :family "Iosevka Comfy"))
+
+(setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
+      lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
+
+(setq backup-directory-alist '(("." . "~/.local/share/Trash/files"))) ; delete to trash instead of create backup files with .el~ suffix (alot of clutter)
+;; (setq user-emacs-directory (expand-file-name "~/.cache/emacs")) ;default is in .emacs dir cache
+
+;; Auto-save-mode doesn't create the path automatically!
+(make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
+
+(setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
+      auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
 
 (use-package! emacs
   ;; :init
@@ -170,19 +182,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "gorl.jpg"))
@@ -198,6 +210,9 @@
 
 (after! spell-fu
   (setq spell-fu-idle-delay 0.5))  ; default is 0.25
+
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (use-package! centaur-tabs
   :defer t
@@ -363,6 +378,28 @@
            "+ %?"
            :empty-lines 1
            :prepend t))))
+
+;; ("d" "Demo Template" entry
+;;   (file+headline "demo.org" "Our first heading");relative to ~/org DIR
+;;   "* DEMO TEXT %?")
+
+;; ("o" "Options in prompt" entry
+;;  (file+headline "demo.org" "Our second heading")
+;;  "* %^{Select your option|ONE|TWO|THREE} %?")
+
+;;; capture region and insert into template ;; attach current time
+;; ("t" "Task with a date" entry
+;;  (file+headline "demo.org" "Scheduled tasks")
+;;  "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
+
+;; ("p" "Prompt for input: " entry
+;;     (file+headline "demo.org" "Our first +heading")
+;;     "* %^ %?")
+
+;; ("a" "A random template") ; group 'em up
+;;     ("at" "submenu - option [t]" entry
+;;      (file+headline "demo.org" "Scheduled tasks")
+;;      "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
 
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
