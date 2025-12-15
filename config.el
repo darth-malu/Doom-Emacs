@@ -224,7 +224,7 @@
   :hook (
          ;; (nix-mode  . centaur-tabs-mode)
          ;; (python-mode  . centaur-tabs-mode)
-         (prog-mode  . centaur-tabs-mode)
+         ;; (prog-mode  . centaur-tabs-mode)
          (pdf-view-mode . centaur-tabs-local-mode)
          (org-mode . centaur-tabs-local-mode)) ; no centaur tabs on org documents
   :bind
