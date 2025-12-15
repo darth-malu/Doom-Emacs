@@ -104,6 +104,7 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 
 ** Lsp Mode
 *** lsp ui
+UI integrations for lsp-mode
 
 https://github.com/emacs-lsp/lsp-ui
 
@@ -113,25 +114,27 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
 (after! lsp-ui
   :custom
   ;; (lsp-ui-doc-show 'bottom)
-  ;; (lsp-ui-doc-position 'top)
-  (lsp-ui-doc-enable nil) ; use K
+  ;; (lsp-ui-doc-position 'top) ;; 'at-point
   ;; (lsp-ui-doc-show-with-cursor t)
-  (lsp-ui-doc-show-with-mouse t)
+  ;; (lsp-ui-doc-enable nil) ;NOTE use K
+  ;; (lsp-ui-doc-show-with-mouse t)
 
-  (lsp-ui-peek-show-directory t)
+  ;; (lsp-ui-peek-show-directory t) ; FIXME
   (lsp-ui-peek-enable t)
 
   ;;;imenu
-  (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
+  ;; (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
   ;; (lsp-ui-imenu-refresh-delay) ;FIXME Does not exists?
-  (lsp-ui-imenu-buffer-position 'left)
+  ;; (lsp-ui-imenu-buffer-position 'left)
 
   ;;;Sideline
   ;; (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-show-code-actions t)
-  (lsp-enable-symbol-highlighting nil) ; symbol eg. print in python highlight
-  (lsp-ui-sideline-show-hover nil) ; hide only hover symbols
-  (lsp-ui-sideline-enable nil)
+
+  (lsp-ui-sideline-show-code-actions t) ;nil::
+  ;; (lsp-enable-symbol-highlighting nil) ; highlight references of symbol at point eg. print in python highlight
+  ;; (lsp-ui-sideline-show-hover nil) ; whether to show hover messages on sideline
+
+  ;; (lsp-ui-sideline-enable nil)     ;t:: TODO....try this
   ;; (lsp-ui-sideline-show-diagnostics nil) ;hide only errors
 
   ;;; eldoc
@@ -148,7 +151,7 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   (lsp-headerline-breadcrumb-enable t)
 
   ;;;flycheck
-  ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present)
+  ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present); auto::
 
   ;;;completion
   ;; (lsp-completion-show-detail nil) ;t::
@@ -296,33 +299,194 @@ abbrev mode is buffer-local
 #+end_src
 *** buffer location in window | display-buffer-alist
 
-Anatomy of an entry
-( BUFFER-MATCHER
-LIST-OF-DISPLAY-FUNCTIONS
-&optional PARAMETERS)
-
 #+begin_src emacs-lisp :tangle yes
 (defun darth-select-window (window)
     "NOTE Docuementation expects a window arg"
     (select-window window))
 
-(add-to-list 'display-buffer-alist '(
+(add-to-list 'display-buffer-alist
         ;; List of display functions (Emacs will use the first successful one)
-        ("\\*Occur\\*"
-        (display-buffer-reuse-mode-window
-         display-buffer-below-selected)
+        `("\\*Occur\\*"
+        (display-buffer-reuse-mode-window display-buffer-below-selected)
         ;; Parameters
         (window-height . fit-window-to-buffer)
         (dedicated . t)
-        (body-function . darth-select-window))
-
-        ;; ((derived-mode . notmuch-hello-mode)
-         ;; List of functions
-         ;; Parameters
-         ;; )
-))
+        (body-function . darth-select-window)))
 #+end_src
 
+=Anatomy of an entry=
+( BUFFER-MATCHER
+LIST-OF-DISPLAY-FUNCTIONS
+&optional PARAMETERS)
+
+=Regex or derived-mode=
+((derived-mode . notmuch-hello-mode)
+  List of functions
+  Parameters
+  )
+
+#+begin_src emacs-lisp :tangle no
+(("^ \\*org-contact\\*" display-buffer-below-selected)
+ ("^\\*diff-hl" (+popup-buffer) (actions) (side . bottom) (size)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
+ ("^\\*vc-change-log" (+popup-buffer) (actions) (side . bottom) (size)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*vc-diff" (+popup-buffer) (actions) (side . bottom)
+  (size quote +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
+  (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
+ ("^\\*Flycheck errors\\*" (+popup-buffer) (actions) (side . bottom)
+  (size . 0.25) (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Flycheck error messages\\*" (+popup-buffer) (actions) (side . bottom)
+  (size) (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
+ ("^\\(?:\\*magit\\|magit:\\| \\*transient\\*\\)" nil)
+ ("^\\*image-dired" (+popup-buffer) (actions) (side . bottom) (size . 0.8)
+  (window-width . 40) (window-height . 0.16) (slot . 20) (vslot)
+  (window-parameters (ttl . 0) (quit) (select . t) (modeline) (autosave)))
+ ("^\\*org-roam: " (+popup-buffer) (actions) (side . right) (size)
+  (window-width . 0.33) (window-height . 0.5) (slot . 2) (vslot)
+  (window-parameters (ttl) (quit) (select . ignore) (modeline) (autosave)))
+ ("\\*org-roam\\*" (+popup-buffer) (actions) (side . right) (size)
+  (window-width . 0.33) (window-height . 0.5) (slot . 1) (vslot)
+  (window-parameters (ttl) (quit) (select . ignore) (modeline) (autosave)))
+ ("^\\*Capture\\*$\\|CAPTURE-.*$" (+popup-buffer) (actions) (side . bottom)
+  (size . 0.42) (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit) (select . t) (modeline)
+                     (autosave . ignore)))
+ ("^\\*Org-Babel" (+popup-buffer) (actions) (side . bottom) (size)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Org Src" (+popup-buffer) (actions) (side . bottom) (size . 0.42)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl) (quit) (select . t) (modeline . t) (autosave . t)))
+ ("^\\*Org Agenda" nil)
+ ("^\\*Edit Formulas\\*$" (+popup-buffer) (actions) (side . bottom)
+  (size . 0.25) (window-width . 40) (window-height . 0.16) (slot . -1)
+  (vslot . -2)
+  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Org \\(?:Select\\|Attach\\|Table Edit\\)" (+popup-buffer) (actions)
+  (side . bottom) (size . 0.25) (window-width . 40) (window-height . 0.16)
+  (slot . -1) (vslot . -2)
+  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^ ?\\*\\(?:Agenda Com\\|Calendar\\|Org Export Dispatcher\\)" (+popup-buffer)
+  (actions) (side . bottom) (size function +popup-shrink-to-fit)
+  (window-width . 40) (window-height . 0.16) (slot . -1) (vslot . -1)
+  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Org Links" (+popup-buffer) (actions) (side . bottom) (size . 2)
+  (window-width . 40) (window-height . 0.16) (slot . -1) (vslot . -1)
+  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Ibuffer\\*$" nil)
+ ("^\\*Command Line" (+popup-buffer) (actions) (side . bottom) (size . 8)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*evil-registers" (+popup-buffer) (actions) (side . bottom) (size . 0.3)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ (#[(bufname _)
+    ((if (boundp '+eval-repl-mode)
+         (progn (buffer-local-value '+eval-repl-mode (get-buffer bufname)))))
+    (t)]
+  (+popup-buffer) (actions) (side . bottom) (size . 0.25) (window-width . 40)
+  (window-height . 0.16) (slot) (vslot)
+  (window-parameters
+   (ttl
+    . #[(buf)
+        ((if (plist-get +eval-repl-plist :persist) nil
+           (let* ((process (and t (get-buffer-process buf))))
+             (if process
+                 (progn
+                   (set-process-query-on-exit-flag process nil)
+                   (kill-process process) (kill-buffer buf))
+               nil))))
+        (t)])
+   (quit) (select . ignore) (modeline) (autosave)))
+ ("^\\*\\(?:Proced\\|timer-list\\|Abbrevs\\|Output\\|Occur\\|unsent mail.*?\\|message\\)\\*"
+  nil)
+ ("^\\*Process List\\*" (+popup-buffer) (actions) (side . bottom) (size . 0.25)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . 101)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*Memory-Profiler-Report " (+popup-buffer) (actions) (side . bottom) (size)
+  (window-width . 0.5) (window-height . 0.4) (slot . 2) (vslot . 100)
+  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
+ ("^\\*CPU-Profiler-Report " (+popup-buffer) (actions) (side . bottom) (size)
+  (window-width . 0.5) (window-height . 0.4) (slot . 1) (vslot . 100)
+  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
+ ("^\\*Backtrace" (+popup-buffer) (actions) (side . bottom) (size . 0.4)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . 99)
+  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
+ ("^\\*Warnings" (+popup-buffer) (actions) (side . bottom) (size . 0.25)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . 99)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*info\\*$" (+popup-buffer) (actions) (side . bottom) (size . 0.45)
+  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot . 2)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*xwidget" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . -11)
+  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
+ ("^\\*eww\\*" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . -11)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*\\([Hh]elp\\|Apropos\\)" (+popup-buffer) (actions) (side . bottom)
+  (size . 0.42) (window-width . 40) (window-height . 0.16) (slot . 2)
+  (vslot . -8)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^ \\*undo-tree\\*" (+popup-buffer) (actions) (side . left) (size . 20)
+  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*Customize" (+popup-buffer) (actions) (side . right) (size . 0.5)
+  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot)
+  (window-parameters (ttl . 5) (quit) (select . t) (modeline) (autosave)))
+ ("^\\*Calc" (+popup-buffer) (actions) (side . bottom) (size . 0.4)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . -7)
+  (window-parameters (ttl . 0) (quit) (select . t) (modeline) (autosave)))
+ ("^\\*\\(?:Wo\\)?Man " (+popup-buffer) (actions) (side . bottom) (size . 0.45)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . -6)
+  (window-parameters (ttl . 0) (quit . t) (select . t) (modeline) (autosave)))
+ ("^\\*doom:\\(?:v?term\\|e?shell\\)-popup" (+popup-buffer) (actions)
+  (side . bottom) (size . 0.35) (window-width . 40) (window-height . 0.16)
+  (slot) (vslot . -5)
+  (window-parameters (ttl) (quit) (select . t) (modeline) (autosave)))
+ ("^\\*doom:" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
+  (window-width . 40) (window-height . 0.16) (slot) (vslot . -4)
+  (window-parameters (ttl . t) (quit) (select . t) (modeline . t) (autosave . t)))
+ ("^\\*\\(?:doom \\|Pp E\\)" (+popup-buffer) (actions) (side . bottom)
+  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
+  (slot) (vslot . -3)
+  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
+                     (autosave . t)))
+ ("^\\*\\(?:[Cc]ompil\\(?:ation\\|e-Log\\)\\|Messages\\)" (+popup-buffer)
+  (actions) (side . bottom) (size . 0.3) (window-width . 40)
+  (window-height . 0.16) (slot) (vslot . -2)
+  (window-parameters (ttl) (quit . t) (select . ignore) (modeline)
+                     (autosave . t)))
+ ("^\\*Local variables\\*$" (+popup-buffer) (actions) (side . bottom)
+  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
+  (slot . 1) (vslot . -1)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*Completions" nil)
+ ("^ \\*" (+popup-buffer) (actions) (side . bottom)
+  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
+  (slot . 1) (vslot . -1)
+  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
+                     (autosave)))
+ ("^\\*" (+popup-buffer) (actions) (side . bottom) (size) (window-width . 40)
+  (window-height . 0.16) (slot . 1) (vslot . -1)
+  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave))))
+#+end_src
 
 ** modeline
 *** Active | Inactive
@@ -577,34 +741,6 @@ unneeded since we use ws-butler which:
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 #+end_src
 * Packages
-** dired
-#+begin_src emacs-lisp :tangle no
-(use-package! dired-open
-  :config
-  (setq dired-open-extensions '(("gif" . "sxiv")
-                                ("jpg" . "sxiv")
-                                ("png" . "sxiv")
-                                ("mkv" . "mpv")
-                                ("mp4" . "mpv"))))
-
-(use-package! peep-dired
-  :after dired
-  :hook (evil-normalize-keymaps . peep-dired-hook)
-  :config
-    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
-    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
-    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
-    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
-)
-#+end_src
-** projectile
-#+begin_src elisp :tangle yes
-(use-package! projectile
-  :init
-  (setq projectile-project-search-path '("~/.code/"))
-  :custom
-  (projectile-auto-cleanup-known-projects nil))
-#+end_src
 ** corfu
 not sure if after! init works lul
 
@@ -614,9 +750,6 @@ not sure if after! init works lul
   (customize-set-variable 'corfu-auto nil))
 #+end_src
 
-#+begin_src emacs-lisp :tangle no
-(customize-set-variable 'corfu-auto nil)
-#+end_src
 
 (text-mode-ispell-word-completion nil)
 
@@ -706,28 +839,53 @@ always activating in org mode...keep it as hook in [[ORG]]
 	markdown-html-attr-name-face
 	markdown-html-tag-name-face))
 #+end_src
-** emms
-#+begin_src elisp :tangle no
-(emms-all)
-(emms-add-directory-tree "/home/malu/Music/")
-(setq emms-player-list '(emms-player-mpv)
-      emms-info-functions '(emms-info-native
-                            ;; emms-info-metaflac ;FIXME not found
-                            ;; emms-info-ogginfo
-                            ))
-#+end_src
 ** evil-nerd-commenter | better comments
 #+begin_src elisp :tangle yes
 (use-package! evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 
-** Async
+** highlight TODO
+#+begin_src emacs-lisp :tangle yes
+(use-package! hl-todo
+  :hook (org-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces `(("TODO"       warning bold)
+                                ("FIXME"      error bold)
+                                ("!TODO"    error bold)
+                                ("HACK"       font-lock-constant-face bold)
+                                ("SEEKGOD"       font-lock-constant-face bold)
+                                ("KESHO"       font-lock-constant-face bold)
+                                ("REVIEW"     font-lock-keyword-face bold)
+                                ("NOTE"       success bold)
+                                ("DEPRECATED" font-lock-doc-face bold))))
+#+end_src
+
+** electric TODO test further
+SCHEDULED: <2025-11-29 Sat 19:00>
 #+begin_src emacs-lisp :tangle no
-(use-package! async
-  :ensure nil
-  :init
-  (dired-async-mode 1)) ;Do dired actions asynchronously.
+(setq electric-pair-pairs '(
+                            (?\{ . ?\})
+                            (?\( . ?\))
+                            (?\[ . ?\])
+                            (?\" . ?\")
+                            ))
+;; (electric-indent-mode -1) ; on::
+  ;; (electric-pair-mode 1) ; on by default
+#+end_src
+
+** elcord
+#+begin_src emacs-lisp :tangle yes
+(use-package! elcord
+  :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  ;; (elcord-mode 1)
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t))
 #+end_src
 
 ** org-auto-tangle
@@ -743,49 +901,8 @@ always activating in org mode...keep it as hook in [[ORG]]
 
 [[github:yilkalargaw/org-auto-tangle]]
 
-** highlight TODO
-#+begin_src emacs-lisp :tangle yes
-(use-package! hl-todo
-  :hook (org-mode . hl-todo-mode)
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces `(("TODO"       warning bold)
-                                ("FIXME"      error bold)
-                                ("NEVERDO"    warning bold)
-                                ("HACK"       font-lock-constant-face bold)
-                                ("SEEKGOD"       font-lock-constant-face bold)
-                                ("KESHO"       font-lock-constant-face bold)
-                                ("REVIEW"     font-lock-keyword-face bold)
-                                ("NOTE"       success bold)
-                                ("DEPRECATED" font-lock-doc-face bold))))
-#+end_src
-** electric
-#+begin_src emacs-lisp :tangle no
-(setq electric-pair-pairs '(
-                            (?\{ . ?\})
-                            (?\( . ?\))
-                            (?\[ . ?\])
-                            (?\" . ?\")
-                            ))
-;; (electric-indent-mode -1) ; on::
-  ;; (electric-pair-mode 1) ; on by default
-#+end_src
-***** TODO test further
-** elcord
-#+begin_src emacs-lisp :tangle yes
-(use-package! elcord
-  ;; :commands elcord-mode
-  :custom
-  (elcord-display-elapsed nil)
-  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
-  :config
-  ;; (elcord-mode 1)
-  (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t))
-#+end_src
-
 ** all the icons
-#+begin_src elisp :tangle yes
+#+begin_src elisp :tangle no
 (use-package! all-the-icons
   :if (display-graphic-p))
 #+end_src
@@ -794,7 +911,40 @@ always activating in org mode...keep it as hook in [[ORG]]
 (use-package! all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 #+end_src
+** projectile
+Does nothing... recurisive search as const eg
+#+begin_src emacs-lisp :tangle no
+(setq projectile-project-search-path '("~/projects/" "~/work/" ("~/github" . 1)))
+#+end_src
+
+#+begin_src elisp :tangle yes
+(use-package! projectile
+  :init
+  (setq projectile-project-search-path '("~/.code" "~/.code/SkunkWorks/"))
+  :custom
+  (projectile-auto-cleanup-known-projects nil))
+#+end_src
 ** old | phased out
+*** dired
+#+begin_src emacs-lisp :tangle no
+(use-package! dired-open
+  :config
+  (setq dired-open-extensions '(("gif" . "sxiv")
+                                ("jpg" . "sxiv")
+                                ("png" . "sxiv")
+                                ("mkv" . "mpv")
+                                ("mp4" . "mpv"))))
+
+(use-package! peep-dired
+  :after dired
+  :hook (evil-normalize-keymaps . peep-dired-hook)
+  :config
+    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file) ; use dired-find-file instead if not using dired-open package
+    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
+    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
+)
+#+end_src
 *** centaur tabs
 #+begin_src elisp :tangle no
 (use-package! centaur-tabs
@@ -873,6 +1023,16 @@ Shouldn't emacs be like this?
 
 If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
 
+*** emms
+#+begin_src elisp :tangle no
+(emms-all)
+(emms-add-directory-tree "/home/malu/Music/")
+(setq emms-player-list '(emms-player-mpv)
+      emms-info-functions '(emms-info-native
+                            ;; emms-info-metaflac ;FIXME not found
+                            ;; emms-info-ogginfo
+                            ))
+#+end_src
 *** company
 #+begin_src elisp :tangle no
 ;; (after! company
@@ -993,6 +1153,14 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
       ;; deft-recursive t
       deft-extensions '("org" "txt"))
 #+end_src
+*** Async
+#+begin_src emacs-lisp :tangle no
+(use-package! async
+  :ensure nil
+  :init
+  (dired-async-mode 1)) ;Do dired actions asynchronously.
+#+end_src
+
 * Terminal Modes
 ** ESHELL
 Cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
@@ -1008,12 +1176,38 @@ I recommend using eshell for light cli work, and using your external terminal em
   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 #+end_src
 * MU4E
+** =My Config=
+#+begin_src emacs-lisp :tangle no
+(use-package! mu4e
+  :custom
+  (mu4e-use-fancy-chars t)
+  (mu4e-attachment-dir "~/Documents/Mail/DownloadedAttachement/")
+  :config
+  (setq mu4e-maildir "/home/malu/Documents/Mail"
+        ;; mu4e-user-mail-address-list '("foo@bar.com" "cuux@example.com"
+        ;; mu4e-sent-messages-behavior 'delete
+        mu4e-maildir-shortcuts '(("/INBOX" . ?i)
+                                  ("/[Gmail].Sent Mail" . ?s)
+                                  ("/[Gmail].Trash" . ?t)
+                                  ("/[Gmail].All Mail" . ?a))
+(setq message-send-mail-function 'smtpmail-send-it
+    starttls-use-gnutls t
+    smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+    smtpmail-auth-credentials
+      '(("smtp.gmail.com" 587 "justinmalu@gmail.com" nil))
+    smtpmail-default-smtp-server "smtp.gmail.com"
+    smtpmail-smtp-server "smtp.gmail.com"
+    smtpmail-smtp-service 587)    
+  )
+#+end_src
+
+** Inspo
+
 #+begin_src elisp :tangle no
 (defvar my-mu4e-path
   (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
 
 (use-package mu4e
-  :ensure nil
   ;; :load-path "/usr/share/emacs/site-lisp/mu4e/"
   ;; :load-path "/nix/store/*share/emacs/site-lisp/mu4e/"
   ;; :load-path "/nix/store/lfa1mdkbj5m06nvaxh8minq2lvxdi4z4-mu-1.12.9-mu4e/share/emacs/site-lisp/mu4e/"
@@ -1247,16 +1441,25 @@ dont have to select manually you can:
                             (file+headline "QuickshellTODO.org" "TODO QML")
                             "+ [ ] %?")
 
-                           ;; Bucket List
-                           ("b" "Bucket List [ movies books youtube]") ; group 'em up
+                           ;; BUCKET LIST
+                           ("b" "Bucket List [ movies anime books youtube]") ; group 'em up
                            ("bm" "movies" plain
                             (file+headline "bucket-list.org" "Movies")
                             "+ [ ] %?"
                             :prepend t)
+                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
+                            ("bam" "Anime Movie"  plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
+                            ;; ANIME
+                            ("bas" "Anime Series" plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
                            ("bb" "books" plain
                             (file+headline "bucket-list.org" "Books")
                             "+ [ ] %?"
                             :prepend t)
+                           ;;YOUTUBE
                            ("by" "youtube" plain
                             (file+headline "bucket-list.org" "YouTube")
                             "+ [ ] %?"
@@ -1286,16 +1489,32 @@ dont have to select manually you can:
                             "+ %?"
                             :empty-lines 1
                             :prepend t)
-                           ("dq" "quotes [q]" plain
+                            ("dq" "quotes [q]" plain
                             (file+headline "diction.org" "Quotes")
-                            " %?"
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
                             :prepend t)
-                           ("dp" "phrases [p]" plain
+                            ("dp" "phrases [p]" plain
                             (file+headline "diction.org" "Phrases")
-                            "+ %?"
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
-                            :prepend t))))
+                            :prepend t)
+                           ("v" "Video Ideas 📷")
+                           ("ve" "Emacs 📃")
+                           ("vei" "Emacs ideas ✔️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Idea")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1
+                            )
+                           ("vej" "emacs jolts ✏️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Jolt")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1)
+                           )))
 #+end_src
 **** old template
 #+begin_src elisp :tangle no

@@ -95,33 +95,26 @@
                                 (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
                                 (lsp-deferred))))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (defun darth-select-window (window)
     "NOTE Docuementation expects a window arg"
     (select-window window))
 
-(add-to-list 'display-buffer-alist '(
+(add-to-list 'display-buffer-alist
         ;; List of display functions (Emacs will use the first successful one)
-        ("\\*Occur\\*"
-        (display-buffer-reuse-mode-window
-         display-buffer-below-selected)
+        `("\\*Occur\\*"
+        (display-buffer-reuse-mode-window display-buffer-below-selected)
         ;; Parameters
         (window-height . fit-window-to-buffer)
         (dedicated . t)
-        (body-function . darth-select-window))
-
-        ;; ((derived-mode . notmuch-hello-mode)
-         ;; List of functions
-         ;; Parameters
-         ;; )
-))
+        (body-function . darth-select-window)))
 
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
@@ -222,30 +215,24 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "gorl.jpg"))
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
-
-(use-package! projectile
-  :init
-  (setq projectile-project-search-path '("~/.code/"))
-  :custom
-  (projectile-auto-cleanup-known-projects nil))
 
 (use-package! corfu
   :init
@@ -253,6 +240,30 @@
 
 (use-package! evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+
+(use-package! hl-todo
+  :hook (org-mode . hl-todo-mode)
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces `(("TODO"       warning bold)
+                                ("FIXME"      error bold)
+                                ("!TODO"    error bold)
+                                ("HACK"       font-lock-constant-face bold)
+                                ("SEEKGOD"       font-lock-constant-face bold)
+                                ("KESHO"       font-lock-constant-face bold)
+                                ("REVIEW"     font-lock-keyword-face bold)
+                                ("NOTE"       success bold)
+                                ("DEPRECATED" font-lock-doc-face bold))))
+
+(use-package! elcord
+  :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  ;; (elcord-mode 1)
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t))
 
 (use-package! org-auto-tangle
   :defer t
@@ -262,32 +273,11 @@
   ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
   (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
 
-(use-package! hl-todo
-  :hook (org-mode . hl-todo-mode)
-  :config
-  (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces `(("TODO"       warning bold)
-                                ("FIXME"      error bold)
-                                ("NEVERDO"    warning bold)
-                                ("HACK"       font-lock-constant-face bold)
-                                ("SEEKGOD"       font-lock-constant-face bold)
-                                ("KESHO"       font-lock-constant-face bold)
-                                ("REVIEW"     font-lock-keyword-face bold)
-                                ("NOTE"       success bold)
-                                ("DEPRECATED" font-lock-doc-face bold))))
-
-(use-package! elcord
-  ;; :commands elcord-mode
+(use-package! projectile
+  :init
+  (setq projectile-project-search-path '("~/.code" "~/.code/SkunkWorks/"))
   :custom
-  (elcord-display-elapsed nil)
-  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
-  :config
-  ;; (elcord-mode 1)
-  (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t))
-
-(use-package! all-the-icons
-  :if (display-graphic-p))
+  (projectile-auto-cleanup-known-projects nil))
 
 (use-package! org
   :init
@@ -379,16 +369,25 @@
                             (file+headline "QuickshellTODO.org" "TODO QML")
                             "+ [ ] %?")
 
-                           ;; Bucket List
-                           ("b" "Bucket List [ movies books youtube]") ; group 'em up
+                           ;; BUCKET LIST
+                           ("b" "Bucket List [ movies anime books youtube]") ; group 'em up
                            ("bm" "movies" plain
                             (file+headline "bucket-list.org" "Movies")
                             "+ [ ] %?"
                             :prepend t)
+                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
+                            ("bam" "Anime Movie"  plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
+                            ;; ANIME
+                            ("bas" "Anime Series" plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
                            ("bb" "books" plain
                             (file+headline "bucket-list.org" "Books")
                             "+ [ ] %?"
                             :prepend t)
+                           ;;YOUTUBE
                            ("by" "youtube" plain
                             (file+headline "bucket-list.org" "YouTube")
                             "+ [ ] %?"
@@ -418,16 +417,32 @@
                             "+ %?"
                             :empty-lines 1
                             :prepend t)
-                           ("dq" "quotes [q]" plain
+                            ("dq" "quotes [q]" plain
                             (file+headline "diction.org" "Quotes")
-                            " %?"
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
                             :prepend t)
-                           ("dp" "phrases [p]" plain
+                            ("dp" "phrases [p]" plain
                             (file+headline "diction.org" "Phrases")
-                            "+ %?"
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
-                            :prepend t))))
+                            :prepend t)
+                           ("v" "Video Ideas 📷")
+                           ("ve" "Emacs 📃")
+                           ("vei" "Emacs ideas ✔️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Idea")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1
+                            )
+                           ("vej" "emacs jolts ✏️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Jolt")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1)
+                           )))
 
 (setq org-agenda-files
       (list "~/org")

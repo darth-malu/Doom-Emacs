@@ -77,7 +77,7 @@
 :checkers
        (syntax +icons +childframe) ; tasing you for every semicolon you forget ;TODO test if childframe needed and difference in behaviour
        (spell +aspell)
-       grammar           ; tasing grammar mistake every you make
+       ;; grammar           ; tasing grammar mistake every you make
 
 :tools
 ;;editorconfig      ; let someone else argue about tabs vs spaces TODO test this
@@ -135,7 +135,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
 :app
        calendar
        ;; twitter ; TODO never works?
-       emms
+       ;; emms
        ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader
