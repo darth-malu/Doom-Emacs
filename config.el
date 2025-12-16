@@ -487,6 +487,8 @@
  '((emacs-lisp . t)
    (jupyter . t))))
 
+(setq magit-view-git-manual-method 'woman)
+
 (map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
 
 (setq eros-eval-result-prefix "⟹ ") ; default =>
