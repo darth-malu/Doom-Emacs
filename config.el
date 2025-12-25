@@ -91,9 +91,11 @@
    (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
                     :activation-fn (lsp-activate-on "qml-ts")
                     :server-id 'qmlls))
-  (add-hook 'qml-ts-mode-hook (lambda ()
-                                (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
-                                (lsp-deferred))))
+  :hook
+  (qml-ts-mode (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
+                                 ;; lsp-headerline-breadcrumb-mode t
+                                 )
+                    (lsp-deferred))))
 
 (setq
   doom-symbol-font (font-spec :family "Symbols Nerd Font")
@@ -141,6 +143,7 @@
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; (org-super-agenda-mode t)
+  (epg-pinentry-mode 'loopback)
   (tab-width 2)
   (tab-always-indent 'complete)
   (tab-first-completion nil) ;; word 'word-or-paren-or-punct)
@@ -175,6 +178,9 @@
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
+
+  ;; (lsp-ui-sideline-show-code-actions t) ;nil::
+
   ;;(display-time-mode 1)                             ; Enable time in the line-mode
   ;; (display-time-format "%H:%M")
   ;;(display-time-default-load-average nil)
@@ -276,6 +282,11 @@
   ;; (elcord-mode 1)
   (setq elcord--editor-name "Church of Emacs"
         elcord-use-major-mode-as-main-icon t))
+
+(custom-set-faces!
+  '(aw-leading-char-face
+    :foreground "white" :background "red"
+    :weight bold :height 2.5 :box (:line-width 10 :color "red")))
 
 (use-package! org-auto-tangle
   :defer t
