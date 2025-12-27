@@ -64,12 +64,12 @@
 
 (setq lsp-pyright-langserver-command "basedpyright")
 
-(use-package lsp-treemacs
-  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
-
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
+
+(use-package lsp-treemacs
+  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 
 (after! ccls
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
@@ -172,9 +172,9 @@
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
 
-  ;;; using ultra scroll block now
-  (scroll-margin 18) ; Adjust the number as needed
-  (scroll-conservatively 101) ; TODO test usefulness and edge cases
+  ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
+  (scroll-margin 18)
+  (scroll-conservatively 101)
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
@@ -187,6 +187,7 @@
   ;; (display-time-day-and-date 1)
 
   :config
+  (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
   (global-auto-revert-mode t)
   (drag-stuff-global-mode 1)

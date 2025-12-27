@@ -103,6 +103,17 @@ https://renzmann.github.io/posts/006_emacs_2_python/
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 
 ** Lsp Mode
+*** lsp-mode
+#+begin_src emacs-lisp :tangle yes
+(after! lsp-mode
+  (setq lsp-enable-symbol-highlighting nil
+        lsp-enable-suggest-server-download nil))
+#+end_src
+*** lsp treemacs
+#+begin_src emacs-lisp :tangle yes
+(use-package lsp-treemacs
+  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
+#+end_src
 *** lsp ui
 UI integrations for lsp-mode
 
@@ -164,17 +175,6 @@ https://emacs-lsp.github.io/lsp-ui/
 
 
 https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
-*** lsp treemacs
-#+begin_src emacs-lisp :tangle yes
-(use-package lsp-treemacs
-  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
-#+end_src
-*** lsp-mode
-#+begin_src emacs-lisp :tangle yes
-(after! lsp-mode
-  (setq lsp-enable-symbol-highlighting nil
-        lsp-enable-suggest-server-download nil))
-#+end_src
 ** c
 *** ccls - ❄️
 #+begin_src elisp :tangle yes
@@ -583,9 +583,9 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
 
-  ;;; using ultra scroll block now
-  (scroll-margin 18) ; Adjust the number as needed
-  (scroll-conservatively 101) ; TODO test usefulness and edge cases
+  ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
+  (scroll-margin 18)
+  (scroll-conservatively 101)
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
@@ -598,6 +598,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (display-time-day-and-date 1)
 
   :config
+  (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
   (global-auto-revert-mode t)
   (drag-stuff-global-mode 1)
