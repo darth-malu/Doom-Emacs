@@ -13,7 +13,6 @@
 ;; (package! jupyter)
 (package! org-auto-tangle)
 ;; (package! qml-ts-mode)
-;;(package! org-present)
 (package! drag-stuff)
 
 ;;; LSP

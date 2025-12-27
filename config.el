@@ -97,13 +97,13 @@
                                  )
                     (lsp-deferred))))
 
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font")
-  doom-font (font-spec :family "JetBrains Mono"
-                       :size 15
-                       :weight 'regular)
-  doom-emoji-font (font-spec :family "Noto Color Emoji")
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+  (setq
+    doom-symbol-font (font-spec :family "Symbols Nerd Font")
+    doom-font (font-spec :family "JetBrains Mono"
+                         :size 15
+                         :weight 'regular)
+    doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (defun darth-select-window (window)
     "NOTE Docuementation expects a window arg"
@@ -164,7 +164,7 @@
   (+doom-dashboard-name "Darth Doom")
 
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
-(+default-want-RET-continue-comments nil)
+  (+default-want-RET-continue-comments nil)
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
 
   (evil-shift-width 2)
@@ -196,6 +196,7 @@
   :bind
   ((
    :map evil-normal-state-map
+        ;; TODO see map!
         ;;;misc
         ("M-;" . save-buffer)
         ("<mouse-8>" . previous-buffer)
@@ -221,6 +222,8 @@
         ("C-M-j" . previous-window)
         ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
 
+        ("C-'" . olivetti-mode)
+
     :map doom-leader-map ("to" . hl-todo-occur)
     ) ; bind conses
     ); end bind
@@ -234,22 +237,22 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
-(defun split-and-follow-horizontally ()
+ (defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
-(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+ (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
-(defun split-and-follow-vertically ()
+ (defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
-(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+ (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "gorl.jpg"))
+(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
