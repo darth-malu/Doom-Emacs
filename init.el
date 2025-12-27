@@ -13,7 +13,7 @@
        ;; (corfu +orderless +icons)  ; complete with cap(f), cape and a flying feather!
        (corfu +orderless)
        ;; (helm +childframe +icons +fuzzy )              ; the *other* search engine for love and life
-       ;; ido               ; the other *other* search engine...
+       ido               ; the other *other* search engine...
        ;;ivy               ; a search engine for love and life
        ;; (ivy +childframe +icons)
        (vertico +icons)           ; the search engine of the future
@@ -43,7 +43,7 @@
        (window-select +switch-window +numbers)     ; visually switch windows
        window-select
        workspaces        ; tab emulation, persistence & separate workspaces ;persp-mode
-       ;; (smooth-scroll +interpolate)
+       (smooth-scroll +interpolate)
        ;;zen               ; distraction-free coding or writing
 
 :editor

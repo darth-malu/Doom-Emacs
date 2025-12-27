@@ -135,14 +135,15 @@
       auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
 
 (use-package! emacs
-  ;; :init
+  :init
   ;; Put Emacs auto-generated junk in a separate file
-  ;; (setq custom-file (expand-file-name "custom.el" doom-user-dir))
+  ;; TODO see this in action --- PS its not junk lol who wrote this
+  (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; (org-super-agenda-mode t)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion 'word) ;; word 'word-or-paren-or-punct)
+  (tab-first-completion nil) ;; word 'word-or-paren-or-punct)
   ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
@@ -153,12 +154,14 @@
   ;; (x-stretch-cursor t) ; see if needed really
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
-  (inhibit-startup-message t)           ;Hide th startup message
+
+  ;; (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
 
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
-  (+doom-dashboard-name "Doom Dashboard")
+  (+doom-dashboard-name "Darth Doom")
 
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
+(+default-want-RET-continue-comments nil)
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
 
   (evil-shift-width 2)
@@ -168,7 +171,7 @@
 
   ;;; using ultra scroll block now
   (scroll-margin 18) ; Adjust the number as needed
-  (scroll-conservatively 101) ; TODO test usefulness
+  (scroll-conservatively 101) ; TODO test usefulness and edge cases
 
   (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
@@ -182,7 +185,6 @@
   (global-auto-revert-mode t)
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
-  ;; (vi-tilde-fringe-mode -1)
 
   :bind
   ((
@@ -202,6 +204,16 @@
         ;;; insert newline below/above
         ("M-o" . +evil/insert-newline-below)
         ("M-O" . +evil/insert-newline-above)
+
+        ;;; NOTE Too much conflict just use native C-w
+        ;; Unify Kitty + Emacs window focusing
+        ("C-M-l" . evil-window-right)
+        ("C-M-h" . evil-window-left)
+        ("C-M-k" . evil-window-up)
+        ("C-M-j" . evil-window-down)
+        ("C-M-j" . previous-window)
+        ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
+
     :map doom-leader-map ("to" . hl-todo-occur)
     ) ; bind conses
     ); end bind
@@ -275,7 +287,7 @@
 
 (use-package! projectile
   :init
-  (setq projectile-project-search-path '("~/.code" "~/.code/SkunkWorks/"))
+  (setq projectile-project-search-path '(("~/.code/" . 1) "~/.code/SkunkWorks/"))
   :custom
   (projectile-auto-cleanup-known-projects nil))
 
