@@ -97,26 +97,18 @@
                                  )
                     (lsp-deferred))))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
-(defun darth-select-window (window)
-    "NOTE Docuementation expects a window arg"
-    (select-window window))
-
-(add-to-list 'display-buffer-alist
-        ;; List of display functions (Emacs will use the first successful one)
-        `("\\*Occur\\*"
-        (display-buffer-reuse-mode-window display-buffer-below-selected)
-        ;; Parameters
-        (window-height . fit-window-to-buffer)
-        (dedicated . t)
-        (body-function . darth-select-window)))
+(set-popup-rules!
+  '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
+    ("\\*doom:scratch*" :quit t)
+    ))
 
 (custom-set-faces!
   ;; '(mode-line :family "Iosevka Comfy" :size 15)
@@ -138,27 +130,25 @@
 
 (use-package! emacs
   :init
-  ;; Put Emacs auto-generated junk in a separate file
-  ;; TODO see this in action --- PS its not junk lol who wrote this
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion nil) ;; word 'word-or-paren-or-punct)
+  (tab-first-completion nil) ;; word 'word-or-paren-or-punct
   ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
-  ;; (auto-save-timeout 10)
-  ;; (auto-save-interval 200)
+  ;; (auto-save-timeout 10) ;;30:-:
+  ;; (auto-save-interval 200) ;; NOTE: Must be -gt 20...emacs will behave as if value is 20 if less
   ;; (undo-limit 80000000)
   (delete-by-moving-to-trash t) ; use system trash can
   ;; (x-stretch-cursor t) ; see if needed really
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
 
-  ;; (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
+  (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
 
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Darth Doom")
@@ -176,7 +166,7 @@
   (scroll-margin 18)
   (scroll-conservatively 101)
 
-  (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
+  (doom-modeline-modal nil)             ;display mode - NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
 
   ;; (lsp-ui-sideline-show-code-actions t) ;nil::
@@ -192,7 +182,8 @@
   (global-auto-revert-mode t)
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
-
+  (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
+  (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
   :bind
   ((
    :map evil-normal-state-map
@@ -224,32 +215,28 @@
 
         ("C-'" . olivetti-mode)
 
-    :map doom-leader-map ("to" . hl-todo-occur)
-    ) ; bind conses
-    ); end bind
-  )
-;; ("U" . evil-redo)
-
-(customize-set-variable 'uniquify-buffer-name-style 'post-forward)
-(customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
+    :map doom-leader-map
+      ("to" . hl-todo-occur)
+      ("SPC" . ace-window)
+    )))
 
 (customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))

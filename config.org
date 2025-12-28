@@ -299,23 +299,18 @@ abbrev mode is buffer-local
 #+begin_src emacs-lisp :tangle no
 (define-abbrev global-abbrev-table "meab" "This is my first abbrev")
 #+end_src
-*** buffer location in window | display-buffer-alist
+*** buffer location in window | display-buffer-alist | set-popup-rules
+**** Doom way 
+because ui: popup use set-popup-rules
 
 #+begin_src emacs-lisp :tangle yes
-(defun darth-select-window (window)
-    "NOTE Docuementation expects a window arg"
-    (select-window window))
-
-(add-to-list 'display-buffer-alist
-        ;; List of display functions (Emacs will use the first successful one)
-        `("\\*Occur\\*"
-        (display-buffer-reuse-mode-window display-buffer-below-selected)
-        ;; Parameters
-        (window-height . fit-window-to-buffer)
-        (dedicated . t)
-        (body-function . darth-select-window)))
+(set-popup-rules!
+  '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
+    ("\\*doom:scratch*" :quit t)
+    ))
 #+end_src
 
+**** vanilla emacs
 =Anatomy of an entry=
 ( BUFFER-MATCHER
 LIST-OF-DISPLAY-FUNCTIONS
@@ -324,170 +319,25 @@ LIST-OF-DISPLAY-FUNCTIONS
 =Regex or derived-mode=
 ((derived-mode . notmuch-hello-mode)
   List of functions
-  Parameters
-  )
+  Parameters)
 
 #+begin_src emacs-lisp :tangle no
-(("^ \\*org-contact\\*" display-buffer-below-selected)
- ("^\\*diff-hl" (+popup-buffer) (actions) (side . bottom) (size)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
- ("^\\*vc-change-log" (+popup-buffer) (actions) (side . bottom) (size)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*vc-diff" (+popup-buffer) (actions) (side . bottom)
-  (size quote +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
-  (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
- ("^\\*Flycheck errors\\*" (+popup-buffer) (actions) (side . bottom)
-  (size . 0.25) (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Flycheck error messages\\*" (+popup-buffer) (actions) (side . bottom)
-  (size) (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
- ("^\\(?:\\*magit\\|magit:\\| \\*transient\\*\\)" nil)
- ("^\\*image-dired" (+popup-buffer) (actions) (side . bottom) (size . 0.8)
-  (window-width . 40) (window-height . 0.16) (slot . 20) (vslot)
-  (window-parameters (ttl . 0) (quit) (select . t) (modeline) (autosave)))
- ("^\\*org-roam: " (+popup-buffer) (actions) (side . right) (size)
-  (window-width . 0.33) (window-height . 0.5) (slot . 2) (vslot)
-  (window-parameters (ttl) (quit) (select . ignore) (modeline) (autosave)))
- ("\\*org-roam\\*" (+popup-buffer) (actions) (side . right) (size)
-  (window-width . 0.33) (window-height . 0.5) (slot . 1) (vslot)
-  (window-parameters (ttl) (quit) (select . ignore) (modeline) (autosave)))
- ("^\\*Capture\\*$\\|CAPTURE-.*$" (+popup-buffer) (actions) (side . bottom)
-  (size . 0.42) (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit) (select . t) (modeline)
-                     (autosave . ignore)))
- ("^\\*Org-Babel" (+popup-buffer) (actions) (side . bottom) (size)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Org Src" (+popup-buffer) (actions) (side . bottom) (size . 0.42)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl) (quit) (select . t) (modeline . t) (autosave . t)))
- ("^\\*Org Agenda" nil)
- ("^\\*Edit Formulas\\*$" (+popup-buffer) (actions) (side . bottom)
-  (size . 0.25) (window-width . 40) (window-height . 0.16) (slot . -1)
-  (vslot . -2)
-  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Org \\(?:Select\\|Attach\\|Table Edit\\)" (+popup-buffer) (actions)
-  (side . bottom) (size . 0.25) (window-width . 40) (window-height . 0.16)
-  (slot . -1) (vslot . -2)
-  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^ ?\\*\\(?:Agenda Com\\|Calendar\\|Org Export Dispatcher\\)" (+popup-buffer)
-  (actions) (side . bottom) (size function +popup-shrink-to-fit)
-  (window-width . 40) (window-height . 0.16) (slot . -1) (vslot . -1)
-  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Org Links" (+popup-buffer) (actions) (side . bottom) (size . 2)
-  (window-width . 40) (window-height . 0.16) (slot . -1) (vslot . -1)
-  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Ibuffer\\*$" nil)
- ("^\\*Command Line" (+popup-buffer) (actions) (side . bottom) (size . 8)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*evil-registers" (+popup-buffer) (actions) (side . bottom) (size . 0.3)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- (#[(bufname _)
-    ((if (boundp '+eval-repl-mode)
-         (progn (buffer-local-value '+eval-repl-mode (get-buffer bufname)))))
-    (t)]
-  (+popup-buffer) (actions) (side . bottom) (size . 0.25) (window-width . 40)
-  (window-height . 0.16) (slot) (vslot)
-  (window-parameters
-   (ttl
-    . #[(buf)
-        ((if (plist-get +eval-repl-plist :persist) nil
-           (let* ((process (and t (get-buffer-process buf))))
-             (if process
-                 (progn
-                   (set-process-query-on-exit-flag process nil)
-                   (kill-process process) (kill-buffer buf))
-               nil))))
-        (t)])
-   (quit) (select . ignore) (modeline) (autosave)))
- ("^\\*\\(?:Proced\\|timer-list\\|Abbrevs\\|Output\\|Occur\\|unsent mail.*?\\|message\\)\\*"
-  nil)
- ("^\\*Process List\\*" (+popup-buffer) (actions) (side . bottom) (size . 0.25)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . 101)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*Memory-Profiler-Report " (+popup-buffer) (actions) (side . bottom) (size)
-  (window-width . 0.5) (window-height . 0.4) (slot . 2) (vslot . 100)
-  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
- ("^\\*CPU-Profiler-Report " (+popup-buffer) (actions) (side . bottom) (size)
-  (window-width . 0.5) (window-height . 0.4) (slot . 1) (vslot . 100)
-  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
- ("^\\*Backtrace" (+popup-buffer) (actions) (side . bottom) (size . 0.4)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . 99)
-  (window-parameters (ttl . 5) (quit) (select . ignore) (modeline) (autosave)))
- ("^\\*Warnings" (+popup-buffer) (actions) (side . bottom) (size . 0.25)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . 99)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*info\\*$" (+popup-buffer) (actions) (side . bottom) (size . 0.45)
-  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot . 2)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*xwidget" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . -11)
-  (window-parameters (ttl . 5) (quit . t) (select) (modeline) (autosave)))
- ("^\\*eww\\*" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . -11)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*\\([Hh]elp\\|Apropos\\)" (+popup-buffer) (actions) (side . bottom)
-  (size . 0.42) (window-width . 40) (window-height . 0.16) (slot . 2)
-  (vslot . -8)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^ \\*undo-tree\\*" (+popup-buffer) (actions) (side . left) (size . 20)
-  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*Customize" (+popup-buffer) (actions) (side . right) (size . 0.5)
-  (window-width . 40) (window-height . 0.16) (slot . 2) (vslot)
-  (window-parameters (ttl . 5) (quit) (select . t) (modeline) (autosave)))
- ("^\\*Calc" (+popup-buffer) (actions) (side . bottom) (size . 0.4)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . -7)
-  (window-parameters (ttl . 0) (quit) (select . t) (modeline) (autosave)))
- ("^\\*\\(?:Wo\\)?Man " (+popup-buffer) (actions) (side . bottom) (size . 0.45)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . -6)
-  (window-parameters (ttl . 0) (quit . t) (select . t) (modeline) (autosave)))
- ("^\\*doom:\\(?:v?term\\|e?shell\\)-popup" (+popup-buffer) (actions)
-  (side . bottom) (size . 0.35) (window-width . 40) (window-height . 0.16)
-  (slot) (vslot . -5)
-  (window-parameters (ttl) (quit) (select . t) (modeline) (autosave)))
- ("^\\*doom:" (+popup-buffer) (actions) (side . bottom) (size . 0.35)
-  (window-width . 40) (window-height . 0.16) (slot) (vslot . -4)
-  (window-parameters (ttl . t) (quit) (select . t) (modeline . t) (autosave . t)))
- ("^\\*\\(?:doom \\|Pp E\\)" (+popup-buffer) (actions) (side . bottom)
-  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
-  (slot) (vslot . -3)
-  (window-parameters (ttl . 0) (quit . t) (select . ignore) (modeline)
-                     (autosave . t)))
- ("^\\*\\(?:[Cc]ompil\\(?:ation\\|e-Log\\)\\|Messages\\)" (+popup-buffer)
-  (actions) (side . bottom) (size . 0.3) (window-width . 40)
-  (window-height . 0.16) (slot) (vslot . -2)
-  (window-parameters (ttl) (quit . t) (select . ignore) (modeline)
-                     (autosave . t)))
- ("^\\*Local variables\\*$" (+popup-buffer) (actions) (side . bottom)
-  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
-  (slot . 1) (vslot . -1)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*Completions" nil)
- ("^ \\*" (+popup-buffer) (actions) (side . bottom)
-  (size . +popup-shrink-to-fit) (window-width . 40) (window-height . 0.16)
-  (slot . 1) (vslot . -1)
-  (window-parameters (ttl . 5) (quit . t) (select . ignore) (modeline)
-                     (autosave)))
- ("^\\*" (+popup-buffer) (actions) (side . bottom) (size) (window-width . 40)
-  (window-height . 0.16) (slot . 1) (vslot . -1)
-  (window-parameters (ttl . 5) (quit . t) (select . t) (modeline) (autosave))))
+(defun darth-select-window (window)
+    "NOTE Docuementation expects a window arg"
+    (select-window window))
+
+(defun my/set-buffer-darth ()
+    "Set my regexex"
+    (add-to-list 'display-buffer-alist
+            ;; List of display functions (Emacs will use the first successful one)
+            `("\\*Occur\\*"
+            (display-buffer-reuse-mode-window display-buffer-below-selected)
+            ;; Parameters
+            (window-height . fit-window-to-buffer)
+            (dedicated . t)
+            (body-function . darth-select-window))))
+
+(add-hook 'doom-after-init-hook #'my/set-buffer-darth)
 #+end_src
 
 ** modeline
@@ -549,27 +399,25 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 #+begin_src elisp :tangle yes
 (use-package! emacs
   :init
-  ;; Put Emacs auto-generated junk in a separate file
-  ;; TODO see this in action --- PS its not junk lol who wrote this
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
   (tab-always-indent 'complete)
-  (tab-first-completion nil) ;; word 'word-or-paren-or-punct)
+  (tab-first-completion nil) ;; word 'word-or-paren-or-punct
   ;; (completion-styles '(orderless basic partial-completion emacs22)) ; flex (orderless basic) ; flex -fuzzy find
   (display-line-numbers-type nil) ;numbers, relative , - perfomance enhance...turn on if needed
   ;; (auto-save-default t)
-  ;; (auto-save-timeout 10)
-  ;; (auto-save-interval 200)
+  ;; (auto-save-timeout 10) ;;30:-:
+  ;; (auto-save-interval 200) ;; NOTE: Must be -gt 20...emacs will behave as if value is 20 if less
   ;; (undo-limit 80000000)
   (delete-by-moving-to-trash t) ; use system trash can
   ;; (x-stretch-cursor t) ; see if needed really
   (bookmark-save-flag 1) ; TODO see docs
   ;; (uniquify-buffer-name-style 'post-forward) ;nil::
 
-  ;; (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
+  (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
 
   (doom-fallback-buffer-name "Doom Emacs") ; *doom*
   (+doom-dashboard-name "Darth Doom")
@@ -587,7 +435,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (scroll-margin 18)
   (scroll-conservatively 101)
 
-  (doom-modeline-modal nil)             ;display mode -> NORMAL,INSERT,VISUAL
+  (doom-modeline-modal nil)             ;display mode - NORMAL,INSERT,VISUAL
   (doom-modeline-check-simple-format t)
 
   ;; (lsp-ui-sideline-show-code-actions t) ;nil::
@@ -603,7 +451,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (global-auto-revert-mode t)
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
-
+  (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
+  (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
   :bind
   ((
    :map evil-normal-state-map
@@ -635,16 +484,10 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 
         ("C-'" . olivetti-mode)
 
-    :map doom-leader-map ("to" . hl-todo-occur)
-    ) ; bind conses
-    ); end bind
-  )
-;; ("U" . evil-redo)
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(customize-set-variable 'uniquify-buffer-name-style 'post-forward)
-(customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
+    :map doom-leader-map
+      ("to" . hl-todo-occur)
+      ("SPC" . ace-window)
+    )))
 #+end_src
 
 ** format +onsave disabled modes
@@ -957,9 +800,9 @@ SCHEDULED: <2025-11-29 Sat 19:00>
 #+begin_src emacs-lisp :tangle no
 (use-package! dired-open
   :config
-  (setq dired-open-extensions '(("gif" . "sxiv")
-                                ("jpg" . "sxiv")
-                                ("png" . "sxiv")
+  (setq dired-open-extensions '(("gif" . "viewnior")
+                                ("jpg" . "viewnior")
+                                ("png" . "viewnior")
                                 ("mkv" . "mpv")
                                 ("mp4" . "mpv"))))
 
