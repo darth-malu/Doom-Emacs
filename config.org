@@ -641,6 +641,12 @@ Also see =tab-first-completion.=
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
+** gpg - pinentry
+#+begin_src emacs-lisp :tangle no
+  (defun pinentry-emacs (desc prompt ok error)
+    (let ((str (read-passwd (concat (replace-regexp-in-string "%22" "\"" (replace-regexp-in-string "%0A" "\n" desc)) prompt ": "))))
+      str))
+#+end_src
 ** spelling
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Spelling.html
 *** ispell
