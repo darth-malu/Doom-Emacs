@@ -92,7 +92,7 @@
                     :activation-fn (lsp-activate-on "qml-ts")
                     :server-id 'qmlls))
   :hook
-  (qml-ts-mode (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
+  (qml-ts-mode . (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
                                  ;; lsp-headerline-breadcrumb-mode t
                                  )
                     (lsp-deferred))))
