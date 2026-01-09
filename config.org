@@ -419,8 +419,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 
   (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
 
-  (doom-fallback-buffer-name "Doom Emacs") ; *doom*
-  (+doom-dashboard-name "Darth Doom")
+  (doom-fallback-buffer-name " ") ; *doom*
+  (+doom-dashboard-name "maluware")
 
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
   (+default-want-RET-continue-comments nil)
