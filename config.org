@@ -317,6 +317,8 @@ because ui: popup use set-popup-rules
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
     ;; ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
+    ("\\*info*" :quit t :side right :select t :width 80)
+    ("^\\*WoMan.*\\*" :quit t :side right :width 70)
     ))
 #+end_src
 
