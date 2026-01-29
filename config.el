@@ -70,6 +70,9 @@
    (julia . t)
    (python . t)
    (jupyter . t)))
+(setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+                                                    (:session . "py")
+                                                    (:kernel . "python3")))
 
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
@@ -432,7 +435,7 @@
                             :prepend t)
 
                            ;; Learning New Languages
-                           ("l" "Programming Languages")
+                           ("l" "Learn Programming Languages")
                            ("lp" "Python" plain
                             (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
                             "+ [ ] %?")
@@ -441,6 +444,11 @@
                             "+ [ ] %?")
                            ("ln" "Nix" plain
                             (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
+                            "+ [ ] %?")
+
+                           ;; School
+                           ("s" "School - USIU" plain
+                            (file+headline "USIU_TODO.org" "TODO school work")
                             "+ [ ] %?")
 
                            ;; Life's Morsels

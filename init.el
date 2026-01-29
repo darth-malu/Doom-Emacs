@@ -85,20 +85,10 @@ magit
 pdf               ; pdf enhancements
 ;; rgb ; create color str
 tree-sitter       ; syntax and parsing, sitting in a tree...
-
-;; taskrunner        ;This module integrates taskrunner into Doom Emacs, which scraps runnable tasks from build systems like make, gradle, npm and the like.
-;;ein               ; tame Jupyter notebooks with emacs
-;; upload            ; map local to remote projects via ssh/ftp
-;; pass              ; password manager for nerds
-;;prodigy           ; FIXME managing external services & code builders
-;;terraform         ; infrastructure as code
-;; tmux              ; an API for interacting with tmux
-;;ansible
-;;biblio            ; Writes a PhD for you (citation needed)
-;;collab            ; buffers with friends
-;; ( debugger +lsp)          ; FIXME stepping through code, to help you add bugs
-;;direnv
-;;docker
+direnv
+docker
+pass
+ein
 
 :os
        (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
@@ -106,7 +96,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
 
 :lang
        (cc +lsp +tree-sitter)         ; C > C++ == 1
-       ;;(csharp +dotnet +lsp +tree-sitter)            ; unity, .NET, and mono shenanigans
+       (csharp +dotnet +lsp +tree-sitter)            ; unity, .NET, and mono shenanigans
        ;; (java +lsp +tree-sitter)       ; the poster child for carpal tunnel syndrome
        (markdown +grip +tree-sitter)          ; writing docs for people to ignore
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
@@ -116,7 +106,7 @@ tree-sitter       ; syntax and parsing, sitting in a tree...
        (web +lsp +tree-sitter)               ; the tubes
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        data              ; config/data formats - csv/xml
-       ;; latex             ; writing papers in Emacs has never been so fun
+       (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
        ;; lua               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML

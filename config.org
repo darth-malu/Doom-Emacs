@@ -85,6 +85,7 @@ https://renzmann.github.io/posts/006_emacs_2_python/
 #+end_src
 
 *** jupyter
+**** Jupyter as interpreter
 #+begin_src emacs-lisp :tangle no
 (use-package! python
   :config
@@ -101,6 +102,7 @@ https://renzmann.github.io/posts/006_emacs_2_python/
 #+end_src
 
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
+
 **** Machine Learning
 #+begin_src emacs-lisp :tangle yes
 (org-babel-do-load-languages
@@ -109,8 +111,10 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
    (julia . t)
    (python . t)
    (jupyter . t)))
+(setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+                                                    (:session . "py")
+                                                    (:kernel . "python3")))
 #+end_src
-
 ** Lsp Mode
 *** lsp-mode
 #+begin_src emacs-lisp :tangle yes
@@ -1385,7 +1389,7 @@ dont have to select manually you can:
                             :prepend t)
 
                            ;; Learning New Languages
-                           ("l" "Programming Languages")
+                           ("l" "Learn Programming Languages")
                            ("lp" "Python" plain
                             (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
                             "+ [ ] %?")
@@ -1394,6 +1398,11 @@ dont have to select manually you can:
                             "+ [ ] %?")
                            ("ln" "Nix" plain
                             (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
+                            "+ [ ] %?")
+
+                           ;; School
+                           ("s" "School - USIU" plain
+                            (file+headline "USIU_TODO.org" "TODO school work")
                             "+ [ ] %?")
 
                            ;; Life's Morsels
