@@ -97,17 +97,18 @@
                                  )
                     (lsp-deferred))))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
+    ;; ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
     ))
 
 (custom-set-faces!
@@ -224,19 +225,29 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+
+;; Trying to save workspaces
+(after! persp-mode
+  ;; Auto-save workspaces when Emacs exits
+  (setq persp-auto-save-opt 1)
+  ;; Save all workspace info including window configurations
+  (setq persp-set-last-persp-for-new-frames nil)
+  (setq persp-reset-windows-on-nil-window-conf nil)
+  ;; Load workspaces automatically on startup
+  (setq persp-auto-resume-time -1))
 
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
@@ -289,13 +300,17 @@
 
 (use-package! projectile
   :init
-  (setq projectile-project-search-path '(("~/.code/" . 1) "~/.code/SkunkWorks/"))
+  (setq projectile-project-search-path '(
+                                         ("~/Development" . 1)
+                                         "~/Development/SkunkWorks"
+                                         "~/Development/Quickshell-Inspo"
+                                         ))
   :custom
   (projectile-auto-cleanup-known-projects nil))
 
 (use-package! org
   :init
-  (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
+  (setq org-directory "~/Documents/Org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
         ;; org-default-notes-file (concat org-directory "/notes.org")
         org-agenda-files (list org-directory)
         org-default-notes-file (expand-file-name  "notes.org" org-directory))
@@ -340,7 +355,7 @@
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
 ;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/org/roam")
+(setq org-roam-directory (file-truename "~/Documents/Org/roam")
       org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
       org-roam-dailies-directory "journal/") ;
   ;; :custom

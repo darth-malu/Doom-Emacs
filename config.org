@@ -307,9 +307,11 @@ because ui: popup use set-popup-rules
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
+    ;; ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
     ))
 #+end_src
 
+ttl - time to live
 **** vanilla emacs
 =Anatomy of an entry=
 ( BUFFER-MATCHER
@@ -587,6 +589,19 @@ unneeded since we use ws-butler which:
 + only on modified lines
 + replaces trailing whitespace with virtual whitespace
 *** default workspace behaviour fix
+#+begin_src emacs-lisp :tangle yes
+;; Trying to save workspaces
+(after! persp-mode
+  ;; Auto-save workspaces when Emacs exits
+  (setq persp-auto-save-opt 1)
+  ;; Save all workspace info including window configurations
+  (setq persp-set-last-persp-for-new-frames nil)
+  (setq persp-reset-windows-on-nil-window-conf nil)
+  ;; Load workspaces automatically on startup
+  (setq persp-auto-resume-time -1))
+
+#+end_src
+
 #+begin_src emacs-lisp :tangle no
 (after! persp-mode
   (setq persp-emacsclient-init-frame-behaviour-override
@@ -797,7 +812,11 @@ SCHEDULED: <2025-11-29 Sat 19:00>
 #+begin_src elisp :tangle yes
 (use-package! projectile
   :init
-  (setq projectile-project-search-path '(("~/.code/" . 1) "~/.code/SkunkWorks/"))
+  (setq projectile-project-search-path '(
+                                         ("~/Development" . 1)
+                                         "~/Development/SkunkWorks"
+                                         "~/Development/Quickshell-Inspo"
+                                         ))
   :custom
   (projectile-auto-cleanup-known-projects nil))
 #+end_src
@@ -1128,7 +1147,7 @@ I recommend using eshell for light cli work, and using your external terminal em
 #+begin_src emacs-lisp :tangle yes
 (use-package! org
   :init
-  (setq org-directory "~/org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
+  (setq org-directory "~/Documents/Org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
         ;; org-default-notes-file (concat org-directory "/notes.org")
         org-agenda-files (list org-directory)
         org-default-notes-file (expand-file-name  "notes.org" org-directory))
@@ -1252,7 +1271,7 @@ org-bullets-face-name
 ** org-roam
 #+begin_src emacs-lisp :tangle yes
 ;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/org/roam")
+(setq org-roam-directory (file-truename "~/Documents/Org/roam")
       org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
       org-roam-dailies-directory "journal/") ;
   ;; :custom
