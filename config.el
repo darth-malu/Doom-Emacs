@@ -64,6 +64,13 @@
 
 (setq lsp-pyright-langserver-command "basedpyright")
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (julia . t)
+   (python . t)
+   (jupyter . t)))
+
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))

@@ -101,6 +101,15 @@ https://renzmann.github.io/posts/006_emacs_2_python/
 #+end_src
 
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
+**** Machine Learning
+#+begin_src emacs-lisp :tangle yes
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (julia . t)
+   (python . t)
+   (jupyter . t)))
+#+end_src
 
 ** Lsp Mode
 *** lsp-mode

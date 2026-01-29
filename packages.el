@@ -10,9 +10,8 @@
 ;;; ORG
 (package! olivetti)
 (package! org-super-agenda)
-;; (package! jupyter)
+(package! jupyter)
 (package! org-auto-tangle)
-;; (package! qml-ts-mode)
 (package! drag-stuff)
 
 ;;; LSP
