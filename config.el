@@ -132,7 +132,7 @@
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
-  '(mode-line-inactive :family "VictorMono Nerd Font" :height 0.92))
+  '(mode-line-inactive :family "VictorMono Nerd Font" :weight bold :height 0.95))
 
 (setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
       lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))

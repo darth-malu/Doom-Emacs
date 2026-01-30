@@ -370,13 +370,8 @@ works !!...height too small thought :height 0.9
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
-  '(mode-line-inactive :family "VictorMono Nerd Font" :height 0.92))
+  '(mode-line-inactive :family "VictorMono Nerd Font" :weight bold :height 0.95))
 #+end_src
-
-=Nice Fonts=
-+ Mononoki Nerd Font
-+ SpaceMono Nerd Font
-+ VictorMono Nerd Font
 
 *** battery
 #+begin_src emacs-lisp :tangle no
