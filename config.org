@@ -299,9 +299,14 @@ doom-serif-font
 
 =Ligatures=
 #FIXME Make this work for org
-#+begin_src emacs-lisp :tangle no
-(set-font-ligatures! '(org-mode) ">>=" ">>-")
+#+begin_src emacs-lisp :tangle yes
+;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
+
+(after! org-mode
+  (set-ligatures! 'org-mode
+    :def "func"))
 #+end_src
+
 ** Inbuilt stuff
 *** abbrev
 
@@ -363,14 +368,10 @@ works !!...height too small thought :height 0.9
 
 #+begin_src emacs-lisp :tangle yes
 (custom-set-faces!
-  ;; '(mode-line :family "Iosevka Comfy" :size 15)
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
   ;; '(doom-modeline-buffer-modified :foreground "green") ; color of modified buffer indicator
-  '(mode-line-inactive :family "Iosevka Comfy"))
+  '(mode-line-inactive :family "VictorMono Nerd Font" :height 0.92))
 #+end_src
-
-#+RESULTS:
-: -1
 
 =Nice Fonts=
 + Mononoki Nerd Font

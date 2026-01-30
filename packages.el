@@ -19,7 +19,7 @@
 (package! lsp-pyright)
 (package! blacken)
 ;; (package! ein)
-;; (package! direnv)
+(package! direnv)
 (package! tmr)
 ;; (package! py-autopep8)
 (package! qml-ts-mode
