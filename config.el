@@ -40,7 +40,7 @@
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
   ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
   ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq elpy-modules (cl-set-difference
+  (setq! elpy-modules (cl-set-difference
                       elpy-modules
                       '(elpy-module-highlight-indentation
                         elpy-module-flymake)))
@@ -55,14 +55,13 @@
   ;; :config
   ;; (setq +python-ipython-repl-args '("-i" "--simple-prompt" "--no-color-info"))
   ;; (setq +python-jupyter-repl-args '("--simple-prompt"))
+  (lsp-pyright-langserver-command "basedpyright")
   :hook
   (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
                    (setq +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
-
-(setq lsp-pyright-langserver-command "basedpyright")
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -107,26 +106,31 @@
                                  )
                     (lsp-deferred))))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(use-package direnv
+ :config
+ (direnv-mode))
+
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 
 (after! org-mode
   (set-ligatures! 'org-mode
-    :def "func"))
+    :def "ƒ"))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
-    ;; ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
-    ("\\*info*" :quit t :side right :select t :width 80)
+    ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
     ("^\\*WoMan.*\\*" :quit t :side right :width 70)
+    ;; ("\\*ein: http.*\\*" :select t :side left :width 80)
+    ;; ("\\*ein:notebooklist.*\\*" :select t :side bottom :actions (display-buffer-in-side-window))
     ))
 
 (custom-set-faces!
@@ -202,6 +206,8 @@
   (drag-stuff-define-keys)
   (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
   (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
+  (customize-set-variable 'ein:jupyter-server-use-command 'server)
+  (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
   :bind
   ((
    :map evil-normal-state-map
@@ -242,19 +248,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;; Trying to save workspaces
 (after! persp-mode

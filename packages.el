@@ -18,7 +18,7 @@
 (package! elpy)
 (package! lsp-pyright)
 (package! blacken)
-;; (package! ein)
+(package! ein)
 (package! direnv)
 (package! tmr)
 ;; (package! py-autopep8)
