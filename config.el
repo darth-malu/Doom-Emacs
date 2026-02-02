@@ -306,7 +306,8 @@
   :config
   ;; (elcord-mode 1)
   (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t))
+        elcord-use-major-mode-as-main-icon t
+        ))
 
 (custom-set-faces!
   '(aw-leading-char-face
@@ -324,8 +325,9 @@
 (use-package! projectile
   :init
   (setq projectile-project-search-path '(
-                                         ("~/Development" . 1)
+                                         ;; ("~/Development" . 1)
                                          "~/Development/SkunkWorks"
+                                         "~/USIU/Development/2026"
                                          "~/Development/Quickshell-Inspo"
                                          ))
   :custom
