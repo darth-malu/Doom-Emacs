@@ -474,6 +474,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
         ;; TODO see map!
         ;;;misc
         ("M-;" . save-buffer)
+        ;; ("C-s" . save-buffer)
         ("<mouse-8>" . previous-buffer)
         ("<mouse-9>" . next-buffer)
         ("C-M-o" . consult-outline)
@@ -818,7 +819,7 @@ SCHEDULED: <2025-11-29 Sat 19:00>
 (use-package! all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 #+end_src
-** projectile
+*** projectile
 
 0 - check DIRECTORY
 1- check SUBDIRECTORIES
@@ -829,11 +830,12 @@ SCHEDULED: <2025-11-29 Sat 19:00>
   (setq projectile-project-search-path '(
                                          ;; ("~/Development" . 1)
                                          "~/Development/SkunkWorks"
-                                         "~/USIU/Development/2026"
-                                         "~/Development/Quickshell-Inspo"
+                                         ;; ("~/USIU" . 1)
+                                         "~/USIU/2026"
+                                         "~/Development/Quickshell-Inspiration"
                                          ))
   :custom
-  (projectile-auto-cleanup-known-projects nil))
+  (projectile-auto-cleanup-known-projects t))
 #+end_src
 ** old | phased out
 *** dired

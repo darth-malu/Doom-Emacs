@@ -110,13 +110,13 @@
  :config
  (direnv-mode))
 
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font")
-  doom-font (font-spec :family "JetBrains Mono"
-                       :size 15
-                       :weight 'regular)
-  doom-emoji-font (font-spec :family "Noto Color Emoji")
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+  (setq
+    doom-symbol-font (font-spec :family "Symbols Nerd Font")
+    doom-font (font-spec :family "JetBrains Mono"
+                         :size 15
+                         :weight 'regular)
+    doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 
@@ -214,6 +214,7 @@
         ;; TODO see map!
         ;;;misc
         ("M-;" . save-buffer)
+        ;; ("C-s" . save-buffer)
         ("<mouse-8>" . previous-buffer)
         ("<mouse-9>" . next-buffer)
         ("C-M-o" . consult-outline)
@@ -248,19 +249,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
-(defun split-and-follow-horizontally ()
+ (defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
-(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+ (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
-(defun split-and-follow-vertically ()
+ (defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
-(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+ (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;; Trying to save workspaces
 (after! persp-mode
@@ -327,11 +328,12 @@
   (setq projectile-project-search-path '(
                                          ;; ("~/Development" . 1)
                                          "~/Development/SkunkWorks"
-                                         "~/USIU/Development/2026"
-                                         "~/Development/Quickshell-Inspo"
+                                         ;; ("~/USIU" . 1)
+                                         "~/USIU/2026"
+                                         "~/Development/Quickshell-Inspiration"
                                          ))
   :custom
-  (projectile-auto-cleanup-known-projects nil))
+  (projectile-auto-cleanup-known-projects t))
 
 (use-package! org
   :init
