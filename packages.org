@@ -32,6 +32,7 @@
 ;; (package! py-autopep8)
 (package! qml-ts-mode
   :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
+(package! astro-ts-mode)
 ;; (package! prettier)
 ;; (package! spotify)
 ;; (package! emms-player-spotify)

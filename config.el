@@ -92,6 +92,17 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
+(setq treesit-language-source-alist
+      '((astro "https://github.com/virchau13/tree-sitter-astro")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
+
+(use-package! astro-ts-mode
+  :defer t
+  :hook)
+
+(mapc #'treesit-install-language-grammar '(astro css tsx))
+
 (use-package qml-ts-mode
   :after lsp-mode
   :config
@@ -110,13 +121,13 @@
  :config
  (direnv-mode))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 
@@ -249,19 +260,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;; Trying to save workspaces
 (after! persp-mode
