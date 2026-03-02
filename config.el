@@ -92,16 +92,26 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
+;; 1. Global Tree-sitter Setup (Runs on Emacs start)
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")
         (css "https://github.com/tree-sitter/tree-sitter-css")
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
 
-;; (use-package! astro-ts-mode
-;;   :defer t
-;;   :hook)
+(dolist (lang '(astro css tsx))
+  (unless (treesit-language-available-p lang)
+    (treesit-install-language-grammar lang)))
 
-(mapc #'treesit-install-language-grammar '(astro css tsx))
+;; 2. Specific Mode Configuration
+(use-package! astro-ts-mode
+  :mode "\\.astro\\'"
+  :init
+  (when (modulep! +lsp)
+    (add-hook 'astro-ts-mode-hook #'lsp! 'append)))
+
+;; 3. Ensure CSS and TSX also use Tree-sitter modes
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
 
 (use-package qml-ts-mode
   :after lsp-mode
@@ -121,19 +131,13 @@
  :config
  (direnv-mode))
 
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
-
-;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
-
-(after! org-mode
-  (set-ligatures! 'org-mode
-    :def "ƒ"))
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
@@ -165,6 +169,9 @@
   :init
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  ;; latex
+  (org-latex-compiler 'lualatex)        ;pdflatex::
+  (org-preview-latex-default-process 'dvisvgm) ;dvipng
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -260,19 +267,19 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
- (defun split-and-follow-horizontally ()
+(defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
 
- (defun split-and-follow-vertically ()
+(defun split-and-follow-vertically ()
 	(interactive)
 	(split-window-right)
 	(balance-windows)
 	(other-window 1))
- (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
 
 ;; Trying to save workspaces
 (after! persp-mode
@@ -292,6 +299,41 @@
 (use-package! corfu
   :init
   (customize-set-variable 'corfu-auto nil))
+
+;; (after! spell-fu
+;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
+;;   ;; (setq spell-fu-faces nil)
+;;   (setq spell-fu-ignore-modes (list 'org-mode) )
+;;   )
+
+(use-package! spell-fu
+  :defer t
+  :custom
+  (spell-fu-ignore-modes (list 'org-mode 'markdown-mode 'html-mode 'prog-mode 'astro-ts-mode))
+  (spell-fu-global-ignore-buffer (lambda (buf)
+                                   (buffer-local-value 'buffer-read-only buf)))
+  :config
+  (spell-fu-global-mode -1)
+
+  ;; :hook
+  ;; (emacs-lisp-mode . (lambda () (spell-fu-mode)))
+  ;; (org-mode . (lambda ()
+  ;;             (setq-local spell-fu-faces-exclude
+  ;;               '(org-block-begin-line
+  ;;                 org-block-end-line
+  ;;                 org-code
+  ;;                 org-date
+  ;;                 org-drawer org-document-info-keyword
+  ;;                 org-ellipsis
+  ;;                 org-link
+  ;;                 org-meta-line
+  ;;                 org-properties
+  ;;                 org-properties-value
+  ;;                 org-special-keyword
+  ;;                 org-src
+  ;;                 org-tag
+  ;;                 org-verbatim))))
+)
 
 (use-package! evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
@@ -348,23 +390,21 @@
 
 (use-package! org
   :init
-  (setq org-directory "~/Documents/Org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
-        ;; org-default-notes-file (concat org-directory "/notes.org")
-        org-agenda-files (list org-directory)
-        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+  ;; (add-to-list 'org-agenda-files "~/File.org")
+  (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+         org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
   (org-mode . (lambda ()
-                ;; (vi-tilde-fringe-mode -1)
-                ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
                 (abbrev-mode)
+                ;; (org-fragtog-mode) NOTE: useful but maybe manual toggles better
                 (spell-fu-mode -1)
                 (diff-hl-mode -1)))
   :config
   (defun my-current-time ()
     (insert (format-time-string "%A,%B %e%t%T")))
   (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
+
   :custom
-  ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
   ;; (org-log-done 'note) ;task done with note prompted to user
@@ -387,13 +427,16 @@
         ("@nix" . ?N)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+
+  ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
+  )
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
 ;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/Documents/Org/roam")
+(setq org-roam-directory (file-truename "~/Documents/IMPORTANT/Org/roam")
       org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
       org-roam-dailies-directory "journal/") ;
   ;; :custom
@@ -525,6 +568,9 @@
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
 ;; (setq org-agenda-files (list "inbox.org"))
+
+(setq! org-agenda-files (list org-directory
+                         (file-name-concat org-directory "roam")))
 
 (setq org-agenda-custom-commands
       `(

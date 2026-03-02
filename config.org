@@ -245,16 +245,26 @@ nil: An incremental analysis assistant for writing in Nix.
 #+end_src
 ** Astro
 #+begin_src emacs-lisp :tangle yes
+;; 1. Global Tree-sitter Setup (Runs on Emacs start)
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")
         (css "https://github.com/tree-sitter/tree-sitter-css")
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
 
-;; (use-package! astro-ts-mode
-;;   :defer t
-;;   :hook)
+(dolist (lang '(astro css tsx))
+  (unless (treesit-language-available-p lang)
+    (treesit-install-language-grammar lang)))
 
-(mapc #'treesit-install-language-grammar '(astro css tsx))
+;; 2. Specific Mode Configuration
+(use-package! astro-ts-mode
+  :mode "\\.astro\\'"
+  :init
+  (when (modulep! +lsp)
+    (add-hook 'astro-ts-mode-hook #'lsp! 'append)))
+
+;; 3. Ensure CSS and TSX also use Tree-sitter modes
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
 #+end_src
 ** QML
 Quickshell site
@@ -311,7 +321,7 @@ doom-serif-font
 
 =Ligatures=
 #FIXME Make this work for org
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 
 (after! org-mode
@@ -427,6 +437,9 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   :init
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  ;; latex
+  (org-latex-compiler 'lualatex)        ;pdflatex::
+  (org-preview-latex-default-process 'dvisvgm) ;dvipng
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -703,7 +716,7 @@ Dictionary is set by ispell-dictionary variable. Can be changed locally with the
 
 *** TODO spell-fu
 always activating in org mode...keep it as hook in [[ORG]]
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 ;; (after! spell-fu
 ;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
 ;;   ;; (setq spell-fu-faces nil)
@@ -711,33 +724,33 @@ always activating in org mode...keep it as hook in [[ORG]]
 ;;   )
 
 (use-package! spell-fu
-  ;;:defer t
+  :defer t
   :custom
-  (spell-fu-ignore-modes (list 'org-mode))
+  (spell-fu-ignore-modes (list 'org-mode 'markdown-mode 'html-mode 'prog-mode 'astro-ts-mode))
   (spell-fu-global-ignore-buffer (lambda (buf)
                                    (buffer-local-value 'buffer-read-only buf)))
   :config
   (spell-fu-global-mode -1)
 
-  :hook
+  ;; :hook
   ;; (emacs-lisp-mode . (lambda () (spell-fu-mode)))
-  (org-mode . (lambda ()
-              (setq-local spell-fu-faces-exclude
-                '(org-block-begin-line
-                  org-block-end-line
-                  org-code
-                  org-date
-                  org-drawer org-document-info-keyword
-                  org-ellipsis
-                  org-link
-                  org-meta-line
-                  org-properties
-                  org-properties-value
-                  org-special-keyword
-                  org-src
-                  org-tag
-                  org-verbatim))
-                  )))
+  ;; (org-mode . (lambda ()
+  ;;             (setq-local spell-fu-faces-exclude
+  ;;               '(org-block-begin-line
+  ;;                 org-block-end-line
+  ;;                 org-code
+  ;;                 org-date
+  ;;                 org-drawer org-document-info-keyword
+  ;;                 org-ellipsis
+  ;;                 org-link
+  ;;                 org-meta-line
+  ;;                 org-properties
+  ;;                 org-properties-value
+  ;;                 org-special-keyword
+  ;;                 org-src
+  ;;                 org-tag
+  ;;                 org-verbatim))))
+)
 #+end_src
 
 =Exclude faces=
@@ -1132,9 +1145,6 @@ I recommend using eshell for light cli work, and using your external terminal em
   (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
 
 (use-package mu4e
-  ;; :load-path "/usr/share/emacs/site-lisp/mu4e/"
-  ;; :load-path "/nix/store/*share/emacs/site-lisp/mu4e/"
-  ;; :load-path "/nix/store/lfa1mdkbj5m06nvaxh8minq2lvxdi4z4-mu-1.12.9-mu4e/share/emacs/site-lisp/mu4e/"
   :load-path my-mu4e-path
   :defer 20 ; Wait until 20 seconds after startup
   :config
@@ -1177,23 +1187,21 @@ I recommend using eshell for light cli work, and using your external terminal em
 #+begin_src emacs-lisp :tangle yes
 (use-package! org
   :init
-  (setq org-directory "~/Documents/Org" ; trailing slash important or use expand-file-name(convert file name to absolute and canonicalize/standardize it)
-        ;; org-default-notes-file (concat org-directory "/notes.org")
-        org-agenda-files (list org-directory)
-        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+  ;; (add-to-list 'org-agenda-files "~/File.org")
+  (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+         org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
   (org-mode . (lambda ()
-                ;; (vi-tilde-fringe-mode -1)
-                ;; (display-line-numbers-mode -1) ;; in emacs init now so no need
                 (abbrev-mode)
+                ;; (org-fragtog-mode) NOTE: useful but maybe manual toggles better
                 (spell-fu-mode -1)
                 (diff-hl-mode -1)))
   :config
   (defun my-current-time ()
     (insert (format-time-string "%A,%B %e%t%T")))
   (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
+
   :custom
-  ;; (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕"))
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
   ;; (org-log-done 'note) ;task done with note prompted to user
@@ -1216,7 +1224,10 @@ I recommend using eshell for light cli work, and using your external terminal em
         ("@nix" . ?N)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+
+  ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
+  )
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
@@ -1301,7 +1312,7 @@ org-bullets-face-name
 ** org-roam
 #+begin_src emacs-lisp :tangle yes
 ;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/Documents/Org/roam")
+(setq org-roam-directory (file-truename "~/Documents/IMPORTANT/Org/roam")
       org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
       org-roam-dailies-directory "journal/") ;
   ;; :custom
@@ -1702,6 +1713,9 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
 ;; (setq org-agenda-files (list "inbox.org"))
+
+(setq! org-agenda-files (list org-directory
+                         (file-name-concat org-directory "roam")))
 
 (setq org-agenda-custom-commands
       `(

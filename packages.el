@@ -13,6 +13,7 @@
 (package! jupyter)
 (package! org-auto-tangle)
 (package! drag-stuff)
+(package! org-fragtog)
 
 ;;; LSP
 (package! elpy)
