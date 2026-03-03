@@ -77,7 +77,7 @@
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 
-(use-package lsp-treemacs
+(use-package! lsp-treemacs
   :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 
 (after! ccls
@@ -113,7 +113,7 @@
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
 
-(use-package qml-ts-mode
+(use-package! qml-ts-mode
   :after lsp-mode
   :config
   (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
@@ -127,17 +127,9 @@
                                  )
                     (lsp-deferred))))
 
-(use-package direnv
+(use-package! direnv
  :config
  (direnv-mode))
-
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font")
-  doom-font (font-spec :family "JetBrains Mono"
-                       :size 15
-                       :weight 'regular)
-  doom-emoji-font (font-spec :family "Noto Color Emoji")
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
@@ -147,6 +139,19 @@
     ;; ("\\*ein: http.*\\*" :select t :side left :width 80)
     ;; ("\\*ein:notebooklist.*\\*" :select t :side bottom :actions (display-buffer-in-side-window))
     ))
+
+;;; :ui doom-dashboard
+(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
+;; Hide the menu for as minimalistic a startup screen as possible.
+(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
+
+(setq
+  doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  doom-font (font-spec :family "JetBrains Mono"
+                       :size 15
+                       :weight 'regular)
+  doom-emoji-font (font-spec :family "Noto Color Emoji")
+  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
@@ -267,19 +272,27 @@
 
 (setq backward-delete-char-untabify-method 'all)
 
-(defun split-and-follow-horizontally ()
-	(interactive)
-	(split-window-below)
-	(balance-windows)
-	(other-window 1))
-(global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+(use-package! elcord
+  :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  ;; (elcord-mode 1)
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t
+        ))
 
-(defun split-and-follow-vertically ()
-	(interactive)
-	(split-window-right)
-	(balance-windows)
-	(other-window 1))
-(global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+(use-package! org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
+  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
+
+(use-package! corfu
+  :init
+  (customize-set-variable 'corfu-auto nil))
 
 ;; Trying to save workspaces
 (after! persp-mode
@@ -290,15 +303,6 @@
   (setq persp-reset-windows-on-nil-window-conf nil)
   ;; Load workspaces automatically on startup
   (setq persp-auto-resume-time -1))
-
-;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
-;; Hide the menu for as minimalistic a startup screen as possible.
-(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
-
-(use-package! corfu
-  :init
-  (customize-set-variable 'corfu-auto nil))
 
 ;; (after! spell-fu
 ;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
@@ -336,6 +340,7 @@
 )
 
 (use-package! evil-nerd-commenter
+  :defer t
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (use-package! hl-todo
@@ -352,29 +357,10 @@
                                 ("NOTE"       success bold)
                                 ("DEPRECATED" font-lock-doc-face bold))))
 
-(use-package! elcord
-  :commands elcord-mode
-  :custom
-  (elcord-display-elapsed nil)
-  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
-  :config
-  ;; (elcord-mode 1)
-  (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t
-        ))
-
 (custom-set-faces!
   '(aw-leading-char-face
     :foreground "white" :background "red"
     :weight bold :height 2.5 :box (:line-width 10 :color "red")))
-
-(use-package! org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
-  ;; :hook (org-src-mode . org-auto-tangle-mode)
-  :config
-  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
-  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
 
 (use-package! projectile
   :init
@@ -388,22 +374,20 @@
   :custom
   (projectile-auto-cleanup-known-projects t))
 
+(defun my-org-mode-setup ()
+  (abbrev-mode)
+  (spell-fu-mode -1)
+  (diff-hl-mode -1))
+
 (use-package! org
   :init
-  ;; (add-to-list 'org-agenda-files "~/File.org")
   (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
          org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
-  (org-mode . (lambda ()
-                (abbrev-mode)
-                ;; (org-fragtog-mode) NOTE: useful but maybe manual toggles better
-                (spell-fu-mode -1)
-                (diff-hl-mode -1)))
-  :config
-  (defun my-current-time ()
-    (insert (format-time-string "%A,%B %e%t%T")))
-  (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
+  (org-mode . my-org-mode-setup)
 
+  :config
+  
   :custom
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
@@ -413,42 +397,33 @@
 
   (org-tag-alist
       '(;;Places
-        ("@home" . ?H)
-        ("@school" . ?S)
-        ("@babe" . ?B)
+        ("@home" . ?h)
+        ("@school" . ?s)
+
         ;;devices
         ("@carthage" . ?C)
         ("@tangier" . ?T)
+
         ;;activites
-        ("@work" . ?W)
-        ("@pyrple" . ?P)
-        ("youtubr" . ?Y)
-        ("@emacs" . ?E)
-        ("@nix" . ?N)))
+        ("@work" . ?w)
+        ("@pyrple" . ?p)
+        ("@youtubr" . ?y)
+        ("@emacs" . ?e)
+        ("@linux" . ?l)
+        ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
-
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
-  )
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
-;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/Documents/IMPORTANT/Org/roam")
-      org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
-      org-roam-dailies-directory "journal/") ;
-  ;; :custom
-  ;; (org-roam-completion-everywhere t) ;default t
-  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
-  ;;        ("C-c n f" . org-roam-node-find)
-  ;;        ("C-c n i" . org-roam-node-insert)
-  ;;        ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ;; ("C-c n j" . org-roam-dailies-capture-today))
-  ;; :config
-  ;; (org-roam-db-autosync-enable))
+(after! org-roam
+  (setq org-roam-directory (expand-file-name "roam" org-directory)
+        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
+        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
+(org-roam-db-autosync-enable))
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
@@ -559,37 +534,35 @@
                             :empty-lines 1)
                            )))
 
-(setq org-agenda-files
-      (list "~/org")
-      ;; '("~/org/agenda")
-      ;; (list "inbox.org")
-      )
-
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
-;; (setq org-agenda-files (list "inbox.org"))
+(defvar my/usiu-files
+  (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
+;; (after! org)
 (setq! org-agenda-files (list org-directory
                          (file-name-concat org-directory "roam")))
 
-(setq org-agenda-custom-commands
-      `(
-        ("D" "Today's view"
-         ((todo "WAIT"
-                ((org-agenda-overriding-header "Tasks on hold\n")))
-          (agenda ""
-                  ((org-agenda-block-separator nil) ;"*"
-                   (org-agenda-span 1) ;7:: how many days should it span
-                   (org-deadline-warning-days 0) ; remove warnings for events not for today
-                   ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
-                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
-                   ;; (org-agenda-fontify-priorities nil)
-                   (org-agenda-start-day nil)
-                   (org-agenda-overriding-header "\nDaily agenda view\n")))
-          ))
-        ("P" "Protesilaos"
-         ,maluware-custom-org-daily-agenda)
-        ))
+(setq! org-agenda-custom-commands
+       `(("S" "School Tasks" tags-todo "@school")
+         ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
+                                                (org-agenda-overriding-header "USIU 2026 - TODO")))))
+         ("n" "Linux + Nix" tags-todo "@nix+@linux")
+
+         ("d" "Today's view"
+          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+           (agenda ""
+                   ((org-agenda-block-separator nil)
+                    (org-agenda-span 1)
+                    (org-agenda-overriding-header "\n")
+                    (org-agenda-start-day nil)
+                    ))
+           (todo "WAIT"
+                 ((org-agenda-block-separator nil)
+                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 
 ;; Function to be run when org-agenda is opened
 (defun org-agenda-open-hook()
@@ -600,13 +573,8 @@
 (add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
 
 (after! org
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (jupyter . t))))
+(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
 
 (setq magit-view-git-manual-method 'woman)
-
-(map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
 
 (setq eros-eval-result-prefix "⟹ ") ; default =>

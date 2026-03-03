@@ -9,7 +9,6 @@
 
 * language major modes
 NOTE: if treesitter available the mode has an appended -ts-mode eg python-ts-mode
-
 ** emacs lsp booster
 #+begin_src emacs-lisp :tangle yes
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
@@ -123,7 +122,7 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 #+end_src
 *** lsp treemacs
 #+begin_src emacs-lisp :tangle yes
-(use-package lsp-treemacs
+(use-package! lsp-treemacs
   :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 #+end_src
 *** lsp ui
@@ -270,7 +269,7 @@ nil: An incremental analysis assistant for writing in Nix.
 Quickshell site
 
 #+begin_src elisp :tangle yes
-(use-package qml-ts-mode
+(use-package! qml-ts-mode
   :after lsp-mode
   :config
   (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
@@ -287,48 +286,18 @@ Quickshell site
 
 ** dotnet
 #+begin_src emacs-lisp :tangle no
-(use-package sharper
+(use-package! sharper
   :demand t
   :bind
   ("C-c n" . sharper-main-transient))
 #+end_src
 ** direnv
 #+begin_src elisp :tangle yes
-(use-package direnv
+(use-package! direnv
  :config
  (direnv-mode))
 #+end_src
 * DOOM functionality
-** fonts
-change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
-
-#+begin_src emacs-lisp :tangle yes
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
-#+end_src
-
-=Useful conditionals=
-(if (string-equal (system-name) "tangier") 'regular 'regular))
-
-=Investigate=
-doom-unicode-font
-doom-serif-font
-
-=Ligatures=
-#FIXME Make this work for org
-#+begin_src emacs-lisp :tangle no
-;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
-
-(after! org-mode
-  (set-ligatures! 'org-mode
-    :def "ƒ"))
-#+end_src
-
 ** Inbuilt stuff
 *** abbrev
 
@@ -338,7 +307,13 @@ abbrev mode is buffer-local
 
 #+begin_src emacs-lisp :tangle no
 (define-abbrev global-abbrev-table "meab" "This is my first abbrev")
+
+(defun my-current-time ()
+  (insert (format-time-string "%A,%B %e%t%T")))
+
+(define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
 #+end_src
+
 *** buffer location in window | display-buffer-alist | set-popup-rules
 **** Doom way 
 because ui: popup use set-popup-rules
@@ -385,6 +360,43 @@ LIST-OF-DISPLAY-FUNCTIONS
 (add-hook 'doom-after-init-hook #'my/set-buffer-darth)
 #+end_src
 
+** dashboard
+#+begin_src emacs-lisp :tangle yes
+;;; :ui doom-dashboard
+(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
+;; Hide the menu for as minimalistic a startup screen as possible.
+(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
+#+end_src
+** fonts
+change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
+
+#+begin_src emacs-lisp :tangle yes
+  (setq
+    doom-symbol-font (font-spec :family "Symbols Nerd Font")
+    doom-font (font-spec :family "JetBrains Mono"
+                         :size 15
+                         :weight 'regular)
+    doom-emoji-font (font-spec :family "Noto Color Emoji")
+    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+#+end_src
+
+=Useful conditionals=
+(if (string-equal (system-name) "tangier") 'regular 'regular))
+
+=Investigate=
+doom-unicode-font
+doom-serif-font
+
+=Ligatures=
+#FIXME Make this work for org
+#+begin_src emacs-lisp :tangle no
+;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
+
+(after! org-mode
+  (set-ligatures! 'org-mode
+    :def "ƒ"))
+#+end_src
+
 ** modeline
 *** Active | Inactive
 works !!...height too small thought :height 0.9
@@ -396,6 +408,8 @@ works !!...height too small thought :height 0.9
   '(mode-line-inactive :family "VictorMono Nerd Font" :weight bold :height 0.95))
 #+end_src
 
+:height 0.95
+
 *** battery
 #+begin_src emacs-lisp :tangle no
 (if (string= (system-name) "tangier") ;; battery on TANGIER
@@ -405,7 +419,7 @@ works !!...height too small thought :height 0.9
   (setq doom-modeline-battery nil))
 #+end_src
 
-** folder clean up | projectile
+** Backup dir alist | projectile | auto save
 Projectile, lsp-mode, and other packages create their own files to store variables and state!
 
 #+begin_src elisp :tangle yes
@@ -426,11 +440,6 @@ Projectile, lsp-mode, and other packages create their own files to store variabl
 
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#Auto-Save-Files
 
-** keybindings
-#+begin_src emacs-lisp :tangle no
-;; (keymap-global-set "M-;" 'save-buffer) ;easier saving
-;; (keymap-global-set "U" 'evil-redo) ;easier redo :)
-#+end_src
 ** emacs sane
 #+begin_src elisp :tangle yes
 (use-package! emacs
@@ -545,8 +554,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 + hungry - all whitespace - tabs, spaces
 + untabify - turn a tab into many spaces, then delete one space at a time
 
-** creating a new window switches cursor to it
-#+begin_src emacs-lisp :tangle yes
+** create a new window and switch cursor to it
+#+begin_src emacs-lisp :tangle no
  (defun split-and-follow-horizontally ()
 	(interactive)
 	(split-window-below)
@@ -615,52 +624,37 @@ useful in vanilla emacs?
 #+begin_src emacs-lisp :tangle no
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
-*** defer load most packages for quick startup
-#+begin_src emacs-lisp :tangle no
-(setq use-package!-always-defer t)
-#+end_src
-*** delete trailing whitespace
-#+begin_src emacs-lisp :tangle no
-(add-hook! 'after-save-hook #'delete-trailing-whitespace)
-;; or
-;; (add-hook! 'after-save-hook #'whitespace-cleanup)
-#+end_src
-unneeded since we use ws-butler which:
-+ only on modified lines
-+ replaces trailing whitespace with virtual whitespace
-*** default workspace behaviour fix
-#+begin_src emacs-lisp :tangle yes
-;; Trying to save workspaces
-(after! persp-mode
-  ;; Auto-save workspaces when Emacs exits
-  (setq persp-auto-save-opt 1)
-  ;; Save all workspace info including window configurations
-  (setq persp-set-last-persp-for-new-frames nil)
-  (setq persp-reset-windows-on-nil-window-conf nil)
-  ;; Load workspaces automatically on startup
-  (setq persp-auto-resume-time -1))
-
-#+end_src
-
-#+begin_src emacs-lisp :tangle no
-(after! persp-mode
-  (setq persp-emacsclient-init-frame-behaviour-override
-   `(+workspace-current-name))
-)
-#+end_src
 ** Henrik lissner tech
 #+begin_src emacs-lisp :tangle no
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 #+end_src
-** dashboard
-#+begin_src emacs-lisp :tangle yes
-;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
-;; Hide the menu for as minimalistic a startup screen as possible.
-(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
-#+end_src
 * Packages
+** elcord
+#+begin_src emacs-lisp :tangle yes
+(use-package! elcord
+  :commands elcord-mode
+  :custom
+  (elcord-display-elapsed nil)
+  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
+  :config
+  ;; (elcord-mode 1)
+  (setq elcord--editor-name "Church of Emacs"
+        elcord-use-major-mode-as-main-icon t
+        ))
+#+end_src
+** org-auto-tangle
+#+begin_src emacs-lisp :tangle yes
+(use-package! org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
+  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
+#+end_src
+
+[[github:yilkalargaw/org-auto-tangle]]
+
 ** corfu
 not sure if after! init works lul
 
@@ -696,11 +690,25 @@ Also see =tab-first-completion.=
 
 Some programming language modes have their own variable to control this,
 e.g., c-tab-always-indent, and do not respect this variable.
-** gpg - pinentry
+** TODO Persp-mode default workspace behaviour fix
+#+begin_src emacs-lisp :tangle yes
+;; Trying to save workspaces
+(after! persp-mode
+  ;; Auto-save workspaces when Emacs exits
+  (setq persp-auto-save-opt 1)
+  ;; Save all workspace info including window configurations
+  (setq persp-set-last-persp-for-new-frames nil)
+  (setq persp-reset-windows-on-nil-window-conf nil)
+  ;; Load workspaces automatically on startup
+  (setq persp-auto-resume-time -1))
+
+#+end_src
+
 #+begin_src emacs-lisp :tangle no
-  (defun pinentry-emacs (desc prompt ok error)
-    (let ((str (read-passwd (concat (replace-regexp-in-string "%22" "\"" (replace-regexp-in-string "%0A" "\n" desc)) prompt ": "))))
-      str))
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override
+   `(+workspace-current-name))
+)
 #+end_src
 ** spelling
 https://www.gnu.org/software/emacs/manual/html_node/emacs/Spelling.html
@@ -768,6 +776,7 @@ always activating in org mode...keep it as hook in [[ORG]]
 ** evil-nerd-commenter | better comments
 #+begin_src elisp :tangle yes
 (use-package! evil-nerd-commenter
+  :defer t
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 
@@ -788,8 +797,16 @@ always activating in org mode...keep it as hook in [[ORG]]
                                 ("DEPRECATED" font-lock-doc-face bold))))
 #+end_src
 
-** electric TODO test further
-SCHEDULED: <2025-11-29 Sat 19:00>
+** Ace-window
+#+begin_src emacs-lisp :tangle yes
+(custom-set-faces!
+  '(aw-leading-char-face
+    :foreground "white" :background "red"
+    :weight bold :height 2.5 :box (:line-width 10 :color "red")))
+#+end_src
+
+** Disabled
+*** electric TODO test further
 #+begin_src emacs-lisp :tangle no
 (setq electric-pair-pairs '(
                             (?\{ . ?\})
@@ -800,42 +817,7 @@ SCHEDULED: <2025-11-29 Sat 19:00>
 ;; (electric-indent-mode -1) ; on::
   ;; (electric-pair-mode 1) ; on by default
 #+end_src
-
-** elcord
-#+begin_src emacs-lisp :tangle yes
-(use-package! elcord
-  :commands elcord-mode
-  :custom
-  (elcord-display-elapsed nil)
-  (elcord-idle-message "Sipo Kwenye Keyboard...👻")
-  :config
-  ;; (elcord-mode 1)
-  (setq elcord--editor-name "Church of Emacs"
-        elcord-use-major-mode-as-main-icon t
-        ))
-#+end_src
-** Ace-window
-#+begin_src emacs-lisp :tangle yes
-(custom-set-faces!
-  '(aw-leading-char-face
-    :foreground "white" :background "red"
-    :weight bold :height 2.5 :box (:line-width 10 :color "red")))
-#+end_src
-
-** org-auto-tangle
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
-  ;; :hook (org-src-mode . org-auto-tangle-mode)
-  :config
-  ;; (setq org-auto-tangle-default t) ; set auto_tangle: nil for buffers not to auto tangle
-  (setq org-auto-tangle-babel-safelist '("~/system.org" "~/test.org")))
-#+end_src
-
-[[github:yilkalargaw/org-auto-tangle]]
-
-** all the icons
+*** all the icons
 #+begin_src elisp :tangle no
 (use-package! all-the-icons
   :if (display-graphic-p))
@@ -845,7 +827,7 @@ SCHEDULED: <2025-11-29 Sat 19:00>
 (use-package! all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 #+end_src
-*** projectile
+**** projectile
 
 0 - check DIRECTORY
 1- check SUBDIRECTORIES
@@ -863,8 +845,14 @@ SCHEDULED: <2025-11-29 Sat 19:00>
   :custom
   (projectile-auto-cleanup-known-projects t))
 #+end_src
-** old | phased out
-*** dired
+*** gpg - pinentry
+#+begin_src emacs-lisp :tangle no
+  (defun pinentry-emacs (desc prompt ok error)
+    (let ((str (read-passwd (concat (replace-regexp-in-string "%22" "\"" (replace-regexp-in-string "%0A" "\n" desc)) prompt ": "))))
+      str))
+#+end_src
+*** old | phased out
+**** dired
 #+begin_src emacs-lisp :tangle no
 (use-package! dired-open
   :config
@@ -884,7 +872,7 @@ SCHEDULED: <2025-11-29 Sat 19:00>
     (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)
 )
 #+end_src
-*** centaur tabs
+**** centaur tabs
 #+begin_src elisp :tangle no
 (use-package! centaur-tabs
   :defer t
@@ -938,7 +926,7 @@ see also:
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#buffer-groups
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
 
-*** ultra-scroll
+**** ultra-scroll
 
 #+begin_src emacs-lisp :tangle no
 (use-package! ultra-scroll
@@ -960,7 +948,7 @@ Shouldn't emacs be like this?
 
 If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
 
-*** emms
+**** emms
 #+begin_src elisp :tangle no
 (emms-all)
 (emms-add-directory-tree "/home/malu/Music/")
@@ -970,7 +958,7 @@ If you scroll buffers with tall images visible, this is also a good reason to gi
                             ;; emms-info-ogginfo
                             ))
 #+end_src
-*** company
+**** company
 #+begin_src elisp :tangle no
 ;; (after! company
 (use-package! company
@@ -1018,7 +1006,7 @@ usage:
 |-----------------------+------------------------------------------------------|
 source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 
-*** obsidian
+**** obsidian
 #+begin_src emacs-lisp :tangle no
 (setq obsidian-directory "~/OBSIDIAN")
 #+end_src
@@ -1050,7 +1038,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
               ("C-c C-b" . obsidian-backlink-jump)))
 #+end_src
 
-*** FIXME git time machine
+**** FIXME git time machine
 #+begin_src emacs-lisp :tangle no
 (use-package! git-timemachine
   :after git-timemachine
@@ -1061,7 +1049,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 )
 #+end_src
 
-*** FIXME Dashboard
+**** FIXME Dashboard
 #+begin_src emacs-lisp :tangle no
 (use-package! dashboard
   :ensure nil
@@ -1084,13 +1072,13 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   (dashboard-setup-startup-hook))
 #+end_src
 
-*** Deft
+**** Deft
 #+begin_src elisp :tangle no
 (setq deft-directory "~/org/deft"
       ;; deft-recursive t
       deft-extensions '("org" "txt"))
 #+end_src
-*** Async
+**** Async
 #+begin_src emacs-lisp :tangle no
 (use-package! async
   :ensure nil
@@ -1144,7 +1132,7 @@ I recommend using eshell for light cli work, and using your external terminal em
 (defvar my-mu4e-path
   (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
 
-(use-package mu4e
+(use-package! mu4e
   :load-path my-mu4e-path
   :defer 20 ; Wait until 20 seconds after startup
   :config
@@ -1182,25 +1170,23 @@ I recommend using eshell for light cli work, and using your external terminal em
     t)
 #+end_src
 * ORG
-** my settings
+** core
 
 #+begin_src emacs-lisp :tangle yes
+(defun my-org-mode-setup ()
+  (abbrev-mode)
+  (spell-fu-mode -1)
+  (diff-hl-mode -1))
+
 (use-package! org
   :init
-  ;; (add-to-list 'org-agenda-files "~/File.org")
   (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
          org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
-  (org-mode . (lambda ()
-                (abbrev-mode)
-                ;; (org-fragtog-mode) NOTE: useful but maybe manual toggles better
-                (spell-fu-mode -1)
-                (diff-hl-mode -1)))
-  :config
-  (defun my-current-time ()
-    (insert (format-time-string "%A,%B %e%t%T")))
-  (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
+  (org-mode . my-org-mode-setup)
 
+  :config
+  
   :custom
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
@@ -1210,24 +1196,24 @@ I recommend using eshell for light cli work, and using your external terminal em
 
   (org-tag-alist
       '(;;Places
-        ("@home" . ?H)
-        ("@school" . ?S)
-        ("@babe" . ?B)
+        ("@home" . ?h)
+        ("@school" . ?s)
+
         ;;devices
         ("@carthage" . ?C)
         ("@tangier" . ?T)
+
         ;;activites
-        ("@work" . ?W)
-        ("@pyrple" . ?P)
-        ("youtubr" . ?Y)
-        ("@emacs" . ?E)
-        ("@nix" . ?N)))
+        ("@work" . ?w)
+        ("@pyrple" . ?p)
+        ("@youtubr" . ?y)
+        ("@emacs" . ?e)
+        ("@linux" . ?l)
+        ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
-
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
-  )
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
@@ -1281,20 +1267,9 @@ I recommend using eshell for light cli work, and using your external terminal em
 
 **** FIXME Preserve Indentation On Org-Babel-Tangle
 #+begin_src emacs-lisp :tangle no
-(setq org-src-preserve-indentation t)
+(setq org-src-preserve-indentation t)   ;NOTE: on by default
 #+end_src
-**** bullets mode
-#+begin_src emacs-lisp :tangle no
-(setq org-bullets-bullet-list '("●" "❀" "◆" "◇" "◖" "☆" "☯" " "))
-(add-hook! 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src
-
-#TODO TEST FURTHER
-#FIXME not working so far
-icons:     large: "◉" "○" "✸" "✿" ;; ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶ |  Small :: ► • ★ ▸
-
-org-bullets-face-name
-** custom faces
+**** custom faces
 #+begin_src emacs-lisp :tangle no
 (custom-theme-set-faces!
 'doom-one
@@ -1311,21 +1286,16 @@ org-bullets-face-name
 
 ** org-roam
 #+begin_src emacs-lisp :tangle yes
-;; (setq org-roam-directory (file-truename "~/org/roam"))
-(setq org-roam-directory (file-truename "~/Documents/IMPORTANT/Org/roam")
-      org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
-      org-roam-dailies-directory "journal/") ;
-  ;; :custom
-  ;; (org-roam-completion-everywhere t) ;default t
-  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
-  ;;        ("C-c n f" . org-roam-node-find)
-  ;;        ("C-c n i" . org-roam-node-insert)
-  ;;        ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ;; ("C-c n j" . org-roam-dailies-capture-today))
-  ;; :config
-  ;; (org-roam-db-autosync-enable))
+(after! org-roam
+  (setq org-roam-directory (expand-file-name "roam" org-directory)
+        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
+        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
+(org-roam-db-autosync-enable))
 #+end_src
+
+Dailies
+ org-roam-dailies-capture-today
+
 ** org-structure-template
 #+begin_src elisp :tangle no
 (add-to-list 'org-structure-template-alist
@@ -1667,23 +1637,6 @@ source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturi
          )))
 #+end_src
 
-***** source?? - nice stuff
-# default location for capture mode?
-#+begin_src emacs-lisp :tangle yes
-(setq org-agenda-files
-      (list "~/org")
-      ;; '("~/org/agenda")
-      ;; (list "inbox.org")
-      )
-#+end_src
-then we can setup a specific capture template for inbox:
-
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-       `(("i" "Inbox" entry  (file "inbox.org")
-        ,(concat "* TODO %?\n"
-                 "/Entered on/ %U"))))
-#+end_src
 ***** capture templates :prot:
 more: manual
 
@@ -1712,30 +1665,45 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 #+begin_src emacs-lisp :tangle yes
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
-;; (setq org-agenda-files (list "inbox.org"))
+(defvar my/usiu-files
+  (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
+;; (after! org)
 (setq! org-agenda-files (list org-directory
                          (file-name-concat org-directory "roam")))
 
-(setq org-agenda-custom-commands
-      `(
-        ("D" "Today's view"
-         ((todo "WAIT"
-                ((org-agenda-overriding-header "Tasks on hold\n")))
-          (agenda ""
-                  ((org-agenda-block-separator nil) ;"*"
-                   (org-agenda-span 1) ;7:: how many days should it span
-                   (org-deadline-warning-days 0) ; remove warnings for events not for today
-                   ;; (org-agenda-day-face-function (lambda (date) 'org-agenda-date)) ; remove underline on todays date
-                   ;; (org-agenda-format-date "%A %-e %B %Y") ;modify date
-                   ;; (org-agenda-fontify-priorities nil)
-                   (org-agenda-start-day nil)
-                   (org-agenda-overriding-header "\nDaily agenda view\n")))
-          ))
-        ("P" "Protesilaos"
-         ,maluware-custom-org-daily-agenda)
-        ))
+(setq! org-agenda-custom-commands
+       `(("S" "School Tasks" tags-todo "@school")
+         ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
+                                                (org-agenda-overriding-header "USIU 2026 - TODO")))))
+         ("n" "Linux + Nix" tags-todo "@nix+@linux")
+
+         ("d" "Today's view"
+          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+           (agenda ""
+                   ((org-agenda-block-separator nil)
+                    (org-agenda-span 1)
+                    (org-agenda-overriding-header "\n")
+                    (org-agenda-start-day nil)
+                    ))
+           (todo "WAIT"
+                 ((org-agenda-block-separator nil)
+                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 #+end_src
+
+#+RESULTS:
+
+(add-to-list 'org-agenda-files "~/File.org")
+
+-{.*} - return all without the match {.*} - so return all with no tags
+
+tags-todo - sysmbol that search for tags specified
+
+You can modify variables inside the agenda config *(())* after the tags-todo "Stuff"
+        TODO Check if other emacs vars outside agendas work
 
 *** olivetti-mode
 #+begin_src emacs-lisp :tangle yes
@@ -2033,10 +2001,39 @@ For neater/shorter presentation
 ** org-babel
 #+begin_src emacs-lisp :tangle yes
 (after! org
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (jupyter . t))))
+(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
+#+end_src
+
+** FIXME org-modern
+#+begin_src emacs-lisp :tangle no
+(use-package! org-modern
+  :hook (org-mode . org-modern-mode)
+  :config
+  (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
+        org-modern-table-vertical 1
+        org-modern-table-horizontal 0.2
+        org-modern-list '((43 . "➤")
+                          (45 . "–")
+                          (42 . "•"))
+        org-modern-todo-faces
+        '(("TODO" :inverse-video t :inherit org-todo)
+          ("PROJ" :inverse-video t :inherit +org-todo-project)
+          ("STRT" :inverse-video t :inherit +org-todo-active)
+          ("[-]"  :inverse-video t :inherit +org-todo-active)
+          ("HOLD" :inverse-video t :inherit +org-todo-onhold)
+          ("WAIT" :inverse-video t :inherit +org-todo-onhold)
+          ("[?]"  :inverse-video t :inherit +org-todo-onhold)
+          ("KILL" :inverse-video t :inherit +org-todo-cancel)
+          ("NO"   :inverse-video t :inherit +org-todo-cancel))
+        org-modern-footnote
+        (cons nil (cadr org-script-display))
+  )
+  (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
+
+(setq org-modern-priority t)
+
+(after! spell-fu
+  (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
 #+end_src
 * Markdown
 #+begin_src emacs-lisp :tangle no
@@ -2246,7 +2243,7 @@ one family, 5 fonts, 3 variable axes
 Only bound after the pkg is loaded
 :map <mode> ( "" . <function> )
 #+begin_src elisp :tangle no
-(use-package helm
+(use-package! helm
   :bind (:map helm-command-map
          ("C-c h" . helm-execute-persistent-action)))
 #+end_src
@@ -2276,7 +2273,7 @@ Only bound after the pkg is loaded
 (add-hook! 'doom-init-ui-hook :append (+doom-dashboard-setup-modified-keymap))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (map! :leader :desc "Dashboard" "d" #'+doom-dashboard/open)
 #+end_src
 
@@ -2287,7 +2284,7 @@ Only bound after the pkg is loaded
 
 *** splash images
 #+begin_src emacs-lisp :tangle no
-(use-package random-splash-image
+(use-package! random-splash-image
   :config
   (setq random-splash-image-dir (concat (getenv "HOME") "/.doom.d/misc/splash-images"))
   (unless (file-directory-p random-splash-image-dir)
@@ -2372,35 +2369,4 @@ Only bound after the pkg is loaded
   :commands wttrin
   :config
   wttrin-default-cities '("Nairobi" ))
-#+end_src
-*** FIXME org-modern
-#+begin_src emacs-lisp :tangle no
-(use-package! org-modern
-  :hook (org-mode . org-modern-mode)
-  :config
-  (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
-        org-modern-table-vertical 1
-        org-modern-table-horizontal 0.2
-        org-modern-list '((43 . "➤")
-                          (45 . "–")
-                          (42 . "•"))
-        org-modern-todo-faces
-        '(("TODO" :inverse-video t :inherit org-todo)
-          ("PROJ" :inverse-video t :inherit +org-todo-project)
-          ("STRT" :inverse-video t :inherit +org-todo-active)
-          ("[-]"  :inverse-video t :inherit +org-todo-active)
-          ("HOLD" :inverse-video t :inherit +org-todo-onhold)
-          ("WAIT" :inverse-video t :inherit +org-todo-onhold)
-          ("[?]"  :inverse-video t :inherit +org-todo-onhold)
-          ("KILL" :inverse-video t :inherit +org-todo-cancel)
-          ("NO"   :inverse-video t :inherit +org-todo-cancel))
-        org-modern-footnote
-        (cons nil (cadr org-script-display))
-  )
-  (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
-
-(setq org-modern-priority t)
-
-(after! spell-fu
-  (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
 #+end_src
