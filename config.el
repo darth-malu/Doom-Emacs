@@ -40,7 +40,7 @@
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
   ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
   ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq! elpy-modules (cl-set-difference
+  (setq elpy-modules (cl-set-difference
                       elpy-modules
                       '(elpy-module-highlight-indentation
                         elpy-module-flymake)))
@@ -58,10 +58,10 @@
   (lsp-pyright-langserver-command "basedpyright")
   :hook
   (python-ts-mode . (lambda ()
-                   (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                   (setq +format-with 'black)
-                   (lsp-deferred)
-                   (local-set-key (kbd "C-c r") 'python-shell-send-region))))
+                      (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
+                      (setq +format-with 'black)
+                      (lsp-deferred)
+                      (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -69,9 +69,10 @@
    (julia . t)
    (python . t)
    (jupyter . t)))
+
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                    (:session . "py")
-                                                    (:kernel . "python3")))
+                                                     (:session . "py")
+                                                     (:kernel . "python3")))
 
 (after! lsp-mode
   (setq lsp-enable-symbol-highlighting nil
@@ -105,13 +106,57 @@
 ;; 2. Specific Mode Configuration
 (use-package! astro-ts-mode
   :mode "\\.astro\\'"
+  :hook
+  (astro-ts-mode . (lambda () (abbrev-mode) (diff-hl-mode -1) (spell-fu-mode -1)))
   :init
   (when (modulep! +lsp)
-    (add-hook 'astro-ts-mode-hook #'lsp! 'append)))
+    (add-hook 'astro-ts-mode-hook #'lsp! 'append))
+  ;;   :config
+  ;; ;; 3. Ensure CSS and TSX also use Tree-sitter modes
+  (set-formatter! 'prettier-astro
+    '("bunx" "prettier" "--parser=astro" ;
+      (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
+    :modes '(astro-ts-mode)))
+;; :config
+;; (setq prettier-js-command "prettierd"
+;;       prettier-js-args '("--no-editorconfig")))
 
-;; 3. Ensure CSS and TSX also use Tree-sitter modes
+
+(use-package! prettier-js
+  :hook
+  (web-mode . prettier-js-mode)
+  (astro-ts-mode . prettier-js-mode)
+  (js-mode . prettier-js-mode))
+
+;; (after! apheleia
+;;   (set-formatter! 'prettier-astro
+;;     '("bunx" "prettier" "--parser=astro" ;
+;;       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
+;;       :modes '(astro-ts-mode))
+;;     (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-js-mode)
+;;                  )
+;;   )
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+
+;; https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/emacs/config.org#headline-58
+;; (add-to-list
+;;   'apheleia-formatters
+;;   '(prettier-astro npx "prettier" "--stdin-filepath" filepath "--parser=astro"
+;;                   (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset)))
+
+;; (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro))
+
+;; (use-package! lsp-tailwindcss :after lsp-mode)
+
+(use-package! lsp-tailwindcss
+  :when (modulep! +lsp)
+  :init
+
+  (setq lsp-tailwindcss-add-on-mode t)
+  :config
+
+  (add-to-list 'lsp-tailwindcss-major-modes 'astro-ts-mode))
 
 (use-package! qml-ts-mode
   :after lsp-mode
@@ -123,13 +168,13 @@
                     :server-id 'qmlls))
   :hook
   (qml-ts-mode . (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
-                                 ;; lsp-headerline-breadcrumb-mode t
-                                 )
-                    (lsp-deferred))))
+                                        ;; lsp-headerline-breadcrumb-mode t
+                                        )
+                   (lsp-deferred))))
 
 (use-package! direnv
- :config
- (direnv-mode))
+  :config
+  (direnv-mode))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
@@ -145,13 +190,12 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
-(setq
-  doom-symbol-font (font-spec :family "Symbols Nerd Font")
-  doom-font (font-spec :family "JetBrains Mono"
-                       :size 15
-                       :weight 'regular)
-  doom-emoji-font (font-spec :family "Noto Color Emoji")
-  doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq     doom-symbol-font (font-spec :family "Symbols Nerd Font")
+          doom-font (font-spec :family "JetBrains Mono"
+                               :size 15
+                               :weight 'regular)
+          doom-emoji-font (font-spec :family "Noto Color Emoji")
+          doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
@@ -175,8 +219,8 @@
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; latex
-  (org-latex-compiler 'lualatex)        ;pdflatex::
-  (org-preview-latex-default-process 'dvisvgm) ;dvipng
+  ;; (org-latex-compiler 'lualatex)        ;pdflatex::
+  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -203,9 +247,12 @@
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
 
   (evil-shift-width 2)
-
+  (eros-eval-result-prefix "⟹ ") ; default =>
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
+
+  ;; magit
+  (magit-view-git-manual-method 'woman)
 
   ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
   (scroll-margin 18)
@@ -233,39 +280,39 @@
   (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
   :bind
   ((
-   :map evil-normal-state-map
-        ;; TODO see map!
+    :map evil-normal-state-map
+    ;; TODO see map!
         ;;;misc
-        ("M-;" . save-buffer)
-        ;; ("C-s" . save-buffer)
-        ("<mouse-8>" . previous-buffer)
-        ("<mouse-9>" . next-buffer)
-        ("C-M-o" . consult-outline)
+    ("M-;" . save-buffer)
+    ;; ("C-s" . save-buffer)
+    ("<mouse-8>" . previous-buffer)
+    ("<mouse-9>" . next-buffer)
+    ("C-M-o" . consult-outline)
 
         ;;; EOL, BOL
-        ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-        ("M-h" . beginning-of-line-text)
-        ("M-S-l" . end-of-visual-line)
-        ("M-S-h" . beginning-of-visual-line)
+    ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
+    ("M-h" . beginning-of-line-text)
+    ("M-S-l" . end-of-visual-line)
+    ("M-S-h" . beginning-of-visual-line)
 
         ;;; insert newline below/above
-        ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)
+    ("M-o" . +evil/insert-newline-below)
+    ("M-O" . +evil/insert-newline-above)
 
         ;;; NOTE Too much conflict just use native C-w
-        ;; Unify Kitty + Emacs window focusing
-        ("C-M-l" . evil-window-right)
-        ("C-M-h" . evil-window-left)
-        ("C-M-k" . evil-window-up)
-        ("C-M-j" . evil-window-down)
-        ("C-M-j" . previous-window)
-        ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
+    ;; Unify Kitty + Emacs window focusing
+    ("C-M-l" . evil-window-right)
+    ("C-M-h" . evil-window-left)
+    ("C-M-k" . evil-window-up)
+    ("C-M-j" . evil-window-down)
+    ("C-M-j" . previous-window)
+    ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
 
-        ("C-'" . olivetti-mode)
+    ("C-'" . olivetti-mode)
 
     :map doom-leader-map
-      ("to" . hl-todo-occur)
-      ("SPC" . ace-window)
+    ("to" . hl-todo-occur)
+    ("SPC" . ace-window)
     )))
 
 (customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
@@ -297,12 +344,12 @@
 ;; Trying to save workspaces
 (after! persp-mode
   ;; Auto-save workspaces when Emacs exits
-  (setq persp-auto-save-opt 1)
-  ;; Save all workspace info including window configurations
-  (setq persp-set-last-persp-for-new-frames nil)
-  (setq persp-reset-windows-on-nil-window-conf nil)
-  ;; Load workspaces automatically on startup
-  (setq persp-auto-resume-time -1))
+  (setq persp-auto-save-opt 1
+        ;; Save all workspace info including window configurations
+        persp-set-last-persp-for-new-frames nil
+        persp-reset-windows-on-nil-window-conf nil
+        ;; Load workspaces automatically on startup
+        persp-auto-resume-time -1.0))
 
 ;; (after! spell-fu
 ;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
@@ -337,7 +384,7 @@
   ;;                 org-src
   ;;                 org-tag
   ;;                 org-verbatim))))
-)
+  )
 
 (use-package! evil-nerd-commenter
   :defer t
@@ -381,12 +428,12 @@
 
 (use-package! org
   :init
-  (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-         org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+        org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
 
-  :config
+  ;; :config
   
   :custom
   (org-log-done 'time) ; task done with timestamp
@@ -396,34 +443,34 @@
   (org-hide-emphasis-markers t)
 
   (org-tag-alist
-      '(;;Places
-        ("@home" . ?h)
-        ("@school" . ?s)
+   '(;;Places
+     ("@home" . ?h)
+     ("@school" . ?s)
 
-        ;;devices
-        ("@carthage" . ?C)
-        ("@tangier" . ?T)
+     ;;devices
+     ("@carthage" . ?C)
+     ("@tangier" . ?T)
 
-        ;;activites
-        ("@work" . ?w)
-        ("@pyrple" . ?p)
-        ("@youtubr" . ?y)
-        ("@emacs" . ?e)
-        ("@linux" . ?l)
-        ("@nix" . ?n)))
+     ;;activites
+     ("@work" . ?w)
+     ("@pyrple" . ?p)
+     ("@youtubr" . ?y)
+     ("@emacs" . ?e)
+     ("@linux" . ?l)
+     ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
-  ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
-  ;; (org-todo-keywords
-  ;;     '((sequence "TODO(t)" "|" "DONE(d)")
-  ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
+   '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
+;; (org-todo-keywords
+;;     '((sequence "TODO(t)" "|" "DONE(d)")
+;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
 (after! org-roam
   (setq org-roam-directory (expand-file-name "roam" org-directory)
         org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
         org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
-(org-roam-db-autosync-enable))
+  (org-roam-db-autosync-enable))
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
@@ -460,12 +507,12 @@
                             (file+headline "bucket-list.org" "Movies")
                             "+ [ ] %?"
                             :prepend t)
-                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
-                            ("bam" "Anime Movie"  plain
+                           ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
+                           ("bam" "Anime Movie"  plain
                             (file+headline "bucket-list.org" "Anime")
                             "+ [ ] %?" :prepend t)
-                            ;; ANIME
-                            ("bas" "Anime Series" plain
+                           ;; ANIME
+                           ("bas" "Anime Series" plain
                             (file+headline "bucket-list.org" "Anime")
                             "+ [ ] %?" :prepend t)
                            ("bb" "books" plain
@@ -507,13 +554,13 @@
                             "+ %?"
                             :empty-lines 1
                             :prepend t)
-                            ("dq" "quotes [q]" plain
+                           ("dq" "quotes [q]" plain
                             (file+headline "diction.org" "Quotes")
                             ;; Template string starts here
                             "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
                             :prepend t)
-                            ("dp" "phrases [p]" plain
+                           ("dp" "phrases [p]" plain
                             (file+headline "diction.org" "Phrases")
                             ;; Template string starts here
                             "#+begin_quote\n%i%?\n#+end_quote\n"
@@ -536,33 +583,36 @@
 
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
-(defvar my/usiu-files
-  (directory-files-recursively "~/USIU/2026" "\\.org$"))
+;; (defvar my/usiu-files
+;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
 ;; (after! org)
-(setq! org-agenda-files (list org-directory
-                         (file-name-concat org-directory "roam")))
+(setq org-agenda-files (list org-directory
+                             (file-name-concat org-directory "roam")))
 
-(setq! org-agenda-custom-commands
-       `(("S" "School Tasks" tags-todo "@school")
-         ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
-                                                (org-agenda-overriding-header "USIU 2026 - TODO")))))
-         ("n" "Linux + Nix" tags-todo "@nix+@linux")
+(setq org-agenda-custom-commands
+      `(("S" "School Tasks" tags-todo "@school")
+        ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
+        ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
+        ("n" "Linux + Nix" tags-todo "@nix+@linux")
 
-         ("d" "Today's view"
-          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-           (agenda ""
-                   ((org-agenda-block-separator nil)
-                    (org-agenda-span 1)
-                    (org-agenda-overriding-header "\n")
-                    (org-agenda-start-day nil)
-                    ))
-           (todo "WAIT"
-                 ((org-agenda-block-separator nil)
-                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
+        ("d" "Today's view"
+         ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                        (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+          (agenda ""
+                  ((org-agenda-block-separator nil)
+                   (org-agenda-span 1)
+                   (org-agenda-overriding-header "\n")
+                   (org-agenda-start-day nil)
+                   ))
+          (todo "WAIT"
+                ((org-agenda-block-separator nil)
+                 (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+        ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+        ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
+
+(after! org
+  (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
 
 ;; Function to be run when org-agenda is opened
 (defun org-agenda-open-hook()
@@ -571,10 +621,3 @@
 
 ;; Adds hooks to org agenda mode, making follow mode active in org agenda
 (add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
-
-(after! org
-(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
-
-(setq magit-view-git-manual-method 'woman)
-
-(setq eros-eval-result-prefix "⟹ ") ; default =>

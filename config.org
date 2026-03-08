@@ -1,6 +1,6 @@
-#+title: my config
+#+title: My Emacs Configuration
 #+author: justin malu
-#+startup: inlineimages content indent
+#+startup: content indent noinlineimages
 #+auto_tangle: t
 
 #+begin_src emacs-lisp :tangle yes
@@ -55,7 +55,7 @@ https://renzmann.github.io/posts/006_emacs_2_python/
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
   ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
   ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq! elpy-modules (cl-set-difference
+  (setq elpy-modules (cl-set-difference
                       elpy-modules
                       '(elpy-module-highlight-indentation
                         elpy-module-flymake)))
@@ -109,6 +109,7 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
    (julia . t)
    (python . t)
    (jupyter . t)))
+
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
                                                     (:session . "py")
                                                     (:kernel . "python3")))
@@ -257,13 +258,59 @@ nil: An incremental analysis assistant for writing in Nix.
 ;; 2. Specific Mode Configuration
 (use-package! astro-ts-mode
   :mode "\\.astro\\'"
+  :hook
+  (astro-ts-mode . (lambda () (abbrev-mode) (diff-hl-mode -1) (spell-fu-mode -1)))
   :init
   (when (modulep! +lsp)
-    (add-hook 'astro-ts-mode-hook #'lsp! 'append)))
+    (add-hook 'astro-ts-mode-hook #'lsp! 'append))
+;;   :config
+;; ;; 3. Ensure CSS and TSX also use Tree-sitter modes
+  (set-formatter! 'prettier-astro
+    '("bunx" "prettier" "--parser=astro" ;
+      (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
+      :modes '(astro-ts-mode)))
+  ;; :config
+  ;; (setq prettier-js-command "prettierd"
+  ;;       prettier-js-args '("--no-editorconfig")))
 
-;; 3. Ensure CSS and TSX also use Tree-sitter modes
+
+(use-package! prettier-js
+  :hook
+  (web-mode . prettier-js-mode)
+  (astro-ts-mode . prettier-js-mode)
+  (js-mode . prettier-js-mode))
+
+;; (after! apheleia
+;;   (set-formatter! 'prettier-astro
+;;     '("bunx" "prettier" "--parser=astro" ;
+;;       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
+;;       :modes '(astro-ts-mode))
+;;     (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-js-mode)
+;;                  )
+;;   )
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+
+;; https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/emacs/config.org#headline-58
+;; (add-to-list
+;;   'apheleia-formatters
+;;   '(prettier-astro npx "prettier" "--stdin-filepath" filepath "--parser=astro"
+;;                   (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset)))
+
+;; (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+;; (use-package! lsp-tailwindcss :after lsp-mode)
+
+(use-package! lsp-tailwindcss
+  :when (modulep! +lsp)
+  :init
+
+  (setq lsp-tailwindcss-add-on-mode t)
+  :config
+
+  (add-to-list 'lsp-tailwindcss-major-modes 'astro-ts-mode))
 #+end_src
 ** QML
 Quickshell site
@@ -371,8 +418,7 @@ LIST-OF-DISPLAY-FUNCTIONS
 change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
 
 #+begin_src emacs-lisp :tangle yes
-  (setq
-    doom-symbol-font (font-spec :family "Symbols Nerd Font")
+  (setq     doom-symbol-font (font-spec :family "Symbols Nerd Font")
     doom-font (font-spec :family "JetBrains Mono"
                          :size 15
                          :weight 'regular)
@@ -447,8 +493,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
   ;; latex
-  (org-latex-compiler 'lualatex)        ;pdflatex::
-  (org-preview-latex-default-process 'dvisvgm) ;dvipng
+  ;; (org-latex-compiler 'lualatex)        ;pdflatex::
+  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -475,9 +521,12 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (evil-move-cursor-back nil)               ; don't move cursor back one CHAR when exiting insert mode
 
   (evil-shift-width 2)
-
+  (eros-eval-result-prefix "⟹ ") ; default =>
   (user-full-name "Justin Malu") ; foor GPG config, email clients, file templates & snippets ; optional
   (user-mail-address "justinmalu@gmail.com")
+
+  ;; magit
+  (magit-view-git-manual-method 'woman)
 
   ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
   (scroll-margin 18)
@@ -590,20 +639,6 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
 (provide 'start-mode)
 #+end_src
 
-*** witchmacs stuff
-
-https://github.com/snackon/Witchmacs/
-
-=Witchmacs= :witch:
-#+begin_src emacs-lisp :tangle no
-(setq-default tab-width 4)
-(setq-default standard-indent 4)
-(setq c-basic-offset tab-width)
-(setq-default electric-indent-inhibit t)
-(setq-default indent-tabs-mode t)
-(setq backward-delete-char-untabify-method 'nil)
-#+end_src
-
 *** hide #+begin_src end_src blocks
 **** FIX does not work well...with doom? better way?
 see plugin options
@@ -619,15 +654,9 @@ useful in vanilla emacs?
 (delete-selection-mode 1)
 (setq delete-selection-mode t) ;;TODO test if this works
 #+end_src
-**** TODO see if works/needed
 *** turn yes-or-no questions into y or no
 #+begin_src emacs-lisp :tangle no
 (defalias 'yes-or-no-p 'y-or-n-p)
-#+end_src
-** Henrik lissner tech
-#+begin_src emacs-lisp :tangle no
-;; Prevents some cases of Emacs flickering.
-(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 #+end_src
 * Packages
 ** elcord
@@ -695,13 +724,12 @@ e.g., c-tab-always-indent, and do not respect this variable.
 ;; Trying to save workspaces
 (after! persp-mode
   ;; Auto-save workspaces when Emacs exits
-  (setq persp-auto-save-opt 1)
-  ;; Save all workspace info including window configurations
-  (setq persp-set-last-persp-for-new-frames nil)
-  (setq persp-reset-windows-on-nil-window-conf nil)
-  ;; Load workspaces automatically on startup
-  (setq persp-auto-resume-time -1))
-
+  (setq persp-auto-save-opt 1
+         ;; Save all workspace info including window configurations
+         persp-set-last-persp-for-new-frames nil
+         persp-reset-windows-on-nil-window-conf nil
+         ;; Load workspaces automatically on startup
+         persp-auto-resume-time -1.0))
 #+end_src
 
 #+begin_src emacs-lisp :tangle no
@@ -926,28 +954,6 @@ see also:
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#buffer-groups
 + https://github.com/ema2159/centaur-tabs?tab=readme-ov-file#tab-styles
 
-**** ultra-scroll
-
-#+begin_src emacs-lisp :tangle no
-(use-package! ultra-scroll
-  :init
-  (setq! scroll-conservatively 101 ; or whatever value you prefer, since v0.4
-        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
-  :config
-  (ultra-scroll-mode 1))
-#+end_src
-
-https://github.com/jdtsmith/ultra-scroll
-
-Do you need this?
-If you don't scroll with a high-speed device (modern mouse or track-pad), no. If you do, but aren't sure, here's a good test to try:
-
-Open a heavy emacs buffer full screen on your largest monitor.
-While scrolling smoothly such that lines would move across your window's full height in about 5 seconds, can you easily read the text you see, without stopping, in both directions? Now, try this exercise again with your browser – I bet it's very readable there.
-Shouldn't emacs be like this?
-
-If you scroll buffers with tall images visible, this is also a good reason to give ultra-scroll a try.
-
 **** emms
 #+begin_src elisp :tangle no
 (emms-all)
@@ -1086,22 +1092,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   (dired-async-mode 1)) ;Do dired actions asynchronously.
 #+end_src
 
-* Terminal Modes
-** ESHELL
-Cannot handle ncurses programs and in certain interpreters (Python, GHCi) selecting previous commands does not work (for now).
-
-I recommend using eshell for light cli work, and using your external terminal emulator of choice for heavier tasks
-** FIXME term-mode
-#+begin_src elisp :tangle no
-(use-package! term
-  :ensure nil
-  :config
-  (setq explicit-shell-file-name "bash")
-  ;;(setq explicit-zsh-args '())
-  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
-#+end_src
 * MU4E
-** =My Config=
 #+begin_src emacs-lisp :tangle no
 (use-package! mu4e
   :custom
@@ -1126,52 +1117,8 @@ I recommend using eshell for light cli work, and using your external terminal em
   )
 #+end_src
 
-** Inspo
-
-#+begin_src elisp :tangle no
-(defvar my-mu4e-path
-  (car (file-expand-wildcards "/nix/store/*-mu-*/share/emacs/site-lisp/mu4e/")))
-
-(use-package! mu4e
-  :load-path my-mu4e-path
-  :defer 20 ; Wait until 20 seconds after startup
-  :config
-  ;; This is set to 't' to avoid mail syncing issues when using mbsync
-  (setq mu4e-change-filenames-when-moving t)
-
-  ;; Refresh mail using isync every 10 minutes
-  (setq mu4e-update-interval (* 10 60))
-  (setq mu4e-get-mail-command "mbsync -a")
-  (setq mu4e-maildir "~/Documents/Mail")
-
-  (setq mu4e-drafts-folder "/[Gmail]/Drafts")
-  (setq mu4e-sent-folder   "/[Gmail]/Sent Mail")
-  (setq mu4e-refile-folder "/[Gmail]/All Mail")
-  (setq mu4e-trash-folder  "/[Gmail]/Trash")
-
-  (setq mu4e-maildir-shortcuts
-      '(("/Inbox"             . ?i)
-        ("/[Gmail]/Sent Mail" . ?s)
-        ("/[Gmail]/Trash"     . ?t)
-        ("/[Gmail]/Drafts"    . ?d)
-        ("/[Gmail]/All Mail"  . ?a))))
-#+end_src
-
-#+begin_src elisp :tangle no
-  (set-email-account! "justinmalu@gmail.com"
-    '((mu4e-sent-folder       . "/bar.com/Sent Mail")
-      (mu4e-drafts-folder . "/[Gmail]/Drafts")
-      (mu4e-sent-folder . "/[Gmail]/Sent Mail")
-      (mu4e-refile-folder . "/[Gmail]/All Mail")
-      (mu4e-trash-folder  . "/[Gmail]/Trash")
-      ;; (smtpmail-smtp-user     . "foo@bar.com")
-      (user-mail-address      . "justinmalu@gmail.com")    ;; only needed for mu < 1.4
-      (mu4e-compose-signature . "---\nYours truly\nJustin Malu"))
-    t)
-#+end_src
 * ORG
 ** core
-
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-mode-setup ()
   (abbrev-mode)
@@ -1180,12 +1127,12 @@ I recommend using eshell for light cli work, and using your external terminal em
 
 (use-package! org
   :init
-  (setq! org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
          org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
 
-  :config
+  ;; :config
   
   :custom
   (org-log-done 'time) ; task done with timestamp
@@ -1220,51 +1167,7 @@ I recommend using eshell for light cli work, and using your external terminal em
 #+end_src
 
 [[https://orgmode.org/orgguide.html#Properties]]
-
 *** experiments
-**** zaiste
-#+begin_src emacs-lisp :tangle no
-(after! org
-  (set-face-attribute 'org-link nil
-                      :weight 'normal
-                      :background nil)
-  (set-face-attribute 'org-code nil
-                      :foreground "#a9a1e1"
-                      :background nil)
-  (set-face-attribute 'org-date nil
-                      :foreground "#5B6268"
-                      :background nil)
-  (set-face-attribute 'org-level-1 nil
-                      :foreground "steelblue2"
-                      :background nil
-                      :height 1.2
-                      :weight 'normal)
-  (set-face-attribute 'org-level-2 nil
-                      :foreground "slategray2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-3 nil
-                      :foreground "SkyBlue2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-4 nil
-                      :foreground "DodgerBlue2"
-                      :background nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-5 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-level-6 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-document-title nil
-                      :foreground "SlateGray1"
-                      :background nil
-                      :height 1.75
-                      :weight 'bold)
-#+end_src
-
 **** FIXME Preserve Indentation On Org-Babel-Tangle
 #+begin_src emacs-lisp :tangle no
 (setq org-src-preserve-indentation t)   ;NOTE: on by default
@@ -1290,7 +1193,7 @@ I recommend using eshell for light cli work, and using your external terminal em
   (setq org-roam-directory (expand-file-name "roam" org-directory)
         org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
         org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
-(org-roam-db-autosync-enable))
+  (org-roam-db-autosync-enable))
 #+end_src
 
 Dailies
@@ -1440,30 +1343,6 @@ dont have to select manually you can:
                             :empty-lines 1)
                            )))
 #+end_src
-**** old template
-#+begin_src elisp :tangle no
-;; ("d" "Demo Template" entry
-;;   (file+headline "demo.org" "Our first heading");relative to ~/org DIR
-;;   "* DEMO TEXT %?")
-
-;; ("o" "Options in prompt" entry
-;;  (file+headline "demo.org" "Our second heading")
-;;  "* %^{Select your option|ONE|TWO|THREE} %?")
-
-;;; capture region and insert into template ;; attach current time
-;; ("t" "Task with a date" entry
-;;  (file+headline "demo.org" "Scheduled tasks")
-;;  "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
-
-;; ("p" "Prompt for input: " entry
-;;     (file+headline "demo.org" "Our first +heading")
-;;     "* %^ %?")
-
-;; ("a" "A random template") ; group 'em up
-;;     ("at" "submenu - option [t]" entry
-;;      (file+headline "demo.org" "Scheduled tasks")
-;;      "* %^{Select your option|ONE|TWO|THREE}\n SCHEDULED: %t\n %i %?")
-#+end_src
 **** docs
 source: https://orgmode.org/manual/Template-elements.html
 
@@ -1530,131 +1409,6 @@ characters only  eg. 'a' or 'ab'
         `(("d" "default" plain ""
            :target (file+head "%<%Y-%m-%d>.org" ,(format "%%[%s/template/journal.org]" org-roam-directory))))))
 #+end_src
-*** inspo
-**** howardism
-
-org capture template consists of 3 parts:
-+ a key binding
-+ a destination, (a file, and some section in that file, like a heading, list item etc)
-+ a formatting template
-
-source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
-
-**** prot tech :prot:
-#+begin_src elisp :tangle no
-(use-package! org-capture
-  :ensure nil
-  :bind ("C-c c" . org-capture)
-  :config
-  ;; (require 'prot-org)
-
-  (setq org-capture-templates
-        `(("u" "Unprocessed" entry
-           (file+headline "tasks.org" "Unprocessed")
-           ,(concat "* %^{Title}\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%i%?")
-           :empty-lines-after 1)
-          ("w" "Wishlist" entry
-           (file+olp "tasks.org" "All tasks" "Wishlist")
-           ,(concat "* %^{Title} %^g\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%?")
-           :empty-lines-after 1)
-          ("t" "Task to do" entry
-           (file+headline "tasks.org" "All tasks")
-           ,(concat "* TODO %^{Title} %^g\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%?")
-           :empty-lines-after 1)
-          ("s" "Select file and heading to add to" entry
-           (function prot-org-select-heading-in-file)
-           ,(concat "* TODO %^{Title}%?\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n")
-           :empty-lines-after 1)
-
-          ;; NOTE 2024-11-24: I am not using this, but am keeping it
-          ;; here because the approach is good.
-
-          ;; ("c" "Clock in and do immediately" entry
-          ;;  (file+headline "tasks.org" "Clocked tasks")
-          ;;  ,(concat "* TODO %^{Title}\n"
-          ;;           ":PROPERTIES:\n"
-          ;;           ":EFFORT: %^{Effort estimate in minutes|5|10|15|30|45|60|90|120}\n"
-          ;;           ":END:\n\n"
-          ;;           "%a\n")
-          ;;  :prepend t
-          ;;  :clock-in t
-          ;;  :clock-keep t
-          ;;  :immediate-finish t
-          ;;  :empty-lines-after 1)
-          ("p" "Private lesson or service" entry
-           (file "coach.org")
-           #'prot-org-capture-coach
-           :prepend t
-           :empty-lines 1)
-          ("P" "Private service clocked" entry
-           (file+headline "coach.org" "Clocked services")
-           #'prot-org-capture-coach-clock
-           :prepend t
-           :clock-in t
-           :clock-keep t
-           :immediate-finish t
-           :empty-lines 1)))
-
-  ;; NOTE 2024-11-10: I realised that I was not using this enough, so
-  ;; I decided to simplify my setup.  Keeping it here, in case I need
-  ;; it again.
-
-  ;; (setq org-capture-templates-contexts
-  ;;       '(("e" ((in-mode . "notmuch-search-mode")
-  ;;               (in-mode . "notmuch-show-mode")
-  ;;               (in-mode . "notmuch-tree-mode")))))
-  )
-#+end_src
-**** templates
-***** thoughtbot guy
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-      `(("t"    ;hotkey
-         "Todo list item"  ; name
-         entry ;type
-         ;heading type and title
-         (file+headline org-default-notes-file "Tasks")
-         "* TODO %?\n %i\n %a" ;template
-         )))
-#+end_src
-
-***** capture templates :prot:
-more: manual
-
-You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
-
-If you then press =t= from the capture menu, Org will prepare the template for you like this:
-
-#+begin_src emacs-lisp :tangle no
-(setq org-capture-templates
-      '(("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
-         "* TODO %?\n  %i\n  %a")
-        ("j" "Journal" entry (file+datetree "~/org/journal.org")
-         "* %?\nEntered on %U\n  %i\n  %a")))
-#+end_src
-
-
-
-[[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
 ** org-agenda
 
 (key desc type match settings files)
@@ -1665,17 +1419,17 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 #+begin_src emacs-lisp :tangle yes
 (load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
-(defvar my/usiu-files
-  (directory-files-recursively "~/USIU/2026" "\\.org$"))
+;; (defvar my/usiu-files
+;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
 ;; (after! org)
-(setq! org-agenda-files (list org-directory
+(setq org-agenda-files (list org-directory
                          (file-name-concat org-directory "roam")))
 
-(setq! org-agenda-custom-commands
+(setq org-agenda-custom-commands
        `(("S" "School Tasks" tags-todo "@school")
-         ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
-                                                (org-agenda-overriding-header "USIU 2026 - TODO")))))
+         ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
+         ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
          ("n" "Linux + Nix" tags-todo "@nix+@linux")
 
          ("d" "Today's view"
@@ -1692,28 +1446,6 @@ Doom Emacs sets (org-agenda-start-day "-3d").
                   (org-agenda-overriding-header "\nTasks on hold ⏳")))))
          ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
-#+end_src
-
-#+RESULTS:
-
-(add-to-list 'org-agenda-files "~/File.org")
-
--{.*} - return all without the match {.*} - so return all with no tags
-
-tags-todo - sysmbol that search for tags specified
-
-You can modify variables inside the agenda config *(())* after the tags-todo "Stuff"
-        TODO Check if other emacs vars outside agendas work
-
-*** olivetti-mode
-#+begin_src emacs-lisp :tangle yes
-;; Function to be run when org-agenda is opened
-(defun org-agenda-open-hook()
-  "Hook to be run when org-agenda is opened"
-  (olivetti-mode))
-
-;; Adds hooks to org agenda mode, making follow mode active in org agenda
-(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
 #+end_src
 
 *** librephoenix
@@ -1990,7 +1722,6 @@ For neater/shorter presentation
 #+end_src
 
 **** Go back to the previous top-level heading
-***** TODO test further
 #+begin_src emacs-lisp :tangle no
 (defun org-back-to-top-level-heading ()
   "Go back to the current top level heading."
@@ -2001,13 +1732,14 @@ For neater/shorter presentation
 ** org-babel
 #+begin_src emacs-lisp :tangle yes
 (after! org
-(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
+  (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
 #+end_src
 
 ** FIXME org-modern
 #+begin_src emacs-lisp :tangle no
 (use-package! org-modern
-  :hook (org-mode . org-modern-mode)
+  ;; :hook (org-mode . org-modern-mode) ; NOTE auto enabled?
+  ;; (org-agenda-finalize . org-modern-agenda) ; FIXME
   :config
   (setq org-modern-star ["◉" "○" "✸" "✿" "✤" "✜" "◆" "▶"]
         org-modern-table-vertical 1
@@ -2035,6 +1767,17 @@ For neater/shorter presentation
 (after! spell-fu
   (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
 #+end_src
+* olivetti-mode
+#+begin_src emacs-lisp :tangle yes
+;; Function to be run when org-agenda is opened
+(defun org-agenda-open-hook()
+  "Hook to be run when org-agenda is opened"
+  (olivetti-mode))
+
+;; Adds hooks to org agenda mode, making follow mode active in org agenda
+(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
+#+end_src
+
 * Markdown
 #+begin_src emacs-lisp :tangle no
 (custom-set-faces
@@ -2046,207 +1789,21 @@ For neater/shorter presentation
  '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.2))))
  '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.1)))))
 #+end_src
-* Magit
-#+begin_src emacs-lisp :tangle yes
-(setq magit-view-git-manual-method 'woman)
-#+end_src
+* Inspo
+** witchmacs stuff
 
-* Inspo / Docs
-** DOCS
-*** docs | old
-**** fonts
-source: [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Fonts.html][emacs - fonts GNU manual]]
-‘slant’
-One of ‘italic’, ‘oblique’, or ‘roman’.
+https://github.com/snackon/Witchmacs/
 
-‘weight’
-One of ‘light’, ‘medium’, ‘demibold’, ‘bold’ or ‘black’.
-
-‘style’
-Some fonts define special styles which are a combination of slant and weight. For instance, ‘Dejavu Sans’ defines the ‘book’ style, which overrides the slant and weight properties.
-
-‘width’
-One of ‘condensed’, ‘normal’, or ‘expanded’.
-
-‘spacing’
-One of ‘monospace’, ‘proportional’, ‘dual-width’, or ‘charcell’.
-
- Doom exposes five (optional) variables for controlling fonts in Doom:
-
- - `doom-font' -- the primary font to use
- - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-   - used in websites? eww?
-   - headers?
-
-**** theme
-***** load theme
-
- There are =two ways= to load a theme. Both assume the theme is installed and
- available.
-
- You can either set =doom-theme= or =manually= load a theme with the =load-theme= function (This is the =default=:)
-
-***** favs
-****** dark
-+ moonlight
-+ ayu-mirage
-+ dracula (python) -> cool purple
-+ gruvbox
-+ tokyonight
-+ doom miramare
-+ horizon - nice red accents and purple
-+ bluloco-dark
-+ oksolar-dark
-+ solarized-dark
-+ one
-+ solarized-dark-high-contrast
-+ material - nice purple dotts and cursor
-+ snazzy
-
-=Python=
-+ monokai-octagon (python)
-
-****** light
-- doom-solarized-light
-- earl grey
-****** really light white light
-- doom-winter-is-coming-light
-- ayu light
-- one light
-****** pastel
-+ ephemeral
-+ nord-aurora
-**** nerd font experiement
-***** mononoki
-kinda nice and kawaii
+=Witchmacs= :witch:
 #+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 17 :weight 'semi-bold ))
-#+end_src
-***** iosevka
-****** comfy
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Comfy" :size 16 :weight 'regular ))
-#+end_src
-****** term
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Iosevka Nerd Font" :size 16 :weight 'medium ))
+(setq-default tab-width 4)
+(setq-default standard-indent 4)
+(setq c-basic-offset tab-width)
+(setq-default electric-indent-inhibit t)
+(setq-default indent-tabs-mode t)
+(setq backward-delete-char-untabify-method 'nil)
 #+end_src
 
-***** zed mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ZedMono Nerd Font" :size 17 :weight 'regular ))
-#+end_src
-
-***** martian mono
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "MartianMono Nerd Font" :size 14 :weight 'regular ))
-#+end_src
-
-***** caskaydia
-****** code
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Code" :size 15 :weight 'semibold ))
-#+end_src
-****** mono
-kinda nice
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Cascadia Mono" :size 15 :weight 'semibold ))
-#+end_src
-
-***** lilex
-nice l and i
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lilex Nerd Font" :size 15 :weight 'normal ))
-#+end_src
-
-***** fira
-nice defaults
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "FiraMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-***** shure
-boxy nice stuff 😃
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "ShureTechMono Nerd Font" :size 15 :weight 'medium ))
-#+end_src
-
-***** lekton
-nice little font actually :)
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Lekton Nerd Font Mono" :size 18 :weight 'bold ))
-#+end_src
-
-***** space mono
-use with rofi as well...clean cut font but kinda thin and no semibold
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "SpaceMono Nerd Font Mono" :size 16 :weight 'regular ))
-#+end_src
-
-***** Monofur
-kawaii - but does not look nice for ide maybe for ui?
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "Monofur Nerd Font" :size 18  :weight 'regular ))
-#+end_src
-
-***** SauceCode Pro
-#+begin_src emacs-lisp :tangle no
-(setq
- doom-font (font-spec :family "SauceCodePro Nerd Font" :size 16  :weight 'regular ))
-#+end_src
-
-***** Geist
-sublime... kinda similar to monaspace... weird ls , i is clean 0 o O
-#+begin_src emacs-lisp :tangle no
-(setq doom-font (font-spec :family "GeistMono Nerd Font" :size 16  :weight 'normal ))
-#+end_src
-
-***** monaspace
-one family, 5 fonts, 3 variable axes
-
-
-|------+---------+--------------------|
-| abbr | name    | font (actual)      |
-|------+---------+--------------------|
-| Ne   | Neon    | Neo-grotesque sans |
-| Ar   | Argon   | Humanist sans      |
-| Xe   | Xenon   | Slab serif         |
-| Ra   | Radon   | Handwriting        |
-| Kr   | Kyrpton | Mechanical sans    |
-|------+---------+--------------------|
-
-#+begin_src emacs-lisp :tangle no
-;; (setq doom-font (font-spec :family "Monaspace Neon" :size 16 :weight 'semibold ))
-(setq doom-font (font-spec :family "Monaspace Krypton" :size 16 :weight 'normal ))
-#+end_src
-
-**** options
-- var:doom-font: the primary font for Emacs to use.
-- var:doom-variable-pitch-font: used for non-monospace fonts (e.g. when using variable-pitch-mode or mixed-pitch-mode). Popular for text modes, like Org or Markdown.
-- var:doom-emoji-font: used for rendering emoji. Only needed if you want to use a font other than your operating system’s default.
-- var:doom-symbol-font: used for rendering symbols.
-- var:doom-serif-font: the sans-serif font to use wherever the face:fixed-pitch-serif face is used.
-- var:doom-big-font: the large font to use when fn:doom-big-font-mode is active.
-*** Revert Buffer
-
-  Reverting a Buffer:
-  The fundamental action is "reverting a buffer," which means replacing the current buffer's text with the text from the file on disk. This is useful when:
-    + You've made changes in Emacs but want to discard them and return to the saved version.
-    + Another program has modified the file, and you want to update the Emacs buffer to reflect those changes.
-
-  Auto Revert Mode:
-  Emacs also provides "auto-revert-mode," which automates this process. When enabled, Emacs periodically checks if the file on disk has changed and automatically updates the buffer. This is particularly useful for:
-    + Viewing log files that are constantly being updated.
-    + Keeping your Emacs buffer synchronized with files modified by other applications.
-*** KeyBinds
-**** Keybindings in lcoal keymaps
-Only bound after the pkg is loaded
-:map <mode> ( "" . <function> )
-#+begin_src elisp :tangle no
-(use-package! helm
-  :bind (:map helm-command-map
-         ("C-c h" . helm-execute-persistent-action)))
-#+end_src
 ** Justin-VC tech :justin:
 *** dashboard / misc
 #+begin_src emacs-lisp :tangle no
@@ -2291,10 +1848,6 @@ Only bound after the pkg is loaded
   (make-directory random-splash-image-dir t))
   (random-splash-image-set))
 #+end_src
-*** eval better arrows
-#+begin_src emacs-lisp :tangle yes
-(setq eros-eval-result-prefix "⟹ ") ; default =>
-#+end_src
 *** GPT things
 #+begin_src emacs-lisp :tangle no
 (use-package! gptel
@@ -2321,48 +1874,6 @@ Only bound after the pkg is loaded
        :desc "Start GPTel" "s" #'gptel
        :desc "Send to GPTel" "S" #'gptel-send))
 #+end_src
-*** Emojify
-#+begin_src emacs-lisp :tangle no
-(customize-set-variable 'emojify-emoji-set "twemoji-v2")
-#+end_src
-
-+ "emojione-v2.2.6-22"
-*** maginalia changes
-#+begin_src emacs-lisp :tangle no
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
-#+end_src
 *** weather
 #+begin_src emacs-lisp :tangle no
 (use-package! wttrin
@@ -2370,3 +1881,174 @@ Only bound after the pkg is loaded
   :config
   wttrin-default-cities '("Nairobi" ))
 #+end_src
+** templates
+*** thoughtbot guy
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+      `(("t"    ;hotkey
+         "Todo list item"  ; name
+         entry ;type
+         ;heading type and title
+         (file+headline org-default-notes-file "Tasks")
+         "* TODO %?\n %i\n %a" ;template
+         )))
+#+end_src
+
+*** capture templates :prot:
+more: manual
+
+You can use templates for different types of capture items, and for different target locations. Say you would like to use one template to create general TODO entries, and you want to put these entries under the heading ‘Tasks’ in your file ‘~/org/gtd.org’. Also, a date tree in the file ‘journal.org’ should capture journal entries. A possible configuration would look like:
+
+If you then press =t= from the capture menu, Org will prepare the template for you like this:
+
+#+begin_src emacs-lisp :tangle no
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree "~/org/journal.org")
+         "* %?\nEntered on %U\n  %i\n  %a")))
+#+end_src
+
+
+
+[[https://www.labri.fr/perso/nrougier/GTD/index.html][very nice tutorials]]
+** prot tech :prot:
+#+begin_src elisp :tangle no
+(use-package! org-capture
+  :ensure nil
+  :bind ("C-c c" . org-capture)
+  :config
+  ;; (require 'prot-org)
+
+  (setq org-capture-templates
+        `(("u" "Unprocessed" entry
+           (file+headline "tasks.org" "Unprocessed")
+           ,(concat "* %^{Title}\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%i%?")
+           :empty-lines-after 1)
+          ("w" "Wishlist" entry
+           (file+olp "tasks.org" "All tasks" "Wishlist")
+           ,(concat "* %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("t" "Task to do" entry
+           (file+headline "tasks.org" "All tasks")
+           ,(concat "* TODO %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("s" "Select file and heading to add to" entry
+           (function prot-org-select-heading-in-file)
+           ,(concat "* TODO %^{Title}%?\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n")
+           :empty-lines-after 1)
+
+          ;; NOTE 2024-11-24: I am not using this, but am keeping it
+          ;; here because the approach is good.
+
+          ;; ("c" "Clock in and do immediately" entry
+          ;;  (file+headline "tasks.org" "Clocked tasks")
+          ;;  ,(concat "* TODO %^{Title}\n"
+          ;;           ":PROPERTIES:\n"
+          ;;           ":EFFORT: %^{Effort estimate in minutes|5|10|15|30|45|60|90|120}\n"
+          ;;           ":END:\n\n"
+          ;;           "%a\n")
+          ;;  :prepend t
+          ;;  :clock-in t
+          ;;  :clock-keep t
+          ;;  :immediate-finish t
+          ;;  :empty-lines-after 1)
+          ("p" "Private lesson or service" entry
+           (file "coach.org")
+           #'prot-org-capture-coach
+           :prepend t
+           :empty-lines 1)
+          ("P" "Private service clocked" entry
+           (file+headline "coach.org" "Clocked services")
+           #'prot-org-capture-coach-clock
+           :prepend t
+           :clock-in t
+           :clock-keep t
+           :immediate-finish t
+           :empty-lines 1)))
+
+  ;; NOTE 2024-11-10: I realised that I was not using this enough, so
+  ;; I decided to simplify my setup.  Keeping it here, in case I need
+  ;; it again.
+
+  ;; (setq org-capture-templates-contexts
+  ;;       '(("e" ((in-mode . "notmuch-search-mode")
+  ;;               (in-mode . "notmuch-show-mode")
+  ;;               (in-mode . "notmuch-tree-mode")))))
+  )
+#+end_src
+** howardism
+
+org capture template consists of 3 parts:
++ a key binding
++ a destination, (a file, and some section in that file, like a heading, list item etc)
++ a formatting template
+
+source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
+** zaiste
+#+begin_src emacs-lisp :tangle no
+(after! org
+  (set-face-attribute 'org-link nil
+                      :weight 'normal
+                      :background nil)
+  (set-face-attribute 'org-code nil
+                      :foreground "#a9a1e1"
+                      :background nil)
+  (set-face-attribute 'org-date nil
+                      :foreground "#5B6268"
+                      :background nil)
+  (set-face-attribute 'org-level-1 nil
+                      :foreground "steelblue2"
+                      :background nil
+                      :height 1.2
+                      :weight 'normal)
+  (set-face-attribute 'org-level-2 nil
+                      :foreground "slategray2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-3 nil
+                      :foreground "SkyBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-4 nil
+                      :foreground "DodgerBlue2"
+                      :background nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-5 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-level-6 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-document-title nil
+                      :foreground "SlateGray1"
+                      :background nil
+                      :height 1.75
+                      :weight 'bold)
+#+end_src
+** Henrik lissner tech
+#+begin_src emacs-lisp :tangle no
+;; Prevents some cases of Emacs flickering.
+(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+#+end_src
+* Experiments

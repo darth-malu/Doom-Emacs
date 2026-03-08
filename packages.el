@@ -22,10 +22,13 @@
 (package! ein)
 (package! direnv)
 (package! tmr)
+(package! exec-path-from-shell)
+
+(package! prettier-js)
 ;; (package! py-autopep8)
 (package! qml-ts-mode
   :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
 (package! astro-ts-mode)
-;; (package! prettier)
+(package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 ;; (package! spotify)
 ;; (package! emms-player-spotify)
