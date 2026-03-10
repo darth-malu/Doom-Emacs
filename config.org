@@ -1127,7 +1127,9 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 (use-package! org
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-         org-default-notes-file (expand-file-name "notes.org" org-directory))
+        ;; org-default-notes-file (concat org-directory "/notes.org")
+        org-agenda-files (list org-directory)
+        org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
 
@@ -1187,6 +1189,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 #+end_src
 
 ** org-roam
+See file-truename, file-name-concat
 #+begin_src emacs-lisp :tangle yes
 (after! org-roam
   (setq org-roam-directory (expand-file-name "roam" org-directory)
@@ -1195,8 +1198,6 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   (org-roam-db-autosync-enable))
 #+end_src
 
-#+RESULTS:
-: t
 
 Dailies
  org-roam-dailies-capture-today

@@ -190,12 +190,12 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
-(setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
-       doom-font (font-spec :family "JetBrains Mono"
-                           :size 15
-                           :weight 'regular)
-       doom-emoji-font (font-spec :family "Noto Color Emoji")
-       doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+  (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
+         doom-font (font-spec :family "JetBrains Mono"
+                             :size 15
+                             :weight 'regular)
+         doom-emoji-font (font-spec :family "Noto Color Emoji")
+         doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 (after! org
@@ -434,7 +434,9 @@
 (use-package! org
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-         org-default-notes-file (expand-file-name "notes.org" org-directory))
+        ;; org-default-notes-file (concat org-directory "/notes.org")
+        org-agenda-files (list org-directory)
+        org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
 
