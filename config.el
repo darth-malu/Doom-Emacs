@@ -58,10 +58,10 @@
   (lsp-pyright-langserver-command "basedpyright")
   :hook
   (python-ts-mode . (lambda ()
-                      (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                      (setq +format-with 'black)
-                      (lsp-deferred)
-                      (local-set-key (kbd "C-c r") 'python-shell-send-region))))
+                   (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
+                   (setq +format-with 'black)
+                   (lsp-deferred)
+                   (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -71,10 +71,10 @@
    (jupyter . t)))
 
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                     (:session . "py")
-                                                     (:kernel . "python3")))
+                                                    (:session . "py")
+                                                    (:kernel . "python3")))
 
-(after! lsp-mode
+(after! lsp
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 
@@ -111,15 +111,15 @@
   :init
   (when (modulep! +lsp)
     (add-hook 'astro-ts-mode-hook #'lsp! 'append))
-  ;;   :config
-  ;; ;; 3. Ensure CSS and TSX also use Tree-sitter modes
+;;   :config
+;; ;; 3. Ensure CSS and TSX also use Tree-sitter modes
   (set-formatter! 'prettier-astro
     '("bunx" "prettier" "--parser=astro" ;
       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-    :modes '(astro-ts-mode)))
-;; :config
-;; (setq prettier-js-command "prettierd"
-;;       prettier-js-args '("--no-editorconfig")))
+      :modes '(astro-ts-mode)))
+  ;; :config
+  ;; (setq prettier-js-command "prettierd"
+  ;;       prettier-js-args '("--no-editorconfig")))
 
 
 (use-package! prettier-js
@@ -168,13 +168,13 @@
                     :server-id 'qmlls))
   :hook
   (qml-ts-mode . (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
-                                        ;; lsp-headerline-breadcrumb-mode t
-                                        )
-                   (lsp-deferred))))
+                                 ;; lsp-headerline-breadcrumb-mode t
+                                 )
+                    (lsp-deferred))))
 
 (use-package! direnv
-  :config
-  (direnv-mode))
+ :config
+ (direnv-mode))
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
@@ -190,12 +190,17 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
-(setq     doom-symbol-font (font-spec :family "Symbols Nerd Font")
-          doom-font (font-spec :family "JetBrains Mono"
-                               :size 15
-                               :weight 'regular)
-          doom-emoji-font (font-spec :family "Noto Color Emoji")
-          doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
+       doom-font (font-spec :family "JetBrains Mono"
+                           :size 15
+                           :weight 'regular)
+       doom-emoji-font (font-spec :family "Noto Color Emoji")
+       doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+
+;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
+(after! org
+  (set-ligatures! 'org-mode
+    :def "ƒ"))
 
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
@@ -280,39 +285,39 @@
   (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
   :bind
   ((
-    :map evil-normal-state-map
-    ;; TODO see map!
+   :map evil-normal-state-map
+        ;; TODO see map!
         ;;;misc
-    ("M-;" . save-buffer)
-    ;; ("C-s" . save-buffer)
-    ("<mouse-8>" . previous-buffer)
-    ("<mouse-9>" . next-buffer)
-    ("C-M-o" . consult-outline)
+        ("M-;" . save-buffer)
+        ;; ("C-s" . save-buffer)
+        ("<mouse-8>" . previous-buffer)
+        ("<mouse-9>" . next-buffer)
+        ("C-M-o" . consult-outline)
 
         ;;; EOL, BOL
-    ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-    ("M-h" . beginning-of-line-text)
-    ("M-S-l" . end-of-visual-line)
-    ("M-S-h" . beginning-of-visual-line)
+        ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
+        ("M-h" . beginning-of-line-text)
+        ("M-S-l" . end-of-visual-line)
+        ("M-S-h" . beginning-of-visual-line)
 
         ;;; insert newline below/above
-    ("M-o" . +evil/insert-newline-below)
-    ("M-O" . +evil/insert-newline-above)
+        ("M-o" . +evil/insert-newline-below)
+        ("M-O" . +evil/insert-newline-above)
 
         ;;; NOTE Too much conflict just use native C-w
-    ;; Unify Kitty + Emacs window focusing
-    ("C-M-l" . evil-window-right)
-    ("C-M-h" . evil-window-left)
-    ("C-M-k" . evil-window-up)
-    ("C-M-j" . evil-window-down)
-    ("C-M-j" . previous-window)
-    ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
+        ;; Unify Kitty + Emacs window focusing
+        ("C-M-l" . evil-window-right)
+        ("C-M-h" . evil-window-left)
+        ("C-M-k" . evil-window-up)
+        ("C-M-j" . evil-window-down)
+        ("C-M-j" . previous-window)
+        ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
 
-    ("C-'" . olivetti-mode)
+        ("C-'" . olivetti-mode)
 
     :map doom-leader-map
-    ("to" . hl-todo-occur)
-    ("SPC" . ace-window)
+      ("to" . hl-todo-occur)
+      ("SPC" . ace-window)
     )))
 
 (customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
@@ -342,14 +347,14 @@
   (customize-set-variable 'corfu-auto nil))
 
 ;; Trying to save workspaces
-(after! persp-mode
+(after! persp
   ;; Auto-save workspaces when Emacs exits
   (setq persp-auto-save-opt 1
-        ;; Save all workspace info including window configurations
-        persp-set-last-persp-for-new-frames nil
-        persp-reset-windows-on-nil-window-conf nil
-        ;; Load workspaces automatically on startup
-        persp-auto-resume-time -1.0))
+         ;; Save all workspace info including window configurations
+         persp-set-last-persp-for-new-frames nil
+         persp-reset-windows-on-nil-window-conf nil
+         ;; Load workspaces automatically on startup
+         persp-auto-resume-time -1.0))
 
 ;; (after! spell-fu
 ;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
@@ -384,7 +389,7 @@
   ;;                 org-src
   ;;                 org-tag
   ;;                 org-verbatim))))
-  )
+)
 
 (use-package! evil-nerd-commenter
   :defer t
@@ -429,7 +434,7 @@
 (use-package! org
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-        org-default-notes-file (expand-file-name "notes.org" org-directory))
+         org-default-notes-file (expand-file-name "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
 
@@ -443,28 +448,28 @@
   (org-hide-emphasis-markers t)
 
   (org-tag-alist
-   '(;;Places
-     ("@home" . ?h)
-     ("@school" . ?s)
+      '(;;Places
+        ("@home" . ?h)
+        ("@school" . ?s)
 
-     ;;devices
-     ("@carthage" . ?C)
-     ("@tangier" . ?T)
+        ;;devices
+        ("@carthage" . ?C)
+        ("@tangier" . ?T)
 
-     ;;activites
-     ("@work" . ?w)
-     ("@pyrple" . ?p)
-     ("@youtubr" . ?y)
-     ("@emacs" . ?e)
-     ("@linux" . ?l)
-     ("@nix" . ?n)))
+        ;;activites
+        ("@work" . ?w)
+        ("@pyrple" . ?p)
+        ("@youtubr" . ?y)
+        ("@emacs" . ?e)
+        ("@linux" . ?l)
+        ("@nix" . ?n)))
 
   (org-todo-keywords
-   '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
-;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
-;; (org-todo-keywords
-;;     '((sequence "TODO(t)" "|" "DONE(d)")
-;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+  ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
+  ;; (org-todo-keywords
+  ;;     '((sequence "TODO(t)" "|" "DONE(d)")
+  ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
 (after! org-roam
   (setq org-roam-directory (expand-file-name "roam" org-directory)
@@ -507,12 +512,12 @@
                             (file+headline "bucket-list.org" "Movies")
                             "+ [ ] %?"
                             :prepend t)
-                           ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
-                           ("bam" "Anime Movie"  plain
+                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
+                            ("bam" "Anime Movie"  plain
                             (file+headline "bucket-list.org" "Anime")
                             "+ [ ] %?" :prepend t)
-                           ;; ANIME
-                           ("bas" "Anime Series" plain
+                            ;; ANIME
+                            ("bas" "Anime Series" plain
                             (file+headline "bucket-list.org" "Anime")
                             "+ [ ] %?" :prepend t)
                            ("bb" "books" plain
@@ -554,13 +559,13 @@
                             "+ %?"
                             :empty-lines 1
                             :prepend t)
-                           ("dq" "quotes [q]" plain
+                            ("dq" "quotes [q]" plain
                             (file+headline "diction.org" "Quotes")
                             ;; Template string starts here
                             "#+begin_quote\n%i%?\n#+end_quote\n"
                             :empty-lines 1
                             :prepend t)
-                           ("dp" "phrases [p]" plain
+                            ("dp" "phrases [p]" plain
                             (file+headline "diction.org" "Phrases")
                             ;; Template string starts here
                             "#+begin_quote\n%i%?\n#+end_quote\n"
@@ -586,33 +591,32 @@
 ;; (defvar my/usiu-files
 ;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
-;; (after! org)
-(setq org-agenda-files (list org-directory
-                             (file-name-concat org-directory "roam")))
+(after! org
+      (setq org-agenda-files (list org-directory
+                              (file-name-concat org-directory "roam"))))
 
 (setq org-agenda-custom-commands
-      `(("S" "School Tasks" tags-todo "@school")
-        ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
-        ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
-        ("n" "Linux + Nix" tags-todo "@nix+@linux")
+       `(("S" "School Tasks" tags-todo "@school")
+         ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
+         ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
+         ("n" "Linux + Nix" tags-todo "@nix+@linux")
 
-        ("d" "Today's view"
-         ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                        (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-          (agenda ""
-                  ((org-agenda-block-separator nil)
-                   (org-agenda-span 1)
-                   (org-agenda-overriding-header "\n")
-                   (org-agenda-start-day nil)
-                   ))
-          (todo "WAIT"
-                ((org-agenda-block-separator nil)
-                 (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-        ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-        ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
+         ("d" "Today's view"
+          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+           (agenda ""
+                   ((org-agenda-block-separator nil)
+                    (org-agenda-span 1)
+                    (org-agenda-overriding-header "\n")
+                    (org-agenda-start-day nil)
+                    ))
+           (todo "WAIT"
+                 ((org-agenda-block-separator nil)
+                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 
-(after! org
-  (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
+(setq emacs-everywhere-frame-name-format "emacs-everywhere")
 
 ;; Function to be run when org-agenda is opened
 (defun org-agenda-open-hook()

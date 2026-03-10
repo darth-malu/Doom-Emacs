@@ -1,6 +1,6 @@
 #+title: My Emacs Configuration
 #+author: justin malu
-#+startup: content indent noinlineimages
+#+startup: content indent
 #+auto_tangle: t
 
 #+begin_src emacs-lisp :tangle yes
@@ -117,7 +117,7 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 ** Lsp Mode
 *** lsp-mode
 #+begin_src emacs-lisp :tangle yes
-(after! lsp-mode
+(after! lsp
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 #+end_src
@@ -418,12 +418,12 @@ LIST-OF-DISPLAY-FUNCTIONS
 change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
 
 #+begin_src emacs-lisp :tangle yes
-  (setq     doom-symbol-font (font-spec :family "Symbols Nerd Font")
-    doom-font (font-spec :family "JetBrains Mono"
-                         :size 15
-                         :weight 'regular)
-    doom-emoji-font (font-spec :family "Noto Color Emoji")
-    doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+  (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
+         doom-font (font-spec :family "JetBrains Mono"
+                             :size 15
+                             :weight 'regular)
+         doom-emoji-font (font-spec :family "Noto Color Emoji")
+         doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 #+end_src
 
 =Useful conditionals=
@@ -435,10 +435,9 @@ doom-serif-font
 
 =Ligatures=
 #FIXME Make this work for org
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
-
-(after! org-mode
+(after! org
   (set-ligatures! 'org-mode
     :def "ƒ"))
 #+end_src
@@ -722,7 +721,7 @@ e.g., c-tab-always-indent, and do not respect this variable.
 ** TODO Persp-mode default workspace behaviour fix
 #+begin_src emacs-lisp :tangle yes
 ;; Trying to save workspaces
-(after! persp-mode
+(after! persp
   ;; Auto-save workspaces when Emacs exits
   (setq persp-auto-save-opt 1
          ;; Save all workspace info including window configurations
@@ -733,7 +732,7 @@ e.g., c-tab-always-indent, and do not respect this variable.
 #+end_src
 
 #+begin_src emacs-lisp :tangle no
-(after! persp-mode
+(after! persp
   (setq persp-emacsclient-init-frame-behaviour-override
    `(+workspace-current-name))
 )
@@ -1196,6 +1195,9 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   (org-roam-db-autosync-enable))
 #+end_src
 
+#+RESULTS:
+: t
+
 Dailies
  org-roam-dailies-capture-today
 
@@ -1422,9 +1424,9 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 ;; (defvar my/usiu-files
 ;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
-;; (after! org)
-(setq org-agenda-files (list org-directory
-                         (file-name-concat org-directory "roam")))
+(after! org
+      (setq org-agenda-files (list org-directory
+                              (file-name-concat org-directory "roam"))))
 
 (setq org-agenda-custom-commands
        `(("S" "School Tasks" tags-todo "@school")
@@ -1730,7 +1732,8 @@ For neater/shorter presentation
       (goto-char (point-min))))
 #+end_src
 ** org-babel
-#+begin_src emacs-lisp :tangle yes
+NOTE: not needed in doom...it auto [[https://discourse.doomemacs.org/t/common-config-anti-patterns/119#loading-org-babel-plugins-yourself-6][does it]]
+#+begin_src emacs-lisp :tangle no
 (after! org
   (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t) (jupyter . t))))
 #+end_src
@@ -1766,6 +1769,10 @@ For neater/shorter presentation
 
 (after! spell-fu
   (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
+#+end_src
+* Emacs Everywhere
+#+begin_src emacs-lisp :tangle yes
+(setq emacs-everywhere-frame-name-format "emacs-everywhere")
 #+end_src
 * olivetti-mode
 #+begin_src emacs-lisp :tangle yes
