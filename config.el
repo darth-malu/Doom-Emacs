@@ -59,7 +59,7 @@
   :hook
   (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
-                   (setq +format-with 'black)
+                   (setq-local +format-with 'black)
                    (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
@@ -93,7 +93,6 @@
   (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
   (lsp-nix-nil-formatter ["nixfmt"]))
 
-;; 1. Global Tree-sitter Setup (Runs on Emacs start)
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")
         (css "https://github.com/tree-sitter/tree-sitter-css")
@@ -103,7 +102,6 @@
   (unless (treesit-language-available-p lang)
     (treesit-install-language-grammar lang)))
 
-;; 2. Specific Mode Configuration
 (use-package! astro-ts-mode
   :mode "\\.astro\\'"
   :hook
@@ -111,41 +109,33 @@
   :init
   (when (modulep! +lsp)
     (add-hook 'astro-ts-mode-hook #'lsp! 'append))
-;;   :config
-;; ;; 3. Ensure CSS and TSX also use Tree-sitter modes
-  (set-formatter! 'prettier-astro
-    '("bunx" "prettier" "--parser=astro" ;
-      (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-      :modes '(astro-ts-mode)))
-  ;; :config
+  :config
+(after! lsp-mode
+    (add-to-list 'lsp-language-id-configuration '(astro-ts-mode . "astro-ts"))
+
+    (lsp-register-client
+    (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
+                    :activation-fn (lsp-activate-on "astro-ts")
+                    :server-id 'astro-ls))))
   ;; (setq prettier-js-command "prettierd"
   ;;       prettier-js-args '("--no-editorconfig")))
 
+;; (use-package! prettier-js
+;;   :hook
+;;   (web-mode . prettier-js-mode)
+;;   ;; (astro-ts-mode . prettier-js-mode)
+;;   (js-mode . prettier-js-mode))
 
-(use-package! prettier-js
-  :hook
-  (web-mode . prettier-js-mode)
-  (astro-ts-mode . prettier-js-mode)
-  (js-mode . prettier-js-mode))
+(after! apheleia
+  (set-formatter! 'prettier-astro
+    '("bunx" "prettier" "--parser=astro" ;
+      (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
+      :modes '(astro-ts-mode))
+    (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
+                 ))
 
-;; (after! apheleia
-;;   (set-formatter! 'prettier-astro
-;;     '("bunx" "prettier" "--parser=astro" ;
-;;       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-;;       :modes '(astro-ts-mode))
-;;     (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-js-mode)
-;;                  )
-;;   )
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
-
-;; https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/emacs/config.org#headline-58
-;; (add-to-list
-;;   'apheleia-formatters
-;;   '(prettier-astro npx "prettier" "--stdin-filepath" filepath "--parser=astro"
-;;                   (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset)))
-
-;; (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro))
 
 ;; (use-package! lsp-tailwindcss :after lsp-mode)
 
@@ -167,14 +157,34 @@
                     :activation-fn (lsp-activate-on "qml-ts")
                     :server-id 'qmlls))
   :hook
-  (qml-ts-mode . (lambda () (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,)
-                                 ;; lsp-headerline-breadcrumb-mode t
-                                 )
-                    (lsp-deferred))))
+  (qml-ts-mode . (lambda () 
+                   (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
+                   (lsp-headerline-breadcrumb-mode 1)
+                   (lsp-deferred))))
 
 (use-package! direnv
  :config
  (direnv-mode))
+
+(use-package yeetube
+  :init (define-prefix-command 'my/yeetube-map)
+  :bind (("C-c y" . 'my/yeetube-map)
+          :map my/yeetube-map
+          ("RET" . 'yeetube-play)     
+          ("s" . 'yeetube-search)
+          ("b" . 'yeetube-play-saved-video)
+          ("d" . 'yeetube-download-videos)
+          ("p" . 'yeetube-mpv-toggle-pause)
+          ("v" . 'yeetube-mpv-toggle-video)
+          ("V" . 'yeetube-mpv-toggle-no-video-flag)
+          ("k" . 'yeetube-remove-saved-video)))
+
+(define-abbrev global-abbrev-table "meab" "This is my first abbrev")
+
+(defun my-current-time ()
+  (insert (format-time-string "%A,%B %e%t%T")))
+
+(define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
@@ -188,14 +198,15 @@
 ;;; :ui doom-dashboard
 (setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
 ;; Hide the menu for as minimalistic a startup screen as possible.
-(setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
+;; (setq +doom-dashboard-functions '(dashboard-widget-banner +dashboard-widget-shortmenu))
+;; (setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
 
-  (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
-         doom-font (font-spec :family "JetBrains Mono"
-                             :size 15
-                             :weight 'regular)
-         doom-emoji-font (font-spec :family "Noto Color Emoji")
-         doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+(setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
+       doom-font (font-spec :family "JetBrains Mono"
+                           :size 15
+                           :weight 'regular)
+       doom-emoji-font (font-spec :family "Noto Color Emoji")
+       doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
 
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 (after! org
@@ -477,7 +488,7 @@
   (setq org-roam-directory (expand-file-name "roam" org-directory)
         org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
         org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
-  (org-roam-db-autosync-enable))
+  (org-roam-db-autosync-mode))
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)

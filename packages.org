@@ -9,6 +9,8 @@
 
 * my pkgs
 #+begin_src emacs-lisp :tangle packages.el
+;; Fun
+(package! yeetube)
 ;;; ORG
 (package! olivetti)
 (package! org-super-agenda)

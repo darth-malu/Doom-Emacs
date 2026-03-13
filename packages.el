@@ -1,6 +1,8 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
+;; Fun
+(package! yeetube)
 ;;; ORG
 (package! olivetti)
 (package! org-super-agenda)
