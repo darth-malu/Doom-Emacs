@@ -432,7 +432,7 @@ LIST-OF-DISPLAY-FUNCTIONS
 (setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
 ;; Hide the menu for as minimalistic a startup screen as possible.
 ;; (setq +doom-dashboard-functions '(dashboard-widget-banner +dashboard-widget-shortmenu))
-;; (setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
+(setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
 #+end_src
 ** fonts
 change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
@@ -713,31 +713,26 @@ not sure if after! init works lul
 #+end_src
 
 
-(text-mode-ispell-word-completion nil)
+(text-mode-ispell-word-completion nil) - NOTE: nil by default...consider changing to sane default
 
-Hide commands in M-x which do not apply to the current mode.  Corfu
-
-commands are hidden, since they are not used via M-x. This setting is
-
-useful beyond Corfu.
+Hide commands in M-x which do not apply to the current mode.  Corfu commands are hidden, since they are not used via M-x. This setting is useful beyond Corfu.
 
 (read-extended-command-predicate #'command-completion-default-include-p)
 
 =tabs-always-indent=
-Enable indentation+completion using the TAB key.
-`completion-at-point' is often bound to M-TAB.
-(setq tab-always-indent 'complete) ; try complete if indent is off
+Enable indentation+completion using the TAB key. =`completion-at-point'= is often bound to M-TAB.
 
+(setq tab-always-indent 'complete) ; try complete if indent is off
 - If t, hitting TAB always just indents the current line.
 - If nil, hitting TAB indents the current line if point is at the left margin
  or in the line's indentation, otherwise it inserts a "real" TAB character.
 - If complete, TAB first tries to indent the current line, and if the line
 was already indented, then try to complete the thing at point.
 
-Also see =tab-first-completion.=
+Also see =tab-first-completion.=(This variable has no effect unless tab-always-indent is complete.)
 
-Some programming language modes have their own variable to control this,
-e.g., c-tab-always-indent, and do not respect this variable.
+Some programming language modes have their own variable to control this, e.g., c-tab-always-indent, and do not respect this variable.
+
 ** TODO Persp-mode default workspace behaviour fix
 #+begin_src emacs-lisp :tangle yes
 ;; Trying to save workspaces

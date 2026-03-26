@@ -199,7 +199,7 @@
 (setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
 ;; Hide the menu for as minimalistic a startup screen as possible.
 ;; (setq +doom-dashboard-functions '(dashboard-widget-banner +dashboard-widget-shortmenu))
-;; (setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
+(setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
 
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
        doom-font (font-spec :family "JetBrains Mono"
