@@ -106,7 +106,7 @@ direnv
        (web +lsp +tree-sitter)               ; the tubes - web/css mode
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        data              ; config/data formats - csv/xml
-       ;; (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
+       (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
        ;; lua               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML

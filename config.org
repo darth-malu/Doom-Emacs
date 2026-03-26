@@ -457,16 +457,6 @@ LIST-OF-DISPLAY-FUNCTIONS
 (add-hook 'doom-after-init-hook #'my/set-buffer-darth)
 #+end_src
 
-** dashboard
-#+begin_src emacs-lisp :tangle yes
-;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png")
-      ;; initial-buffer-choice #'eshell
-      ;; +doom-dashboard-name "maluware"
-      +dashboard-name "maluware"
-      +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
-;; Hide the menu for as minimalistic a startup screen as possible.
-#+end_src
 ** fonts
 change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To change fonts on the fly][Link to my notes]]
 
@@ -555,9 +545,13 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   :init
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  (fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
+        ;; initial-buffer-choice #'eshell
+  (+dashboard-name "maluware" )
+  (+dashboard-functions '(+dashboard-widget-banner))
   ;; latex
   ;; (org-latex-compiler 'lualatex)        ;pdflatex::
-  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng
+  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng::
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -663,9 +657,8 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
           ("C-M-h" . evil-window-left)
           ("C-M-k" . evil-window-up)
           ("C-M-j" . evil-window-down)
-          ;; ("C-M-j" . previous-window)
+          ("C-M-SPC" . evil-window-delete)
           ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
-
           ("C-'" . olivetti-mode)
 
           :map evil-insert-state-map
@@ -676,6 +669,12 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
           ("I" . ielm)
           ("SPC" . ace-window)))
 #+end_src
+
++dashboard-functions:
++ +dashboard-widget-banner
++ +dashboard-widget-shortmenu
+
+Old function: doom-dashboard-name
 
 ** format +onsave disabled modes
 #+begin_src emacs-lisp :tangle yes

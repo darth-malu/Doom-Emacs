@@ -12,6 +12,7 @@
 (package! org-roam-ui)
 (package! nov)                      ;For annotations? -org-noter
 (package! org-transclusion)
+;; (package! cdlatex)                      ;for nice latex minor mode...😀
 
 ;;; LSP / Dev
 (package! jupyter)

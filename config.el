@@ -143,14 +143,6 @@
     ;; ("\\*ein:notebooklist.*\\*" :select t :side bottom :actions (display-buffer-in-side-window))
     ))
 
-;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png")
-      ;; initial-buffer-choice #'eshell
-      ;; +doom-dashboard-name "maluware"
-      +dashboard-name "maluware"
-      +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
-;; Hide the menu for as minimalistic a startup screen as possible.
-
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
        doom-font (font-spec :family "JetBrains Mono"
                            :size 15
@@ -179,9 +171,13 @@
   :init
   (setq custom-file (expand-file-name "custom.el" doom-user-dir))
   :custom
+  (fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
+        ;; initial-buffer-choice #'eshell
+  (+dashboard-name "maluware" )
+  (+dashboard-functions '(+dashboard-widget-banner))
   ;; latex
   ;; (org-latex-compiler 'lualatex)        ;pdflatex::
-  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng
+  ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng::
   ;; (org-super-agenda-mode t)
   (epg-pinentry-mode 'loopback)
   (tab-width 2)
@@ -287,9 +283,8 @@
           ("C-M-h" . evil-window-left)
           ("C-M-k" . evil-window-up)
           ("C-M-j" . evil-window-down)
-          ;; ("C-M-j" . previous-window)
+          ("C-M-SPC" . evil-window-delete)
           ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
-
           ("C-'" . olivetti-mode)
 
           :map evil-insert-state-map
