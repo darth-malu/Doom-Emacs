@@ -38,8 +38,6 @@
   :config
   ;; (elpy-folding-fringe-indicators t)
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
-  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (setq elpy-modules (cl-set-difference
                       elpy-modules
                       '(elpy-module-highlight-indentation
@@ -81,17 +79,71 @@
 (use-package! lsp-treemacs
   :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 
+(after! lsp-ui
+  :custom
+  ;; (lsp-ui-doc-show 'bottom)
+  ;; (lsp-ui-doc-position 'top) ;; 'at-point
+  ;; (lsp-ui-doc-show-with-cursor t)
+  ;; (lsp-ui-doc-enable nil) ;NOTE use K
+  ;; (lsp-ui-doc-show-with-mouse t)
+
+  ;; (lsp-ui-peek-show-directory t) ; FIXME
+  ;; (lsp-ui-peek-enable t)
+
+  ;;;imenu
+  ;; (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
+  ;; (lsp-ui-imenu-refresh-delay) ;FIXME Does not exists?
+  ;; (lsp-ui-imenu-buffer-position 'left)
+
+  ;;;Sideline
+  ;; (lsp-ui-sideline-enable nil)
+
+  (lsp-ui-sideline-show-code-actions t) ;nil::
+  ;; (lsp-enable-symbol-highlighting nil) ; highlight references of symbol at point eg. print in python highlight
+  ;; (lsp-ui-sideline-show-hover nil) ; whether to show hover messages on sideline
+
+  ;; (lsp-ui-sideline-enable nil)     ;t:: TODO....try this
+  ;; (lsp-ui-sideline-show-diagnostics nil) ;hide only errors
+
+  ;;; eldoc
+  ;; (lsp-eldoc-enable-hover nil)
+
+  ;;;modeline
+  ;; (lsp-modeline-code-actions-enable nil)
+  ;; (lsp-modeline-diagnostics-enable nil)
+
+  ;;; lenses
+  ;; (lsp-lens-enable nil)
+
+  ;;;headerline
+  ;; (lsp-headerline-breadcrumb-enable t)
+
+  ;;;flycheck
+  ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present); auto::
+
+  ;;;completion
+  ;; (lsp-completion-show-detail nil) ;t::
+  ;; (lsp-completion-show-kind nil)
+  ;; (lsp-completion-provider :none) ; (company mode)
+  )
+
 (after! ccls
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
   (set-lsp-priority! 'ccls 1))
 
-(use-package! lsp-nix
-  ;; :ensure lsp-mode
-  :after (lsp-mode)
-  :demand t
-  :custom
-  (lsp-disabled-clients '((nix-mode . nix-nixd))) ;; TODO test if nixdd is on or need disabling
-  (lsp-nix-nil-formatter ["nixfmt"]))
+(use-package! nix-mode
+:after lsp-mode
+:hook
+(nix-mode . lsp-deferred) ;; So that envrc mode will work
+:custom
+(lsp-disabled-clients '((nix-mode . nix-nil))) ;; Disable nil so that nixd will be used as lsp-server
+:config
+(setq lsp-nix-nixd-server-path "nixd"
+      lsp-nix-nixd-formatting-command [ "nixfmt" ]
+      lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
+      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")

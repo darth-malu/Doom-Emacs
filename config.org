@@ -52,8 +52,6 @@ https://renzmann.github.io/posts/006_emacs_2_python/
   :config
   ;; (elpy-folding-fringe-indicators t)
   ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  ;; (setq elpy-modules (delq 'elpy-module-highlight-indentation elpy-modules)) ; disable elpy indentation guide
-  ;; (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (setq elpy-modules (cl-set-difference
                       elpy-modules
                       '(elpy-module-highlight-indentation
@@ -132,7 +130,7 @@ https://github.com/emacs-lsp/lsp-ui
 
 By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 (after! lsp-ui
   :custom
   ;; (lsp-ui-doc-show 'bottom)
@@ -142,7 +140,7 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   ;; (lsp-ui-doc-show-with-mouse t)
 
   ;; (lsp-ui-peek-show-directory t) ; FIXME
-  (lsp-ui-peek-enable t)
+  ;; (lsp-ui-peek-enable t)
 
   ;;;imenu
   ;; (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
@@ -170,7 +168,7 @@ By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configu
   ;; (lsp-lens-enable nil)
 
   ;;;headerline
-  (lsp-headerline-breadcrumb-enable t)
+  ;; (lsp-headerline-breadcrumb-enable t)
 
   ;;;flycheck
   ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present); auto::
@@ -212,7 +210,7 @@ lsp mode with clangd
 https://github.com/NixOS/nix-mode
 *** nil lsp
 nil: An incremental analysis assistant for writing in Nix.
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! lsp-nix
   ;; :ensure lsp-mode
   :after (lsp-mode)
@@ -223,10 +221,9 @@ nil: An incremental analysis assistant for writing in Nix.
 #+end_src
 
 *** nixd
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 (use-package! nix-mode
 :after lsp-mode
-:ensure nil
 :hook
 (nix-mode . lsp-deferred) ;; So that envrc mode will work
 :custom
@@ -234,14 +231,27 @@ nil: An incremental analysis assistant for writing in Nix.
 :config
 (setq lsp-nix-nixd-server-path "nixd"
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
+      lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
       lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/nb/nixos\").nixosConfigurations.mnd.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/nb/nixos\").homeConfigurations.\"nb@mnd\".options"))
-
-;; (add-hook!! 'nix-mode-hook
-         ;; enable autocompletion with company
-         ;; (setq company-idle-delay 0.1))
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 #+end_src
+
+A. home-manager switch --flake .#... (standalone Home Manager)
+B. nixos-rebuild switch --flake .#... (NixOS with integrated Home Manager)
+
+Configuration examples for both approaches are shown below.
+
+#+begin_src json :tangle no
+"home-manager": {
+  A:
+  "expr": "(builtins.getFlake (builtins.toString ./.)).homeConfigurations.<name>.options"
+
+  B:
+  "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.<name>.options.home-manager.users.type.getSubOptions []"
+}
+#+end_src
+
 ** Astro
 #+begin_src emacs-lisp :tangle yes
 (setq treesit-language-source-alist
