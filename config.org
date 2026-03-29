@@ -9,7 +9,7 @@
 * language major modes
 NOTE: if treesitter available the mode has an appended -ts-mode eg python-ts-mode
 ** emacs lsp booster
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
   (or
@@ -43,24 +43,8 @@ NOTE: if treesitter available the mode has an appended -ts-mode eg python-ts-mod
 #+end_src
 ** python mode
 https://renzmann.github.io/posts/006_emacs_2_python/
-*** elpy
-#+begin_src emacs-lisp :tangle yes
-(use-package! elpy
-  :defer t
-  :init
-  (advice-add 'python-ts-mode :before 'elpy-enable)
-  :config
-  ;; (elpy-folding-fringe-indicators t)
-  ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq elpy-modules (cl-set-difference
-                      elpy-modules
-                      '(elpy-module-highlight-indentation
-                        elpy-module-flymake)))
-  :hook
-  (elpy-mode . flycheck-mode))
-#+end_src
 
-*** ipython
+*** ipython + python-ts-mode
 #+begin_src elisp :tangle yes
 (use-package! python
   :custom
@@ -75,7 +59,7 @@ https://renzmann.github.io/posts/006_emacs_2_python/
   (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
                    (setq-local +format-with 'black)
-                   (lsp-deferred)
+                   ;; (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 #+end_src
 
@@ -111,15 +95,35 @@ source: [[https://emacs-lsp.github.io/lsp-pyright/]]
                                                     (:session . "py")
                                                     (:kernel . "python3")))
 #+end_src
+*** elpy
+#+begin_src emacs-lisp :tangle no
+(use-package! elpy
+  :defer t
+  :init
+  (advice-add 'python-ts-mode :before 'elpy-enable)
+  :custom
+  ;; (elpy-folding-fringe-indicators t)
+  (elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  ;; (setq elpy-modules (cl-set-difference
+  ;;                     elpy-modules
+  ;;                     '(elpy-module-highlight-indentation
+  ;;                       elpy-module-flymake)))
+  :hook
+  (elpy-mode . flycheck-mode))
+#+end_src
+
+cl-set-difference: combines LIST1 + LIST2 such that the resulting list has all elements of LIST1 but not those in LIST2
+        TODO: check if (require 'cl-lib needed)
+
 ** Lsp Mode
 *** lsp-mode
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (after! lsp
   (setq lsp-enable-symbol-highlighting nil
         lsp-enable-suggest-server-download nil))
 #+end_src
 *** lsp treemacs
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (use-package! lsp-treemacs
   :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
 #+end_src
@@ -130,7 +134,7 @@ https://github.com/emacs-lsp/lsp-ui
 
 By default, =lsp-mode= automatically activates =lsp-ui= unless =lsp-auto-configure= is set to nil.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (after! lsp-ui
   :custom
   ;; (lsp-ui-doc-show 'bottom)
@@ -221,6 +225,7 @@ nil: An incremental analysis assistant for writing in Nix.
 #+end_src
 
 *** nixd
+=lsp-mode=
 #+begin_src emacs-lisp :tangle yes
 (use-package! nix-mode
 :after lsp-mode
@@ -232,7 +237,7 @@ nil: An incremental analysis assistant for writing in Nix.
 (setq lsp-nix-nixd-server-path "nixd"
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
-      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
       lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
       lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 #+end_src
@@ -253,6 +258,7 @@ Configuration examples for both approaches are shown below.
 #+end_src
 
 ** Astro
+*** Astro-ls
 #+begin_src emacs-lisp :tangle yes
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")
@@ -271,49 +277,57 @@ Configuration examples for both approaches are shown below.
   (when (modulep! +lsp)
     (add-hook 'astro-ts-mode-hook #'lsp! 'append))
   :config
-(after! lsp-mode
+  (after! lsp-mode
     (add-to-list 'lsp-language-id-configuration '(astro-ts-mode . "astro-ts"))
 
     (lsp-register-client
-    (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
-                    :activation-fn (lsp-activate-on "astro-ts")
-                    :server-id 'astro-ls))))
-  ;; (setq prettier-js-command "prettierd"
-  ;;       prettier-js-args '("--no-editorconfig")))
+     (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
+                      :activation-fn (lsp-activate-on "astro-ts")
+                      :server-id 'astro-ls))))
+;; (setq prettier-js-command "prettierd"
+;;       prettier-js-args '("--no-editorconfig")))
 
 ;; (use-package! prettier-js
 ;;   :hook
 ;;   (web-mode . prettier-js-mode)
 ;;   ;; (astro-ts-mode . prettier-js-mode)
 ;;   (js-mode . prettier-js-mode))
+#+end_src
 
+*** Formatting with apeleia - prettier bunx
+#+begin_src emacs-lisp :tangle yes
 (after! apheleia
   (set-formatter! 'prettier-astro
     '("bunx" "prettier" "--parser=astro" ;
       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-      :modes '(astro-ts-mode))
-    (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
-                 ))
+    :modes '(astro-ts-mode))
+  (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
+               ))
 
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
-
 #+end_src
 
 https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/emacs/config.org#headline-58
+
+[[https://github.com/withastro/prettier-plugin-astro][astro prettier]]: 
+
 
 #+begin_src emacs-lisp :tangle yes
 ;; (use-package! lsp-tailwindcss :after lsp-mode)
 
 (use-package! lsp-tailwindcss
-  :when (modulep! +lsp)
+  ;; :when (modulep! +lsp)
+  :after lsp-mode
   :init
-
   (setq lsp-tailwindcss-add-on-mode t)
-  :config
 
+  :config
   (add-to-list 'lsp-tailwindcss-major-modes 'astro-ts-mode))
 #+end_src
+
+Steps to get it working:
++ 
 ** web mode
 #+begin_src emacs-lisp :tangle no
 (defun my/web-mode-hook ()
@@ -388,7 +402,6 @@ abbrev mode is buffer-local
 
 (define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
 #+end_src
-
 
 *** buffer location in window | display-buffer-alist | set-popup-rules
 **** Doom way 
@@ -483,6 +496,17 @@ works !!...height too small thought :height 0.9
   '(mode-line-inactive :family "VictorMono Nerd Font" :weight bold :height 0.95))
 #+end_src
 
+#+begin_src emacs-lisp :tangle no
+;; TODO: see if fonts can be changed this way instead
+  ;; DOOM MODELINE
+  (setq doom-modeline-height 1) ; optional
+  (if (facep 'mode-line-active)
+      (set-face-attribute 'mode-line-active nil :family "Mononoki Nerd Font" :height 100) ; For 29+
+    (set-face-attribute 'mode-line nil :family "Noto Sans" :height 100))
+  (set-face-attribute 'mode-line-inactive nil :family "VictorMono Nerd Font"  :height 100)
+
+#+end_src
+
 :height 0.95
 
 *** battery
@@ -558,11 +582,35 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   (magit-view-git-manual-method 'woman)
 
   ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
-  (scroll-margin 18)
+  (scroll-margin 8)
   (scroll-conservatively 101)
 
-  (doom-modeline-modal nil)             ;display mode - NORMAL,INSERT,VISUAL
-  (doom-modeline-check-simple-format t)
+  ;; TODO: check what the numbers mean in doom
+  ;; (doom-modeline-check-simple-format t)
+  ;; (doom-modeline-check-icon t)
+  ;; (doom-modeline-height 3)             ;5:: -If charheight is larger its respected instead
+  ;; (doom-modeline-hud t)       ;Only respected in GUI
+  ;;; ON BY DEFAULT
+  ;; (doom-modeline-buffer-file-name-style 'auto)
+  ;; (doom-modeline-major-mode-color-icon t)
+  ;; (doom-modeline-lsp-icon t)
+  ;; (doom-modeline-buffer-name t)
+  ;; Whether display the minor modes in the mode-line.
+  ;; (doom-modeline-minor-modes nil)
+  ;; (doom-modeline-vcs-icon t)
+  ;; (doom-modeline-vcs-max-length 15)
+  (doom-modeline-modal nil)
+  ;; (doom-modeline-modal-icon t)
+  ;; (doom-modeline-modal-modern-icon t) ;; Whether display the modern icons for modals.
+  
+  (doom-modeline-always-show-macro-register t) ;show register name when recording a macro
+
+  ;; Major modes in which to display word count continuously.
+  ;; Also applies to any derived modes. Respects `doom-modeline-enable-word-count'.
+  ;; If it brings the sluggish issue, disable `doom-modeline-enable-word-count' or
+  ;; remove the modes from `doom-modeline-continuous-word-count-modes'.
+  ;; (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+  
 
   ;; (lsp-ui-sideline-show-code-actions t) ;nil::
 
@@ -572,6 +620,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (display-time-day-and-date 1)
 
   :config
+
   (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
   (global-auto-revert-mode t)
@@ -789,9 +838,9 @@ always activating in org mode...keep it as hook in [[ORG]]
   (spell-fu-ignore-modes (list 'org-mode 'markdown-mode 'html-mode 'prog-mode 'astro-ts-mode))
   (spell-fu-global-ignore-buffer (lambda (buf)
                                    (buffer-local-value 'buffer-read-only buf)))
+  ;; (spell-fu-global-mode nil)
   :config
   (spell-fu-global-mode -1)
-
   ;; :hook
   ;; (emacs-lisp-mode . (lambda () (spell-fu-mode)))
   ;; (org-mode . (lambda ()
@@ -1142,7 +1191,7 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 #+end_src
 
 * ORG
-** my settings
+** my ORG settings
 #+begin_src emacs-lisp :tangle yes
 (defun my-org-mode-setup ()
   (abbrev-mode)
@@ -1150,16 +1199,14 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   (diff-hl-mode -1))
 
 (use-package! org
-  :init
-  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-        ;; org-default-notes-file (concat org-directory "/notes.org")
-        org-agenda-files (list org-directory)
-        org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
+  :init
+  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+        org-agenda-files (list org-directory (file-name-concat org-directory "roam"))
+        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+  (load! "maluware-org-agenda") 
 
-  ;; :config
-  
   :custom
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
@@ -1185,7 +1232,29 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
         ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+
+  (org-agenda-custom-commands
+        `(("S" "School Tasks" tags-todo "@school")
+          ("n" "Linux + Nix" tags-todo "@nix+@linux")
+          ("d" "Today's view"
+            ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                          (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+            (agenda ""
+                    ((org-agenda-block-separator nil)
+                      (org-agenda-span 1)
+                      (org-agenda-overriding-header "\n")
+                      (org-agenda-start-day nil)
+                      ))
+            (todo "WAIT"
+                  ((org-agenda-block-separator nil)
+                    (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+          ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda))))
+
+;; (defvar my/usiu-files
+;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
+
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
@@ -1540,35 +1609,6 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 
 *** custom agenda / maluware-org-agenda :prot:
 #+begin_src emacs-lisp :tangle yes
-(load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
-
-;; (defvar my/usiu-files
-;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
-
-(after! org
-      (setq org-agenda-files (list org-directory
-                              (file-name-concat org-directory "roam"))))
-
-(setq org-agenda-custom-commands
-       `(("S" "School Tasks" tags-todo "@school")
-         ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
-         ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
-         ("n" "Linux + Nix" tags-todo "@nix+@linux")
-
-         ("d" "Today's view"
-          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-           (agenda ""
-                   ((org-agenda-block-separator nil)
-                    (org-agenda-span 1)
-                    (org-agenda-overriding-header "\n")
-                    (org-agenda-start-day nil)
-                    ))
-           (todo "WAIT"
-                 ((org-agenda-block-separator nil)
-                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 #+end_src
 
 *** librephoenix

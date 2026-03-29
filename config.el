@@ -1,50 +1,5 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
-(advice-add (if (progn (require 'json)
-                       (fboundp 'json-parse-buffer))
-                'json-parse-buffer
-              'json-read)
-            :around
-            #'lsp-booster--advice-json-parse)
-
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-            (setcar orig-result command-from-exec-path))
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
-
-(use-package! elpy
-  :defer t
-  :init
-  (advice-add 'python-ts-mode :before 'elpy-enable)
-  :config
-  ;; (elpy-folding-fringe-indicators t)
-  ;; (elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (setq elpy-modules (cl-set-difference
-                      elpy-modules
-                      '(elpy-module-highlight-indentation
-                        elpy-module-flymake)))
-  :hook
-  (elpy-mode . flycheck-mode))
-
 (use-package! python
   :custom
   (python-shell-interpreter "ipython")
@@ -58,7 +13,7 @@
   (python-ts-mode . (lambda ()
                    (setq-local lsp-pyright-langserver-command "basedpyright") ;; pyright or basedpyright
                    (setq-local +format-with 'black)
-                   (lsp-deferred)
+                   ;; (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
 (org-babel-do-load-languages
@@ -71,61 +26,6 @@
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
                                                     (:session . "py")
                                                     (:kernel . "python3")))
-
-(after! lsp
-  (setq lsp-enable-symbol-highlighting nil
-        lsp-enable-suggest-server-download nil))
-
-(use-package! lsp-treemacs
-  :after lsp-mode)                           ; TODO check if need lsp or lsp-mode
-
-(after! lsp-ui
-  :custom
-  ;; (lsp-ui-doc-show 'bottom)
-  ;; (lsp-ui-doc-position 'top) ;; 'at-point
-  ;; (lsp-ui-doc-show-with-cursor t)
-  ;; (lsp-ui-doc-enable nil) ;NOTE use K
-  ;; (lsp-ui-doc-show-with-mouse t)
-
-  ;; (lsp-ui-peek-show-directory t) ; FIXME
-  ;; (lsp-ui-peek-enable t)
-
-  ;;;imenu
-  ;; (lsp-ui-imenu-auto-refresh) ; auto refresh when necessary
-  ;; (lsp-ui-imenu-refresh-delay) ;FIXME Does not exists?
-  ;; (lsp-ui-imenu-buffer-position 'left)
-
-  ;;;Sideline
-  ;; (lsp-ui-sideline-enable nil)
-
-  (lsp-ui-sideline-show-code-actions t) ;nil::
-  ;; (lsp-enable-symbol-highlighting nil) ; highlight references of symbol at point eg. print in python highlight
-  ;; (lsp-ui-sideline-show-hover nil) ; whether to show hover messages on sideline
-
-  ;; (lsp-ui-sideline-enable nil)     ;t:: TODO....try this
-  ;; (lsp-ui-sideline-show-diagnostics nil) ;hide only errors
-
-  ;;; eldoc
-  ;; (lsp-eldoc-enable-hover nil)
-
-  ;;;modeline
-  ;; (lsp-modeline-code-actions-enable nil)
-  ;; (lsp-modeline-diagnostics-enable nil)
-
-  ;;; lenses
-  ;; (lsp-lens-enable nil)
-
-  ;;;headerline
-  ;; (lsp-headerline-breadcrumb-enable t)
-
-  ;;;flycheck
-  ;; (lsp-diagnostics-provider :none) ; flycheck or flymake (if noflycheck is present); auto::
-
-  ;;;completion
-  ;; (lsp-completion-show-detail nil) ;t::
-  ;; (lsp-completion-show-kind nil)
-  ;; (lsp-completion-provider :none) ; (company mode)
-  )
 
 (after! ccls
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
@@ -141,7 +41,7 @@
 (setq lsp-nix-nixd-server-path "nixd"
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
-      lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
+      ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
       lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
       lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
@@ -162,15 +62,15 @@
   (when (modulep! +lsp)
     (add-hook 'astro-ts-mode-hook #'lsp! 'append))
   :config
-(after! lsp-mode
+  (after! lsp-mode
     (add-to-list 'lsp-language-id-configuration '(astro-ts-mode . "astro-ts"))
 
     (lsp-register-client
-    (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
-                    :activation-fn (lsp-activate-on "astro-ts")
-                    :server-id 'astro-ls))))
-  ;; (setq prettier-js-command "prettierd"
-  ;;       prettier-js-args '("--no-editorconfig")))
+     (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
+                      :activation-fn (lsp-activate-on "astro-ts")
+                      :server-id 'astro-ls))))
+;; (setq prettier-js-command "prettierd"
+;;       prettier-js-args '("--no-editorconfig")))
 
 ;; (use-package! prettier-js
 ;;   :hook
@@ -182,9 +82,9 @@
   (set-formatter! 'prettier-astro
     '("bunx" "prettier" "--parser=astro" ;
       (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-      :modes '(astro-ts-mode))
-    (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
-                 ))
+    :modes '(astro-ts-mode))
+  (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
+               ))
 
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
@@ -192,12 +92,12 @@
 ;; (use-package! lsp-tailwindcss :after lsp-mode)
 
 (use-package! lsp-tailwindcss
-  :when (modulep! +lsp)
+  ;; :when (modulep! +lsp)
+  :after lsp-mode
   :init
-
   (setq lsp-tailwindcss-add-on-mode t)
-  :config
 
+  :config
   (add-to-list 'lsp-tailwindcss-major-modes 'astro-ts-mode))
 
 (use-package! qml-ts-mode
@@ -323,11 +223,35 @@
   (magit-view-git-manual-method 'woman)
 
   ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
-  (scroll-margin 18)
+  (scroll-margin 8)
   (scroll-conservatively 101)
 
-  (doom-modeline-modal nil)             ;display mode - NORMAL,INSERT,VISUAL
-  (doom-modeline-check-simple-format t)
+  ;; TODO: check what the numbers mean in doom
+  ;; (doom-modeline-check-simple-format t)
+  ;; (doom-modeline-check-icon t)
+  ;; (doom-modeline-height 3)             ;5:: -If charheight is larger its respected instead
+  ;; (doom-modeline-hud t)       ;Only respected in GUI
+  ;;; ON BY DEFAULT
+  ;; (doom-modeline-buffer-file-name-style 'auto)
+  ;; (doom-modeline-major-mode-color-icon t)
+  ;; (doom-modeline-lsp-icon t)
+  ;; (doom-modeline-buffer-name t)
+  ;; Whether display the minor modes in the mode-line.
+  ;; (doom-modeline-minor-modes nil)
+  ;; (doom-modeline-vcs-icon t)
+  ;; (doom-modeline-vcs-max-length 15)
+  (doom-modeline-modal nil)
+  ;; (doom-modeline-modal-icon t)
+  ;; (doom-modeline-modal-modern-icon t) ;; Whether display the modern icons for modals.
+  
+  (doom-modeline-always-show-macro-register t) ;show register name when recording a macro
+
+  ;; Major modes in which to display word count continuously.
+  ;; Also applies to any derived modes. Respects `doom-modeline-enable-word-count'.
+  ;; If it brings the sluggish issue, disable `doom-modeline-enable-word-count' or
+  ;; remove the modes from `doom-modeline-continuous-word-count-modes'.
+  ;; (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+  
 
   ;; (lsp-ui-sideline-show-code-actions t) ;nil::
 
@@ -337,6 +261,7 @@
   ;; (display-time-day-and-date 1)
 
   :config
+
   (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
   (global-auto-revert-mode t)
@@ -431,9 +356,9 @@
   (spell-fu-ignore-modes (list 'org-mode 'markdown-mode 'html-mode 'prog-mode 'astro-ts-mode))
   (spell-fu-global-ignore-buffer (lambda (buf)
                                    (buffer-local-value 'buffer-read-only buf)))
+  ;; (spell-fu-global-mode nil)
   :config
   (spell-fu-global-mode -1)
-
   ;; :hook
   ;; (emacs-lisp-mode . (lambda () (spell-fu-mode)))
   ;; (org-mode . (lambda ()
@@ -495,16 +420,14 @@
   (diff-hl-mode -1))
 
 (use-package! org
-  :init
-  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-        ;; org-default-notes-file (concat org-directory "/notes.org")
-        org-agenda-files (list org-directory)
-        org-default-notes-file (expand-file-name  "notes.org" org-directory))
   :hook
   (org-mode . my-org-mode-setup)
+  :init
+  (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
+        org-agenda-files (list org-directory (file-name-concat org-directory "roam"))
+        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+  (load! "maluware-org-agenda") 
 
-  ;; :config
-  
   :custom
   (org-log-done 'time) ; task done with timestamp
   ;; (org-log-done-with-time nil)
@@ -530,7 +453,29 @@
         ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+
+  (org-agenda-custom-commands
+        `(("S" "School Tasks" tags-todo "@school")
+          ("n" "Linux + Nix" tags-todo "@nix+@linux")
+          ("d" "Today's view"
+            ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
+                                          (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+            (agenda ""
+                    ((org-agenda-block-separator nil)
+                      (org-agenda-span 1)
+                      (org-agenda-overriding-header "\n")
+                      (org-agenda-start-day nil)
+                      ))
+            (todo "WAIT"
+                  ((org-agenda-block-separator nil)
+                    (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+          ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
+          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda))))
+
+;; (defvar my/usiu-files
+;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
+
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
   ;; (org-todo-keywords
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
@@ -651,35 +596,7 @@
                             :empty-lines 1)
                            )))
 
-(load! "maluware-org-agenda") ; imports maluware-orgAgenda.el
 
-;; (defvar my/usiu-files
-;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
-
-(after! org
-      (setq org-agenda-files (list org-directory
-                              (file-name-concat org-directory "roam"))))
-
-(setq org-agenda-custom-commands
-       `(("S" "School Tasks" tags-todo "@school")
-         ;; ("s" "School course work" ((todo ".*" ((org-agenda-files my/usiu-files)
-         ;;                                        (org-agenda-overriding-header "USIU 2026 - TODO")))))
-         ("n" "Linux + Nix" tags-todo "@nix+@linux")
-
-         ("d" "Today's view"
-          ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                         (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-           (agenda ""
-                   ((org-agenda-block-separator nil)
-                    (org-agenda-span 1)
-                    (org-agenda-overriding-header "\n")
-                    (org-agenda-start-day nil)
-                    ))
-           (todo "WAIT"
-                 ((org-agenda-block-separator nil)
-                  (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-         ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-         ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 
 (setq emacs-everywhere-frame-name-format "emacs-everywhere")
 

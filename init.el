@@ -76,19 +76,19 @@
        ;; grammar           ; tasing grammar mistake every you make
 
 :tools
-;;editorconfig      ; let someone else argue about tabs vs spaces TODO test this
-(eval +overlay)     ; run code, run (also, repls) TODO test this
+editorconfig      ; let someone else argue about tabs vs spaces TODO test this
+(eval +overlay)     ; run code, run (also, repls)
 (lookup +dictionary +offline)              ; navigate your code and its documentation
-(lsp +peek)               ; M-x vscode
+(lsp +peek +eglot +booster)               ; M-x vscode
 magit
-;; make              ; run make tasks from Emacs
+make              ; run make tasks from Emacs
 pdf               ; pdf enhancements
-;; rgb ; create color str
+;; rgb ; create color str NOTE: deprecated??
 tree-sitter       ; syntax and parsing, sitting in a tree...
 direnv
-docker
-pass
-ein
+(docker +tree-sitter +lsp)
+(pass +auth)
+;; ein ;; NOTE: deprecated infavor of code-cells.el
 
 :os
        (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
@@ -96,17 +96,17 @@ ein
 
 :lang
        (cc +lsp +tree-sitter)         ; C > C++ == 1
-       (csharp +dotnet +lsp +tree-sitter)            ; unity, .NET, and mono shenanigans
+       ;; (csharp +dotnet +lsp +tree-sitter)            ; unity, .NET, and mono shenanigans
        ;; (java +lsp +tree-sitter)       ; the poster child for carpal tunnel syndrome
        (markdown +grip +tree-sitter)          ; writing docs for people to ignore
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
        (org +present +roam +pomodoro +contacts +jupyter +journal +dragndrop +pandoc +pretty)
        (python +lsp +pyright +tree-sitter)            ; beautiful is better than ugly
        (sh +lsp +tree-sitter)                ; she sells {ba,z,fi}sh shells on the C xor
-       (web +lsp +tree-sitter)               ; the tubes
+       (web +lsp +tree-sitter)               ; the tubes - web/css mode
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        data              ; config/data formats - csv/xml
-       (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
+       ;; (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
        ;; lua               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
        json              ; At least it ain't XML

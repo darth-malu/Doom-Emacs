@@ -13,23 +13,22 @@
 (package! yeetube)
 ;;; ORG
 (package! olivetti)
-(package! org-super-agenda)
+(package! org-super-agenda)             ;TODO:
 (package! org-auto-tangle)
 (package! drag-stuff)
 (package! org-fragtog)
 
 ;;; LSP / Dev
 (package! jupyter)
-(package! elpy)
-(package! lsp-pyright)
-(package! blacken)
-(package! ein)
+;; (package! blacken)
+;; (package! ein)
+(package! code-cells)
 (package! direnv)
 (package! tmr)
 ;; (package! exec-path-from-shell) ; NOTE use doom env lol
-(package! prettier-js)
 (package! qml-ts-mode
   :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
+(package! prettier-js)
 (package! astro-ts-mode)
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 
