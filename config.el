@@ -16,12 +16,10 @@
                    ;; (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (julia . t)
-   (python . t)
-   (jupyter . t)))
+(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)
+                                                          (julia . t)
+                                                          (python . t)
+                                                          (jupyter . t)))
 
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
                                                     (:session . "py")
@@ -142,16 +140,19 @@
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
     ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
+    ("\\*ielm*" :quit t :side right :select t :width +popup-shrink-to-fit)
     ("^\\*WoMan.*\\*" :quit t :side right :width 70)
     ;; ("\\*ein: http.*\\*" :select t :side left :width 80)
     ;; ("\\*ein:notebooklist.*\\*" :select t :side bottom :actions (display-buffer-in-side-window))
     ))
 
 ;;; :ui doom-dashboard
-(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png"))
+(setq fancy-splash-image (file-name-concat doom-user-dir "emacs.png")
+      ;; initial-buffer-choice #'eshell
+      ;; +doom-dashboard-name "maluware"
+      +dashboard-name "maluware"
+      +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
 ;; Hide the menu for as minimalistic a startup screen as possible.
-;; (setq +doom-dashboard-functions '(dashboard-widget-banner +dashboard-widget-shortmenu))
-(setq +dashboard-functions '(+dashboard-widget-banner +dashboard-widget-shortmenu))
 
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
        doom-font (font-spec :family "JetBrains Mono"
@@ -207,8 +208,7 @@
 
   (inhibit-startup-message t)           ;Tutorial Page lol---useless with doom?
 
-  (doom-fallback-buffer-name " ") ; *doom*
-  (+doom-dashboard-name "maluware")
+  ;; (doom-fallback-buffer-name " ") ;last page...creat if does not exist
 
   (+evil-want-o/O-to-continue-comments nil) ; o/O does not continue comment to next new line 😸
   (+default-want-RET-continue-comments nil)
@@ -261,7 +261,6 @@
   ;; (display-time-day-and-date 1)
 
   :config
-
   (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
   (global-auto-revert-mode t)
@@ -269,14 +268,15 @@
   (drag-stuff-define-keys)
   (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
   (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
-  (customize-set-variable 'ein:jupyter-server-use-command 'server)
-  (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
+  ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
+  ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
+
   :bind
   ((
    :map evil-normal-state-map
-        ;; TODO see map!
         ;;;misc
-        ("M-;" . save-buffer)
+        ("M-;" . save-buffer)      
+        ;; ("M-s" . save-buffer)
         ;; ("C-s" . save-buffer)
         ("<mouse-8>" . previous-buffer)
         ("<mouse-9>" . next-buffer)
@@ -303,8 +303,12 @@
 
         ("C-'" . olivetti-mode)
 
+    :map evil-insert-state-map
+      ("M-/" . #'org-comment-dwim) 
+
     :map doom-leader-map
       ("to" . hl-todo-occur)
+      ("I" . ielm)
       ("SPC" . ace-window)
     )))
 
@@ -419,13 +423,17 @@
   (spell-fu-mode -1)
   (diff-hl-mode -1))
 
+(defvar my/usiu-files
+  (directory-files-recursively "~/USIU/2026" "\\.org$"))
+
 (use-package! org
   :hook
   (org-mode . my-org-mode-setup)
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
-        org-agenda-files (list org-directory (file-name-concat org-directory "roam"))
-        org-default-notes-file (expand-file-name  "notes.org" org-directory))
+        org-agenda-files `(,org-directory ,(file-name-concat org-directory "roam") ,@my/usiu-files)
+        org-noter-notes-search-path (list (file-name-concat org-directory "notes"))
+        org-default-notes-file (expand-file-name  ".notes" org-directory))
   (load! "maluware-org-agenda") 
 
   :custom
@@ -436,45 +444,39 @@
   (org-hide-emphasis-markers t)
 
   (org-tag-alist
-      '(;;Places
-        ("@home" . ?h)
-        ("@school" . ?s)
+      '(("@home" . ?h) ("@school" . ?s)
 
-        ;;devices
-        ("@carthage" . ?C)
-        ("@tangier" . ?T)
+        ("@carthage" . ?C) ("@tangier" . ?T)
 
-        ;;activites
-        ("@work" . ?w)
-        ("@pyrple" . ?p)
-        ("@youtubr" . ?y)
-        ("@emacs" . ?e)
-        ("@linux" . ?l)
-        ("@nix" . ?n)))
+        ("@work" . ?w) ("@pyrple" . ?p) ("@youtubr" . ?y)
+        ("@emacs" . ?e) ("@linux" . ?l) ("@nix" . ?n)))
 
   (org-todo-keywords
       '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+
+;; ((sequence "TODO(t)" "PROJ(p)" "LOOP(r)" "STRT(s)" "WAIT(w)" "HOLD(h)" "IDEA(i)"
+;;            "|" "DONE(d)" "KILL(k)")
+;;  (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
+;;  (sequence "|" "OKAY(o)" "YES(y)" "NO(n)"))
 
   (org-agenda-custom-commands
         `(("S" "School Tasks" tags-todo "@school")
           ("n" "Linux + Nix" tags-todo "@nix+@linux")
           ("d" "Today's view"
             ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                          (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-            (agenda ""
-                    ((org-agenda-block-separator nil)
+                                           (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+             (agenda ""
+                     ((org-agenda-block-separator nil)
                       (org-agenda-span 1)
                       (org-agenda-overriding-header "\n")
-                      (org-agenda-start-day nil)
-                      ))
-            (todo "WAIT"
-                  ((org-agenda-block-separator nil)
+                      (org-agenda-start-day nil)))
+                      
+             (todo "WAIT"
+                   ((org-agenda-block-separator nil)
                     (org-agenda-overriding-header "\nTasks on hold ⏳")))))
           ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
           ("p" "Protesilaos" ,maluware-custom-org-daily-agenda))))
 
-;; (defvar my/usiu-files
-;;   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
   ;; (org-todo-keywords
@@ -486,6 +488,21 @@
         org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
         org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
   (org-roam-db-autosync-mode))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
@@ -607,3 +624,9 @@
 
 ;; Adds hooks to org agenda mode, making follow mode active in org agenda
 (add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
+
+(defun my/markdown-toggler ()
+  (interactive)
+  (if (eq #'markdown-view-mode)
+      (markdown-mode)
+    (markdown-view-mode)))

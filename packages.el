@@ -9,6 +9,8 @@
 (package! org-auto-tangle)
 (package! drag-stuff)
 (package! org-fragtog)
+(package! org-roam-ui)
+(package! org-transclusion)
 
 ;;; LSP / Dev
 (package! jupyter)
@@ -31,3 +33,4 @@
 (package! all-the-icons) ;TODO add desc
 (package! elcord)
 ;; (package! wttrin)
+;; (package! wttrin :recipe (:local-repo "lisp/wttrin"))

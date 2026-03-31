@@ -17,6 +17,8 @@
 (package! org-auto-tangle)
 (package! drag-stuff)
 (package! org-fragtog)
+(package! org-roam-ui)
+(package! org-transclusion)
 
 ;;; LSP / Dev
 (package! jupyter)
@@ -39,6 +41,7 @@
 (package! all-the-icons) ;TODO add desc
 (package! elcord)
 ;; (package! wttrin)
+;; (package! wttrin :recipe (:local-repo "lisp/wttrin"))
 #+end_src
 
 * justinVC-tech :justin:
@@ -49,9 +52,8 @@
 ;; (package! gptel)
 ;; (package! gptel-quick :recipe (:host github :repo  "karthink/gptel-quick"))
 
-(package! elcord)
-(package! wttrin :recipe (:local-repo "lisp/wttrin"))
 #+end_src
+
 * DOCS
 ** install pkg
 *** melpa
@@ -89,6 +91,12 @@ with the =:disable= property:
 
 #+begin_src elisp
 (package! builtin-package :disable t)
+#+end_src
+
+My Disabled Packages
+#+begin_src elisp
+(package! company :disable t)
+(package! helm :disable t)
 #+end_src
 
 ** override pkgs

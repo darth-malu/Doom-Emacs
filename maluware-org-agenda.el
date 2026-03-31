@@ -23,7 +23,7 @@
                 (org-agenda-block-separator nil)
                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                 (org-agenda-overriding-header "\nNext three days\n")))
-    (agenda "" ((org-agenda-time-grid nil)
+    (agenda "" ((org-agenda-time-grid nil) ;Removes ... blank times and the ....
                 (org-agenda-start-on-weekday nil)
                 ;; We don't want to replicate the previous section's
                 ;; three days, so we start counting from the day after.
