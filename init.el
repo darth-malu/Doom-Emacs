@@ -33,7 +33,7 @@
        ophints           ; highlight the region an operation acts on ; TODO read further
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
        ;; tabs              ; a tab bar for Emacs
-       (treemacs +lsp)          ; a project drawer, like neotree but cooler TODO test further
+       (treemacs)          ; a project drawer, like neotree but cooler TODO test further ; NOTE:  +lsp not with eglot
        ;; unicode           ; extended unicode support for various languages NOTE can cause issues with ligatures
        (vc-gutter +pretty) ; vcs diff in the fringe
        ;; vi-tilde-fringe   ; fringe tildes to mark beyond EOB
@@ -79,14 +79,14 @@
 editorconfig      ; let someone else argue about tabs vs spaces TODO test this
 (eval +overlay)     ; run code, run (also, repls)
 (lookup +dictionary +offline)              ; navigate your code and its documentation
-(lsp +peek +eglot +booster)               ; M-x vscode
+(lsp +eglot +booster)               ; M-x vscode ; NOTE: peek does not work with eglot, booster only eglot for now
 magit
-make              ; run make tasks from Emacs
+;; make              ; run make tasks from Emacs
 pdf               ; pdf enhancements
 ;; rgb ; create color str NOTE: deprecated??
 tree-sitter       ; syntax and parsing, sitting in a tree...
 direnv
-(docker +tree-sitter +lsp)
+;; (docker +tree-sitter +lsp)
 (pass +auth)
 ;; ein ;; NOTE: deprecated infavor of code-cells.el
 

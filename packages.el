@@ -10,6 +10,7 @@
 (package! drag-stuff)
 (package! org-fragtog)
 (package! org-roam-ui)
+(package! nov)                      ;For annotations? -org-noter
 (package! org-transclusion)
 
 ;;; LSP / Dev

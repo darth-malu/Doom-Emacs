@@ -16,10 +16,11 @@
                    ;; (lsp-deferred)
                    (local-set-key (kbd "C-c r") 'python-shell-send-region))))
 
-(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)
-                                                          (julia . t)
-                                                          (python . t)
-                                                          (jupyter . t)))
+;; (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)
+;;                                                           (julia . t)
+;;                                                           (python . t)
+;;                                                           (jupyter . t)))
+
 
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
                                                     (:session . "py")
@@ -40,8 +41,8 @@
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
       ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
 (setq treesit-language-source-alist
       '((astro "https://github.com/virchau13/tree-sitter-astro")
@@ -129,13 +130,6 @@
           ("V" . 'yeetube-mpv-toggle-no-video-flag)
           ("k" . 'yeetube-remove-saved-video)))
 
-(define-abbrev global-abbrev-table "meab" "This is my first abbrev")
-
-(defun my-current-time ()
-  (insert (format-time-string "%A,%B %e%t%T")))
-
-(define-abbrev org-mode-abbrev-table "mytime" "" 'my-current-time)
-
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
@@ -160,11 +154,6 @@
                            :weight 'regular)
        doom-emoji-font (font-spec :family "Noto Color Emoji")
        doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
-
-;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
-(after! org
-  (set-ligatures! 'org-mode
-    :def "ƒ"))
 
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
@@ -263,7 +252,7 @@
   :config
   (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
-  (global-auto-revert-mode t)
+  ;; (global-auto-revert-mode t) ;; NOTE enabled by default?
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
   (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
@@ -271,46 +260,42 @@
   ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
   ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
 
-  :bind
-  ((
-   :map evil-normal-state-map
-        ;;;misc
-        ("M-;" . save-buffer)      
-        ;; ("M-s" . save-buffer)
-        ;; ("C-s" . save-buffer)
-        ("<mouse-8>" . previous-buffer)
-        ("<mouse-9>" . next-buffer)
-        ("C-M-o" . consult-outline)
+  :bind (:map evil-normal-state-map
+          ;;;misc
+          ("M-;" . save-buffer)      
+          ;; ("M-s" . save-buffer)
+          ;; ("C-s" . save-buffer)
+          ("<mouse-8>" . previous-buffer)
+          ("<mouse-9>" . next-buffer)
+          ("C-M-o" . consult-outline)
 
-        ;;; EOL, BOL
-        ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-        ("M-h" . beginning-of-line-text)
-        ("M-S-l" . end-of-visual-line)
-        ("M-S-h" . beginning-of-visual-line)
+          ;;; EOL, BOL
+          ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
+          ("M-h" . beginning-of-line-text)
+          ("M-S-l" . end-of-visual-line)
+          ("M-S-h" . beginning-of-visual-line)
 
-        ;;; insert newline below/above
-        ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)
+          ;;; insert newline below/above
+          ("M-o" . +evil/insert-newline-below)
+          ("M-O" . +evil/insert-newline-above)
 
-        ;;; NOTE Too much conflict just use native C-w
-        ;; Unify Kitty + Emacs window focusing
-        ("C-M-l" . evil-window-right)
-        ("C-M-h" . evil-window-left)
-        ("C-M-k" . evil-window-up)
-        ("C-M-j" . evil-window-down)
-        ("C-M-j" . previous-window)
-        ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
+          ;; Unify Kitty + Emacs window focusing
+          ("C-M-l" . evil-window-right)
+          ("C-M-h" . evil-window-left)
+          ("C-M-k" . evil-window-up)
+          ("C-M-j" . evil-window-down)
+          ;; ("C-M-j" . previous-window)
+          ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
 
-        ("C-'" . olivetti-mode)
+          ("C-'" . olivetti-mode)
 
-    :map evil-insert-state-map
-      ("M-/" . #'org-comment-dwim) 
+          :map evil-insert-state-map
+          ("M-/" . #'org-comment-dwim) 
 
-    :map doom-leader-map
-      ("to" . hl-todo-occur)
-      ("I" . ielm)
-      ("SPC" . ace-window)
-    )))
+          :map doom-leader-map
+          ("to" . hl-todo-occur)
+          ("I" . ielm)
+          ("SPC" . ace-window)))
 
 (customize-set-variable '+format-on-save-disabled-modes '(nxml-mode)) ;Android studio
 
@@ -406,6 +391,9 @@
     :foreground "white" :background "red"
     :weight bold :height 2.5 :box (:line-width 10 :color "red")))
 
+(use-package! all-the-icons
+  :if (display-graphic-p))
+
 (use-package! projectile
   :init
   (setq projectile-project-search-path '(
@@ -426,15 +414,28 @@
 (defvar my/usiu-files
   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
+
+;; Function to be run when org-agenda is opened
+(defun org-agenda-open-hook()
+  "Hook to be run when org-agenda is opened"
+  (olivetti-mode))
+
 (use-package! org
   :hook
   (org-mode . my-org-mode-setup)
+  (org-agenda-mode . org-agenda-open-hook)
+
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
         org-agenda-files `(,org-directory ,(file-name-concat org-directory "roam") ,@my/usiu-files)
         org-noter-notes-search-path (list (file-name-concat org-directory "notes"))
         org-default-notes-file (expand-file-name  ".notes" org-directory))
-  (load! "maluware-org-agenda") 
+
+  :config
+  (setq org-roam-directory (expand-file-name "roam" org-directory)
+        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
+        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
+  (org-roam-db-autosync-mode)
 
   :custom
   (org-log-done 'time) ; task done with timestamp
@@ -442,7 +443,6 @@
   ;; (org-log-done 'note) ;task done with note prompted to user
   (org-log-into-drawer t)
   (org-hide-emphasis-markers t)
-
   (org-tag-alist
       '(("@home" . ?h) ("@school" . ?s)
 
@@ -452,30 +452,13 @@
         ("@emacs" . ?e) ("@linux" . ?l) ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
 
 ;; ((sequence "TODO(t)" "PROJ(p)" "LOOP(r)" "STRT(s)" "WAIT(w)" "HOLD(h)" "IDEA(i)"
 ;;            "|" "DONE(d)" "KILL(k)")
 ;;  (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
 ;;  (sequence "|" "OKAY(o)" "YES(y)" "NO(n)"))
 
-  (org-agenda-custom-commands
-        `(("S" "School Tasks" tags-todo "@school")
-          ("n" "Linux + Nix" tags-todo "@nix+@linux")
-          ("d" "Today's view"
-            ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                           (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-             (agenda ""
-                     ((org-agenda-block-separator nil)
-                      (org-agenda-span 1)
-                      (org-agenda-overriding-header "\n")
-                      (org-agenda-start-day nil)))
-                      
-             (todo "WAIT"
-                   ((org-agenda-block-separator nil)
-                    (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-          ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda))))
 
 
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
@@ -483,11 +466,26 @@
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 
-(after! org-roam
-  (setq org-roam-directory (expand-file-name "roam" org-directory)
-        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
-        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
-  (org-roam-db-autosync-mode))
+(load! "maluware-org-agenda") 
+
+(setq org-agenda-custom-commands
+      `(("S" "School Tasks" tags-todo "@school")
+        ("n" "Linux + Nix" tags-todo "@nix+@linux")
+        ("d" "Today's view"
+         ((tags-todo "+PRIORITY=\"A\"" 
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+          (agenda ""
+                  ((org-agenda-block-separator nil)
+                   (org-agenda-span 1)
+                   (org-agenda-overriding-header "\n")
+                   (org-agenda-start-day nil)))
+          (todo "WAIT"
+                ((org-agenda-block-separator nil)
+                 (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+        ("u" "untagged tasks" tags-todo "-{.+}" 
+         ((org-agenda-overriding-header "Untagged Tasks")))
+        ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 
 (use-package! websocket
     :after org-roam)
@@ -506,6 +504,7 @@
 
 (use-package! org-capture
   :bind ("C-c c" . org-capture)
+  :after org
   :custom
   ;; (require 'prot-org)
   (org-capture-templates '(
@@ -613,20 +612,10 @@
                             :empty-lines 1)
                            )))
 
-
-
-(setq emacs-everywhere-frame-name-format "emacs-everywhere")
-
-;; Function to be run when org-agenda is opened
-(defun org-agenda-open-hook()
-  "Hook to be run when org-agenda is opened"
-  (olivetti-mode))
-
-;; Adds hooks to org agenda mode, making follow mode active in org agenda
-(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
-
 (defun my/markdown-toggler ()
+  "This function toggles markdown view mode on/off 😀"
   (interactive)
-  (if (eq #'markdown-view-mode)
+  ;; (if (eq major-mode #'markdown-view-mode)
+  (if (derived-mode-p 'markdown-view-mode)
       (markdown-mode)
     (markdown-view-mode)))

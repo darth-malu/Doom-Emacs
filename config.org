@@ -83,16 +83,20 @@ https://renzmann.github.io/posts/006_emacs_2_python/
 source: [[https://emacs-lsp.github.io/lsp-pyright/]]
 
 **** Machine Learning
+NOTE: No need to load babel plugins myself [[https://discourse.doomemacs.org/t/common-config-anti-patterns/119#loading-org-babel-plugins-yourself-6][because]]
+
 #+begin_src emacs-lisp :tangle yes
-(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)
-                                                          (julia . t)
-                                                          (python . t)
-                                                          (jupyter . t)))
+;; (org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . t)
+;;                                                           (julia . t)
+;;                                                           (python . t)
+;;                                                           (jupyter . t)))
+
 
 (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
                                                     (:session . "py")
                                                     (:kernel . "python3")))
 #+end_src
+
 *** elpy
 #+begin_src emacs-lisp :tangle no
 (use-package! elpy
@@ -236,8 +240,8 @@ nil: An incremental analysis assistant for writing in Nix.
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
       ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake \"/home/malu/Shibuya\").nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 #+end_src
 
 A. home-manager switch --flake .#... (standalone Home Manager)
@@ -392,7 +396,7 @@ NOTE need to toggle abbrev mode
 
 abbrev mode is buffer-local
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (define-abbrev global-abbrev-table "meab" "This is my first abbrev")
 
 (defun my-current-time ()
@@ -479,7 +483,7 @@ doom-serif-font
 
 =Ligatures=
 #FIXME Make this work for org
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 ;; (set-font-ligatures! '(org-mode) ">>=" ">>-")
 (after! org
   (set-ligatures! 'org-mode
@@ -622,7 +626,7 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   :config
   (defalias 'man 'woman)
   ;; (global-set-key [escape] 'keyboard-escape-quit) ; By default, Emacs requires you to hit ESC three times to escape quit the minibuffer. ; test this further
-  (global-auto-revert-mode t)
+  ;; (global-auto-revert-mode t) ;; NOTE enabled by default?
   (drag-stuff-global-mode 1)
   (drag-stuff-define-keys)
   (customize-set-variable 'uniquify-buffer-name-style 'post-forward)
@@ -630,46 +634,42 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
   ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
 
-  :bind
-  ((
-   :map evil-normal-state-map
-        ;;;misc
-        ("M-;" . save-buffer)      
-        ;; ("M-s" . save-buffer)
-        ;; ("C-s" . save-buffer)
-        ("<mouse-8>" . previous-buffer)
-        ("<mouse-9>" . next-buffer)
-        ("C-M-o" . consult-outline)
+  :bind (:map evil-normal-state-map
+          ;;;misc
+          ("M-;" . save-buffer)      
+          ;; ("M-s" . save-buffer)
+          ;; ("C-s" . save-buffer)
+          ("<mouse-8>" . previous-buffer)
+          ("<mouse-9>" . next-buffer)
+          ("C-M-o" . consult-outline)
 
-        ;;; EOL, BOL
-        ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-        ("M-h" . beginning-of-line-text)
-        ("M-S-l" . end-of-visual-line)
-        ("M-S-h" . beginning-of-visual-line)
+          ;;; EOL, BOL
+          ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
+          ("M-h" . beginning-of-line-text)
+          ("M-S-l" . end-of-visual-line)
+          ("M-S-h" . beginning-of-visual-line)
 
-        ;;; insert newline below/above
-        ("M-o" . +evil/insert-newline-below)
-        ("M-O" . +evil/insert-newline-above)
+          ;;; insert newline below/above
+          ("M-o" . +evil/insert-newline-below)
+          ("M-O" . +evil/insert-newline-above)
 
-        ;;; NOTE Too much conflict just use native C-w
-        ;; Unify Kitty + Emacs window focusing
-        ("C-M-l" . evil-window-right)
-        ("C-M-h" . evil-window-left)
-        ("C-M-k" . evil-window-up)
-        ("C-M-j" . evil-window-down)
-        ("C-M-j" . previous-window)
-        ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
+          ;; Unify Kitty + Emacs window focusing
+          ("C-M-l" . evil-window-right)
+          ("C-M-h" . evil-window-left)
+          ("C-M-k" . evil-window-up)
+          ("C-M-j" . evil-window-down)
+          ;; ("C-M-j" . previous-window)
+          ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
 
-        ("C-'" . olivetti-mode)
+          ("C-'" . olivetti-mode)
 
-    :map evil-insert-state-map
-      ("M-/" . #'org-comment-dwim) 
+          :map evil-insert-state-map
+          ("M-/" . #'org-comment-dwim) 
 
-    :map doom-leader-map
-      ("to" . hl-todo-occur)
-      ("I" . ielm)
-      ("SPC" . ace-window)
-    )))
+          :map doom-leader-map
+          ("to" . hl-todo-occur)
+          ("I" . ielm)
+          ("SPC" . ace-window)))
 #+end_src
 
 ** format +onsave disabled modes
@@ -923,7 +923,7 @@ always activating in org mode...keep it as hook in [[ORG]]
   ;; (electric-pair-mode 1) ; on by default
 #+end_src
 *** all the icons
-#+begin_src elisp :tangle no
+#+begin_src elisp :tangle yes
 (use-package! all-the-icons
   :if (display-graphic-p))
 #+end_src
@@ -1081,12 +1081,12 @@ To see or change the list of enabled back-ends, type M-x =customize-variable= RE
 Once installed, enable company-mode with M-x =company-mode=.
 
 usage:
-|-----------------------+------------------------------------------------------|
+|-------------------------+------------------------------------------------------|
 | =C-n / C-p=             | up / down                                            |
 | =C-s C-r C-o=           | search through completions                           |
 | =M-<digit>=             | quickly complete with one of the first 10 candidates |
 | =M-x: company-complete= | to initiate completion manually                      |
-|-----------------------+------------------------------------------------------|
+|-------------------------+------------------------------------------------------|
 source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 
 **** obsidian
@@ -1205,15 +1205,28 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 (defvar my/usiu-files
   (directory-files-recursively "~/USIU/2026" "\\.org$"))
 
+
+;; Function to be run when org-agenda is opened
+(defun org-agenda-open-hook()
+  "Hook to be run when org-agenda is opened"
+  (olivetti-mode))
+
 (use-package! org
   :hook
   (org-mode . my-org-mode-setup)
+  (org-agenda-mode . org-agenda-open-hook)
+
   :init
   (setq org-directory (expand-file-name "~/Documents/IMPORTANT/Org")
         org-agenda-files `(,org-directory ,(file-name-concat org-directory "roam") ,@my/usiu-files)
         org-noter-notes-search-path (list (file-name-concat org-directory "notes"))
         org-default-notes-file (expand-file-name  ".notes" org-directory))
-  (load! "maluware-org-agenda") 
+
+  :config
+  (setq org-roam-directory (expand-file-name "roam" org-directory)
+        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
+        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
+  (org-roam-db-autosync-mode)
 
   :custom
   (org-log-done 'time) ; task done with timestamp
@@ -1221,7 +1234,6 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   ;; (org-log-done 'note) ;task done with note prompted to user
   (org-log-into-drawer t)
   (org-hide-emphasis-markers t)
-
   (org-tag-alist
       '(("@home" . ?h) ("@school" . ?s)
 
@@ -1231,30 +1243,13 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
         ("@emacs" . ?e) ("@linux" . ?l) ("@nix" . ?n)))
 
   (org-todo-keywords
-      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)")))
+      '((sequence "TODO(t)" "WAIT(w!)"  "|" "DONE(d!)" "CANCEL(c!)"))))
 
 ;; ((sequence "TODO(t)" "PROJ(p)" "LOOP(r)" "STRT(s)" "WAIT(w)" "HOLD(h)" "IDEA(i)"
 ;;            "|" "DONE(d)" "KILL(k)")
 ;;  (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
 ;;  (sequence "|" "OKAY(o)" "YES(y)" "NO(n)"))
 
-  (org-agenda-custom-commands
-        `(("S" "School Tasks" tags-todo "@school")
-          ("n" "Linux + Nix" tags-todo "@nix+@linux")
-          ("d" "Today's view"
-            ((tags-todo "+PRIORITY=\"A\"" ((org-agenda-block-separator nil)
-                                           (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
-             (agenda ""
-                     ((org-agenda-block-separator nil)
-                      (org-agenda-span 1)
-                      (org-agenda-overriding-header "\n")
-                      (org-agenda-start-day nil)))
-                      
-             (todo "WAIT"
-                   ((org-agenda-block-separator nil)
-                    (org-agenda-overriding-header "\nTasks on hold ⏳")))))
-          ("u" "untagged tasks" tags-todo "-{.+}" ((org-agenda-overriding-header "Untagged Tasks")))
-          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda))))
 
 
   ;; (calendar-week-start-day 1)  ; 0 - sun, 1 -mon
@@ -1262,6 +1257,8 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
   ;;     '((sequence "TODO(t)" "|" "DONE(d)")
   ;;       (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")))
 #+end_src
+
+See file-truename, file-name-concat
 
 [[https://orgmode.org/orgguide.html#Properties]]
 *** experiments
@@ -1284,370 +1281,74 @@ source:[[http://company-mode.github.io/manual/Getting-Started.html#Commands-1]]
 '(org-document-title  :height 1.8 :bold t :underline nil))
 #+end_src
 
-** org-roam
-See file-truename, file-name-concat
-
-#+begin_src emacs-lisp :tangle yes :results no
-(after! org-roam
-  (setq org-roam-directory (expand-file-name "roam" org-directory)
-        org-roam-db-location (file-name-concat org-roam-directory ".org-roam.db")
-        org-roam-dailies-directory (expand-file-name "Journal" org-roam-directory))
-  (org-roam-db-autosync-mode))
-#+end_src
-
-
-Dailies
- org-roam-dailies-capture-today
-*** Org-roam-ui
-#+begin_src emacs-lisp :tangle yes
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
-#+end_src
- 
-** org-structure-template
-#+begin_src elisp :tangle no
-(add-to-list 'org-structure-template-alist
-             '("ss" . "src emacs-lisp")) ;FIXME deprecated approach find new way to do this
-#+end_src
-
-#+begin_src elisp :tangle no
-(with-eval-after-load 'org
-  (require 'org-tempo)
-  (add-to-list 'org-structure-template-alist
-               '("se" . "src emacs-lisp")))
-
-#+end_src
-
-** org-capture
-Capture lets you quickly store notes with no workflow interruption
-*** escape codes
-|------------------+-----------------------------------------------------------|
-| special =%= escape | does                                                      |
-|------------------+-----------------------------------------------------------|
-| =%a=               | annotation, normally the link created with org-store-link |
-| =%i=               | with active region selected, insert it at point           |
-| =%t=  =%T=           | timestamp, date only, or date and time                    |
-| =%^t=              | prompt for timestamp                                      |
-| =%u=  =%U=           | like above, but inactive timestamps                       |
-| =%?=               | after completing the template, position point here        |
-| =%^=               | input/prompt                                              |
-|------------------+-----------------------------------------------------------|
-**** time management
-dont have to select manually you can:
-+ relative time +3d
-
-*** org-capture-template
-**** Current Template
-#+begin_src emacs-lisp :tangle yes
-(use-package! org-capture
-  :bind ("C-c c" . org-capture)
-  :custom
-  ;; (require 'prot-org)
-  (org-capture-templates '(
-                           ("e" "EMACs" plain
-                            (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
-                            "+ [ ] %?")
-
-                           ;; NixOs
-                           ("n" "nixOs" plain
-                            (file+headline "nixTODO.org" "TODO nixOs")
-                            "+ [ ] %?"
-                            :prepend t)
-
-                           ("a" "App Ideas" plain
-                            (file+headline "appsTODO.org" "TODO App Ideas")
-                            "+ [ ] %?"
-                            :prepend t)
-
-                           ;; Quickshell
-                           ("Q" "Quickshell + QML")
-                           ("QQ" "Quickshell" plain
-                            (file+headline "QuickshellTODO.org" "TODO Quickshell")
-                            "+ [ ] %?")
-                           ("QM" "QML" plain
-                            (file+headline "QuickshellTODO.org" "TODO QML")
-                            "+ [ ] %?")
-
-                           ;; BUCKET LIST
-                           ("b" "Bucket List [ movies anime books youtube]") ; group 'em up
-                           ("bm" "movies" plain
-                            (file+headline "bucket-list.org" "Movies")
-                            "+ [ ] %?"
-                            :prepend t)
-                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
-                            ("bam" "Anime Movie"  plain
-                            (file+headline "bucket-list.org" "Anime")
-                            "+ [ ] %?" :prepend t)
-                            ;; ANIME
-                            ("bas" "Anime Series" plain
-                            (file+headline "bucket-list.org" "Anime")
-                            "+ [ ] %?" :prepend t)
-                           ("bb" "books" plain
-                            (file+headline "bucket-list.org" "Books")
-                            "+ [ ] %?"
-                            :prepend t)
-                           ;;YOUTUBE
-                           ("by" "youtube" plain
-                            (file+headline "bucket-list.org" "YouTube")
-                            "+ [ ] %?"
-                            :prepend t)
-
-                           ;; Learning New Languages
-                           ("l" "Learn Programming Languages")
-                           ("lp" "Python" plain
-                            (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
-                            "+ [ ] %?")
-                           ("lc" "C" plain
-                            (file+headline "ProgrammingLanguagesTODO.org" "TODO C")
-                            "+ [ ] %?")
-                           ("ln" "Nix" plain
-                            (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
-                            "+ [ ] %?")
-
-                           ;; School
-                           ("s" "School - USIU" plain
-                            (file+headline "USIU_TODO.org" "TODO school work")
-                            "+ [ ] %?")
-
-                           ;; Life's Morsels
-                           ("d" "Life's Morsels")
-                           ("dw" "words [w]" plain
-                            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
-                            "\n\n %?"
-                            :empty-lines 1
-                            :prepend t)
-                           ("di" "idioms [i]" plain
-                            (file+headline "diction.org" "Idioms")
-                            "+ %?"
-                            :empty-lines 1
-                            :prepend t)
-                            ("dq" "quotes [q]" plain
-                            (file+headline "diction.org" "Quotes")
-                            ;; Template string starts here
-                            "#+begin_quote\n%i%?\n#+end_quote\n"
-                            :empty-lines 1
-                            :prepend t)
-                            ("dp" "phrases [p]" plain
-                            (file+headline "diction.org" "Phrases")
-                            ;; Template string starts here
-                            "#+begin_quote\n%i%?\n#+end_quote\n"
-                            :empty-lines 1
-                            :prepend t)
-                           ("v" "Video Ideas 📷")
-                           ("ve" "Emacs 📃")
-                           ("vei" "Emacs ideas ✔️" plain
-                            (file+headline "emacsVideoIdea.org" "Random Idea")
-                            " %?"
-                            :prepend t
-                            :empty-lines 1
-                            )
-                           ("vej" "emacs jolts ✏️" plain
-                            (file+headline "emacsVideoIdea.org" "Random Jolt")
-                            " %?"
-                            :prepend t
-                            :empty-lines 1)
-                           )))
-#+end_src
-**** docs
-source: https://orgmode.org/manual/Template-elements.html
-
-=keys=
-characters only  eg. 'a' or 'ab'
-=type=
-|------------+--------------------------------------------------------------------|
-| entry      | text with heading                                                  |
-| item       | plain list item, placed in the first plain list at target location |
-| checkitem  | checkbox item                                                      |
-| table-line | A new line in the first table at the target location. see more     |
-| plain      | text inserted as i                                                 |
-|------------+--------------------------------------------------------------------|
-*** shortcurts
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| command              | keymap          | does                                                                       |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
-| org-capture-finalize | =C-c C-c=         |                                                                            |
-| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
-| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
-|----------------------+-----------------+----------------------------------------------------------------------------|
-*** org-roam-capture-template :hils:
-#+begin_src emacs-lisp :tangle no
-(after! org-roam
-  (setq org-roam-capture-templates
-        `(("n" "note" plain
-           ,(format "#+title: ${title}\n%%[%s/template/note.org]" org-roam-directory)
-           :target (file "note/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("r" "thought" plain
-           ,(format "#+title: ${title}\n%%[%s/template/thought.org]" org-roam-directory)
-           :target (file "thought/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("t" "topic" plain
-           ,(format "#+title: ${title}\n%%[%s/template/topic.org]" org-roam-directory)
-           :target (file "topic/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("c" "contact" plain
-           ,(format "#+title: ${title}\n%%[%s/template/contact.org]" org-roam-directory)
-           :target (file "contact/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("p" "project" plain
-           ,(format "#+title: ${title}\n%%[%s/template/project.org]" org-roam-directory)
-           :target (file "project/%<%Y%m%d>-${slug}.org")
-           :unnarrowed t)
-          ("i" "invoice" plain
-           ,(format "#+title: %%<%%Y%%m%%d>-${title}\n%%[%s/template/invoice.org]" org-roam-directory)
-           :target (file "invoice/%<%Y%m%d>-${slug}.org")
-           :unnarrowed t)
-          ("f" "ref" plain
-           ,(format "#+title: ${title}\n%%[%s/template/ref.org]" org-roam-directory)
-           :target (file "ref/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("w" "works" plain
-           ,(format "#+title: ${title}\n%%[%s/template/works.org]" org-roam-directory)
-           :target (file "works/%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)
-          ("s" "secret" plain "#+title: ${title}\n\n"
-           :target (file "secret/%<%Y%m%d%H%M%S>-${slug}.org.gpg")
-           :unnarrowed t))
-        ;; Use human readable dates for dailies titles
-        org-roam-dailies-capture-templates
-        `(("d" "default" plain ""
-           :target (file+head "%<%Y-%m-%d>.org" ,(format "%%[%s/template/journal.org]" org-roam-directory))))))
-#+end_src
-**** inspo
-***** howardism
-
-org capture template consists of 3 parts:
-+ a key binding
-+ a destination, (a file, and some section in that file, like a heading, list item etc)
-+ a formatting template
-
-source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
-
-***** prot tech :prot:
-#+begin_src elisp :tangle no
-(use-package! org-capture
-  :ensure nil
-  :bind ("C-c c" . org-capture)
-  :config
-  ;; (require 'prot-org)
-
-  (setq org-capture-templates
-        `(("u" "Unprocessed" entry
-           (file+headline "tasks.org" "Unprocessed")
-           ,(concat "* %^{Title}\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%i%?")
-           :empty-lines-after 1)
-          ("w" "Wishlist" entry
-           (file+olp "tasks.org" "All tasks" "Wishlist")
-           ,(concat "* %^{Title} %^g\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%?")
-           :empty-lines-after 1)
-          ("t" "Task to do" entry
-           (file+headline "tasks.org" "All tasks")
-           ,(concat "* TODO %^{Title} %^g\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n"
-                    "%a\n%?")
-           :empty-lines-after 1)
-          ("s" "Select file and heading to add to" entry
-           (function prot-org-select-heading-in-file)
-           ,(concat "* TODO %^{Title}%?\n"
-                    ":PROPERTIES:\n"
-                    ":CAPTURED: %U\n"
-                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
-                    ":END:\n\n")
-           :empty-lines-after 1)
-
-          ;; NOTE 2024-11-24: I am not using this, but am keeping it
-          ;; here because the approach is good.
-
-          ;; ("c" "Clock in and do immediately" entry
-          ;;  (file+headline "tasks.org" "Clocked tasks")
-          ;;  ,(concat "* TODO %^{Title}\n"
-          ;;           ":PROPERTIES:\n"
-          ;;           ":EFFORT: %^{Effort estimate in minutes|5|10|15|30|45|60|90|120}\n"
-          ;;           ":END:\n\n"
-          ;;           "%a\n")
-          ;;  :prepend t
-          ;;  :clock-in t
-          ;;  :clock-keep t
-          ;;  :immediate-finish t
-          ;;  :empty-lines-after 1)
-          ("p" "Private lesson or service" entry
-           (file "coach.org")
-           #'prot-org-capture-coach
-           :prepend t
-           :empty-lines 1)
-          ("P" "Private service clocked" entry
-           (file+headline "coach.org" "Clocked services")
-           #'prot-org-capture-coach-clock
-           :prepend t
-           :clock-in t
-           :clock-keep t
-           :immediate-finish t
-           :empty-lines 1)))
-
-  ;; NOTE 2024-11-10: I realised that I was not using this enough, so
-  ;; I decided to simplify my setup.  Keeping it here, in case I need
-  ;; it again.
-
-  ;; (setq org-capture-templates-contexts
-  ;;       '(("e" ((in-mode . "notmuch-search-mode")
-  ;;               (in-mode . "notmuch-show-mode")
-  ;;               (in-mode . "notmuch-tree-mode")))))
-  )
-#+end_src
 ** org-agenda
 
-(key desc type match settings files)
+=(key desc type match settings files)=
 
 Doom Emacs sets (org-agenda-start-day "-3d").
 
 *** custom agenda / maluware-org-agenda :prot:
 #+begin_src emacs-lisp :tangle yes
+
+  (load! "maluware-org-agenda") 
+
+  (setq org-agenda-custom-commands
+        `(("S" "School Tasks" tags-todo "@school")
+          ("n" "Linux + Nix" tags-todo "@nix+@linux")
+          ("d" "Today's view"
+           ((tags-todo "+PRIORITY=\"A\"" 
+                       ((org-agenda-block-separator nil)
+                        (org-agenda-overriding-header "\nDaily agenda view 😀\n\nHigh PRIORITY tasks 🔥")))
+            (agenda ""
+                    ((org-agenda-block-separator nil)
+                     (org-agenda-span 1)
+                     (org-agenda-overriding-header "\n")
+                     (org-agenda-start-day nil)))
+            (todo "WAIT"
+                  ((org-agenda-block-separator nil)
+                   (org-agenda-overriding-header "\nTasks on hold ⏳")))))
+          ("u" "untagged tasks" tags-todo "-{.+}" 
+           ((org-agenda-overriding-header "Untagged Tasks")))
+          ("p" "Protesilaos" ,maluware-custom-org-daily-agenda)))
 #+end_src
 
-*** librephoenix
+**** =LibrePhoenix Org Agenda=
+#+begin_src emacs-lisp :tangle no
+;; (setq org-agenda-hide-tags-regexp ".*")
 
-#+begin_src elisp :tangle no
-;; Add icons!
+(setq org-agenda-prefix-format '(
+                                 (agenda . " %?-2i %t ")
+                                 (todo . " %i %-12:c")
+                                 (tags . " %i %-12:c")
+                                 (search . " %i %-12:c")))
+
+(setq org-agenda-time-grid '((daily) () "" ""))
+
+(setq org-agenda-current-time-string "")
+(setq org-agenda-skip-timestamp-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-scheduled-if-deadline-is-shown t
+      org-agenda-skip-timestamp-if-deadline-is-shown t)
+
+TODO move this to libre block for easier troubleshoot
+(use-package! all-the-icons
+  :if (display-graphic-p))
+
 (setq org-agenda-category-icon-alist
-      `(("Teaching.p" ,(list (all-the-icons-faicon "graduation-cap" :height 0.8)) nil nil :ascent center)
-        ("Family.s" ,(list (all-the-icons-faicon "home" :v-adjust 0.005)) nil nil :ascent center)
-        ("Producer.p" ,(list (all-the-icons-faicon "youtube-play" :height 0.9)) nil nil :ascent center)
-        ("Bard.p" ,(list (all-the-icons-faicon "music" :height 0.9)) nil nil :ascent center)
-        ("Stories.s" ,(list (all-the-icons-faicon "book" :height 0.9)) nil nil :ascent center)
-        ("Author.p" ,(list (all-the-icons-faicon "pencil" :height 0.9)) nil nil :ascent center)
+      `(("NixOs" ,(list (all-the-icons-faicon "graduation-cap" :height 0.8)) nil nil :ascent center)
+        ("Emacs" ,(list (all-the-icons-faicon "home" :v-adjust 0.005)) nil nil :ascent center)
+        ("School" ,(list (all-the-icons-faicon "youtube-play" :height 0.9)) nil nil :ascent center)
+        ("Quickshell" ,(list (all-the-icons-faicon "music" :height 0.9)) nil nil :ascent center)
+        ("Linux" ,(list (all-the-icons-faicon "book" :height 0.9)) nil nil :ascent center)
+        ("Pyrple" ,(list (all-the-icons-faicon "pencil" :height 0.9)) nil nil :ascent center)
         ("Gamedev.s" ,(list (all-the-icons-faicon "gamepad" :height 0.9)) nil nil :ascent center)
         ("Knowledge.p" ,(list (all-the-icons-faicon "database" :height 0.8)) nil nil :ascent center)
         ("Personal.p" ,(list (all-the-icons-material "person" :height 0.9)) nil nil :ascent center)
 ))
 #+end_src
 
-=org super agenda=
+***** =org super agenda=
 #+begin_src elisp :tangle no
 (setq org-super-agenda-groups
        '(;; Each group has an implicit boolean OR operator between its selectors.
@@ -1667,7 +1368,13 @@ Doom Emacs sets (org-agenda-start-day "-3d").
          (:name "Personal" ; Name
                 :file-path "Personal" ; Filter criteria
                 :order 3 ; Order it should appear in the agenda view
+                :not (:tag "event")
                 :face 'error) ; Font faced used for text
+
+         (:name "NixOs"  ; Name
+                :file-path "NixOs" ; Filter criteria
+                :order 3 ; Order it should appear in the agenda view
+                :face 'error) ; Font face used for text
 
          ;; Third filter..
          (:name "Work"  ; Name
@@ -1692,8 +1399,7 @@ Doom Emacs sets (org-agenda-start-day "-3d").
 
   org-agenda-date-today
 
-*** external variable files
-For neater/shorter presentation
+*** external variable files For neater/shorter presentation
 **** defvar maluware-org-custom-daily-agenda
 #+begin_src emacs-lisp :tangle maluware-org-agenda.el
 (defvar maluware-custom-org-daily-agenda
@@ -1911,6 +1617,329 @@ For neater/shorter presentation
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
 #+end_src
+** Org-roam-ui
+#+begin_src emacs-lisp :tangle yes
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
+ 
+** org-structure-template
+#+begin_src elisp :tangle no
+(add-to-list 'org-structure-template-alist
+             '("ss" . "src emacs-lisp")) ;FIXME deprecated approach find new way to do this
+#+end_src
+
+#+begin_src elisp :tangle no
+(with-eval-after-load 'org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist
+               '("se" . "src emacs-lisp")))
+
+#+end_src
+
+** org-capture
+Capture lets you quickly store notes with no workflow interruption
+*** escape codes
+|--------------------+-----------------------------------------------------------|
+| special =%= escape | does                                                      |
+|--------------------+-----------------------------------------------------------|
+| =%a=               | annotation, normally the link created with org-store-link |
+| =%i=               | with active region selected, insert it at point           |
+| =%t=  =%T=         | timestamp, date only, or date and time                    |
+| =%^t=              | prompt for timestamp                                      |
+| =%u=  =%U=         | like above, but inactive timestamps                       |
+| =%?=               | after completing the template, position point here        |
+| =%^=               | input/prompt                                              |
+|--------------------+-----------------------------------------------------------|
+**** time management
+dont have to select manually you can:
++ relative time +3d
+
+*** org-capture-template
+**** Current Template
+#+begin_src emacs-lisp :tangle yes
+(use-package! org-capture
+  :bind ("C-c c" . org-capture)
+  :after org
+  :custom
+  ;; (require 'prot-org)
+  (org-capture-templates '(
+                           ("e" "EMACs" plain
+                            (file+headline "EmacsTODO.org" "TODO emacs") ;Create if does not exist otherwise ins under it
+                            "+ [ ] %?")
+
+                           ;; NixOs
+                           ("n" "nixOs" plain
+                            (file+headline "nixTODO.org" "TODO nixOs")
+                            "+ [ ] %?"
+                            :prepend t)
+
+                           ("a" "App Ideas" plain
+                            (file+headline "appsTODO.org" "TODO App Ideas")
+                            "+ [ ] %?"
+                            :prepend t)
+
+                           ;; Quickshell
+                           ("Q" "Quickshell + QML")
+                           ("QQ" "Quickshell" plain
+                            (file+headline "QuickshellTODO.org" "TODO Quickshell")
+                            "+ [ ] %?")
+                           ("QM" "QML" plain
+                            (file+headline "QuickshellTODO.org" "TODO QML")
+                            "+ [ ] %?")
+
+                           ;; BUCKET LIST
+                           ("b" "Bucket List [ movies anime books youtube]") ; group 'em up
+                           ("bm" "movies" plain
+                            (file+headline "bucket-list.org" "Movies")
+                            "+ [ ] %?"
+                            :prepend t)
+                            ("ba"  "Anime List (Movies + Series)")  ;; Just a label, optional dummy
+                            ("bam" "Anime Movie"  plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
+                            ;; ANIME
+                            ("bas" "Anime Series" plain
+                            (file+headline "bucket-list.org" "Anime")
+                            "+ [ ] %?" :prepend t)
+                           ("bb" "books" plain
+                            (file+headline "bucket-list.org" "Books")
+                            "+ [ ] %?"
+                            :prepend t)
+                           ;;YOUTUBE
+                           ("by" "youtube" plain
+                            (file+headline "bucket-list.org" "YouTube")
+                            "+ [ ] %?"
+                            :prepend t)
+
+                           ;; Learning New Languages
+                           ("l" "Learn Programming Languages")
+                           ("lp" "Python" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO PythonLearning")
+                            "+ [ ] %?")
+                           ("lc" "C" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO C")
+                            "+ [ ] %?")
+                           ("ln" "Nix" plain
+                            (file+headline "ProgrammingLanguagesTODO.org" "TODO Nix")
+                            "+ [ ] %?")
+
+                           ;; School
+                           ("s" "School - USIU" plain
+                            (file+headline "USIU_TODO.org" "TODO school work")
+                            "+ [ ] %?")
+
+                           ;; Life's Morsels
+                           ("d" "Life's Morsels")
+                           ("dw" "words [w]" plain
+                            (file+headline "diction.org" "Words") ;TODO see if this can support yassnippets
+                            "\n\n %?"
+                            :empty-lines 1
+                            :prepend t)
+                           ("di" "idioms [i]" plain
+                            (file+headline "diction.org" "Idioms")
+                            "+ %?"
+                            :empty-lines 1
+                            :prepend t)
+                            ("dq" "quotes [q]" plain
+                            (file+headline "diction.org" "Quotes")
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
+                            :empty-lines 1
+                            :prepend t)
+                            ("dp" "phrases [p]" plain
+                            (file+headline "diction.org" "Phrases")
+                            ;; Template string starts here
+                            "#+begin_quote\n%i%?\n#+end_quote\n"
+                            :empty-lines 1
+                            :prepend t)
+                           ("v" "Video Ideas 📷")
+                           ("ve" "Emacs 📃")
+                           ("vei" "Emacs ideas ✔️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Idea")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1
+                            )
+                           ("vej" "emacs jolts ✏️" plain
+                            (file+headline "emacsVideoIdea.org" "Random Jolt")
+                            " %?"
+                            :prepend t
+                            :empty-lines 1)
+                           )))
+#+end_src
+**** docs
+source: https://orgmode.org/manual/Template-elements.html
+
+=keys=
+characters only  eg. 'a' or 'ab'
+=type=
+|------------+--------------------------------------------------------------------|
+| entry      | text with heading                                                  |
+| item       | plain list item, placed in the first plain list at target location |
+| checkitem  | checkbox item                                                      |
+| table-line | A new line in the first table at the target location. see more     |
+| plain      | text inserted as i                                                 |
+|------------+--------------------------------------------------------------------|
+*** shortcurts
+|----------------------+-------------------+----------------------------------------------------------------------------|
+| command              | keymap            | does                                                                       |
+|----------------------+-------------------+----------------------------------------------------------------------------|
+| org-capture          | =M-x org-capture= | start capture process, placing you into a narrowed indirect buffer to edit |
+| org-capture-finalize | =C-c C-c=         |                                                                            |
+| org-capture-refile   | =C-c C-w=         | Finalize the capture process by refiling the note to a different place     |
+| org-capture-kill     | =C-c C-k=         | Abort the capture process and return to the previous state.                |
+|----------------------+-------------------+----------------------------------------------------------------------------|
+*** org-roam-capture-template 
+#+begin_src emacs-lisp :tangle no
+(after! org-roam
+  (setq org-roam-capture-templates
+        `(("n" "note" plain
+           ,(format "#+title: ${title}\n%%[%s/template/note.org]" org-roam-directory)
+           :target (file "note/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("r" "thought" plain
+           ,(format "#+title: ${title}\n%%[%s/template/thought.org]" org-roam-directory)
+           :target (file "thought/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("t" "topic" plain
+           ,(format "#+title: ${title}\n%%[%s/template/topic.org]" org-roam-directory)
+           :target (file "topic/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("c" "contact" plain
+           ,(format "#+title: ${title}\n%%[%s/template/contact.org]" org-roam-directory)
+           :target (file "contact/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("p" "project" plain
+           ,(format "#+title: ${title}\n%%[%s/template/project.org]" org-roam-directory)
+           :target (file "project/%<%Y%m%d>-${slug}.org")
+           :unnarrowed t)
+          ("i" "invoice" plain
+           ,(format "#+title: %%<%%Y%%m%%d>-${title}\n%%[%s/template/invoice.org]" org-roam-directory)
+           :target (file "invoice/%<%Y%m%d>-${slug}.org")
+           :unnarrowed t)
+          ("f" "ref" plain
+           ,(format "#+title: ${title}\n%%[%s/template/ref.org]" org-roam-directory)
+           :target (file "ref/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("w" "works" plain
+           ,(format "#+title: ${title}\n%%[%s/template/works.org]" org-roam-directory)
+           :target (file "works/%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("s" "secret" plain "#+title: ${title}\n\n"
+           :target (file "secret/%<%Y%m%d%H%M%S>-${slug}.org.gpg")
+           :unnarrowed t))
+        ;; Use human readable dates for dailies titles
+        org-roam-dailies-capture-templates
+        `(("d" "default" plain ""
+           :target (file+head "%<%Y-%m-%d>.org" ,(format "%%[%s/template/journal.org]" org-roam-directory))))))
+#+end_src
+**** inspo
+***** howardism
+
+org capture template consists of 3 parts:
++ a key binding
++ a destination, (a file, and some section in that file, like a heading, list item etc)
++ a formatting template
+
+source:[[https://howardism.org/Technical/Emacs/capturing-intro.html][Org capturing intro Howardism]]
+
+***** prot tech :prot:
+#+begin_src elisp :tangle no
+(use-package! org-capture
+  :ensure nil
+  :bind ("C-c c" . org-capture)
+  :config
+  ;; (require 'prot-org)
+
+  (setq org-capture-templates
+        `(("u" "Unprocessed" entry
+           (file+headline "tasks.org" "Unprocessed")
+           ,(concat "* %^{Title}\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%i%?")
+           :empty-lines-after 1)
+          ("w" "Wishlist" entry
+           (file+olp "tasks.org" "All tasks" "Wishlist")
+           ,(concat "* %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("t" "Task to do" entry
+           (file+headline "tasks.org" "All tasks")
+           ,(concat "* TODO %^{Title} %^g\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n"
+                    "%a\n%?")
+           :empty-lines-after 1)
+          ("s" "Select file and heading to add to" entry
+           (function prot-org-select-heading-in-file)
+           ,(concat "* TODO %^{Title}%?\n"
+                    ":PROPERTIES:\n"
+                    ":CAPTURED: %U\n"
+                    ":CUSTOM_ID: h:%(format-time-string \"%Y%m%dT%H%M%S\")\n"
+                    ":END:\n\n")
+           :empty-lines-after 1)
+
+          ;; NOTE 2024-11-24: I am not using this, but am keeping it
+          ;; here because the approach is good.
+
+          ;; ("c" "Clock in and do immediately" entry
+          ;;  (file+headline "tasks.org" "Clocked tasks")
+          ;;  ,(concat "* TODO %^{Title}\n"
+          ;;           ":PROPERTIES:\n"
+          ;;           ":EFFORT: %^{Effort estimate in minutes|5|10|15|30|45|60|90|120}\n"
+          ;;           ":END:\n\n"
+          ;;           "%a\n")
+          ;;  :prepend t
+          ;;  :clock-in t
+          ;;  :clock-keep t
+          ;;  :immediate-finish t
+          ;;  :empty-lines-after 1)
+          ("p" "Private lesson or service" entry
+           (file "coach.org")
+           #'prot-org-capture-coach
+           :prepend t
+           :empty-lines 1)
+          ("P" "Private service clocked" entry
+           (file+headline "coach.org" "Clocked services")
+           #'prot-org-capture-coach-clock
+           :prepend t
+           :clock-in t
+           :clock-keep t
+           :immediate-finish t
+           :empty-lines 1)))
+
+  ;; NOTE 2024-11-10: I realised that I was not using this enough, so
+  ;; I decided to simplify my setup.  Keeping it here, in case I need
+  ;; it again.
+
+  ;; (setq org-capture-templates-contexts
+  ;;       '(("e" ((in-mode . "notmuch-search-mode")
+  ;;               (in-mode . "notmuch-show-mode")
+  ;;               (in-mode . "notmuch-tree-mode")))))
+  )
+#+end_src
 ** org-babel
 NOTE: not needed in doom...it auto [[https://discourse.doomemacs.org/t/common-config-anti-patterns/119#loading-org-babel-plugins-yourself-6][does it]]
 #+begin_src emacs-lisp :tangle no
@@ -1950,22 +1979,18 @@ NOTE: not needed in doom...it auto [[https://discourse.doomemacs.org/t/common-co
 (after! spell-fu
   (cl-pushnew 'org-modern-tag (alist-get 'org-mode +spell-excluded-faces-alist)))
 #+end_src
-* Emacs Everywhere
-#+begin_src emacs-lisp :tangle yes
-(setq emacs-everywhere-frame-name-format "emacs-everywhere")
-#+end_src
-* olivetti-mode
-#+begin_src emacs-lisp :tangle yes
-;; Function to be run when org-agenda is opened
-(defun org-agenda-open-hook()
-  "Hook to be run when org-agenda is opened"
-  (olivetti-mode))
-
-;; Adds hooks to org agenda mode, making follow mode active in org agenda
-(add-hook 'org-agenda-mode-hook 'org-agenda-open-hook)
-#+end_src
-
 * Markdown
+=Markdown-view-mode= toggle
+#+begin_src elisp :tangle yes
+(defun my/markdown-toggler ()
+  "This function toggles markdown view mode on/off 😀"
+  (interactive)
+  ;; (if (eq major-mode #'markdown-view-mode)
+  (if (derived-mode-p 'markdown-view-mode)
+      (markdown-mode)
+    (markdown-view-mode)))
+#+end_src
+
 #+begin_src emacs-lisp :tangle no
 (custom-set-faces
  '(markdown-header-face ((t (:inherit font-lock-function-name-face :weight bold :family "variable-pitch"))))
@@ -1976,14 +2001,9 @@ NOTE: not needed in doom...it auto [[https://discourse.doomemacs.org/t/common-co
  '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.2))))
  '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.1)))))
 #+end_src
-
-=Markdown-view-mode= toggle
-#+begin_src elisp :tangle yes
-(defun my/markdown-toggler ()
-  (interactive)
-  (if (eq #'markdown-view-mode)
-      (markdown-mode)
-    (markdown-view-mode)))
+* Emacs Everywhere
+#+begin_src emacs-lisp :tangle no
+(setq emacs-everywhere-frame-name-format "emacs-everywhere")
 #+end_src
 * Inspo
 ** witchmacs stuff
