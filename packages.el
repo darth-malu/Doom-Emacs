@@ -16,8 +16,8 @@
 ;;; LSP / Dev
 (package! jupyter)
 ;; (package! blacken)
-;; (package! ein)
-(package! code-cells)
+(package! ein)
+(package! code-cells)                   ; NOTE: use in depth - Jupyter NoteBooks replacement?
 (package! direnv)
 (package! tmr)
 ;; (package! exec-path-from-shell) ; NOTE use doom env lol

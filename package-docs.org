@@ -1,5 +1,4 @@
 #+title: packages
-#+auto_tangle: t
 #+startup: content indent
 
 * justinVC-tech :justin:
