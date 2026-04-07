@@ -16,7 +16,7 @@
 ;;; LSP / Dev
 (package! jupyter)
 ;; (package! blacken)
-(package! ein)
+;; (package! ein)
 (package! code-cells)                   ; NOTE: use in depth - Jupyter NoteBooks replacement?
 (package! direnv)
 (package! tmr)

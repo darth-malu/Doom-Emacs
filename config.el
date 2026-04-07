@@ -130,6 +130,9 @@
           ("V" . 'yeetube-mpv-toggle-no-video-flag)
           ("k" . 'yeetube-remove-saved-video)))
 
+(after! org
+  (setq org-babel-js-cmd "bun"))
+
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
     ("\\*doom:scratch*" :quit t)
