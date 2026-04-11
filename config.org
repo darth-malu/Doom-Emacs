@@ -1993,6 +1993,13 @@ NOTE: not needed in doom...it auto [[https://discourse.doomemacs.org/t/common-co
   (if (derived-mode-p 'markdown-view-mode)
       (markdown-mode)
     (markdown-view-mode)))
+
+;; (add-hook 'markdown-mode-hook
+;;           (lambda () (local-set-key (kbd "/") #'my/markdown-toggler)))
+
+(map! :map markdown-mode-map
+      :localleader
+      "/" #'my/markdown-toggler)
 #+end_src
 
 #+begin_src emacs-lisp :tangle no

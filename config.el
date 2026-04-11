@@ -617,3 +617,10 @@
   (if (derived-mode-p 'markdown-view-mode)
       (markdown-mode)
     (markdown-view-mode)))
+
+;; (add-hook 'markdown-mode-hook
+;;           (lambda () (local-set-key (kbd "/") #'my/markdown-toggler)))
+
+(map! :map markdown-mode-map
+      :localleader
+      "/" #'my/markdown-toggler)
