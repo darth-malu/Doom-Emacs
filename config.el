@@ -44,17 +44,20 @@
       lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options"
       lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
-(setq treesit-language-source-alist
-      '((astro "https://github.com/virchau13/tree-sitter-astro")
-        (css "https://github.com/tree-sitter/tree-sitter-css")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
+;; Added when FIXME: treesit-ready-p - void function
+(when (featurep 'treesit)
+  (setq treesit-language-source-alist
+        '((astro "https://github.com/virchau13/tree-sitter-astro")
+          (css "https://github.com/tree-sitter/tree-sitter-css")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
 
-(dolist (lang '(astro css tsx))
-  (unless (treesit-language-available-p lang)
-    (treesit-install-language-grammar lang)))
+  (dolist (lang '(astro css tsx))
+    (unless (treesit-language-available-p lang)
+      (treesit-install-language-grammar lang))))
 
 (use-package! astro-ts-mode
   :mode "\\.astro\\'"
+  :if (featurep 'treesit)
   :hook
   (astro-ts-mode . (lambda () (abbrev-mode) (diff-hl-mode -1) (spell-fu-mode -1)))
   :init
@@ -85,8 +88,9 @@
   (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
                ))
 
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+(when (featurep 'treesit)
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode)))
 
 ;; (use-package! lsp-tailwindcss :after lsp-mode)
 
@@ -278,17 +282,12 @@
           ("M-o" . +evil/insert-newline-below)
           ("M-O" . +evil/insert-newline-above)
 
-          ;; Unify Kitty + Emacs window focusing
-          ("C-M-l" . evil-window-right)
-          ("C-M-h" . evil-window-left)
-          ("C-M-k" . evil-window-up)
-          ("C-M-j" . evil-window-down)
-          ("C-M-SPC" . evil-window-delete)
-          ("C-M-RET" . evil-window-vsplit) ; Hook This up only in prog mode to prevent conflict with org
           ("C-'" . olivetti-mode)
+
 
           :map evil-insert-state-map
           ("M-/" . #'org-comment-dwim) 
+          ("M-;" . nil)                 ;Unmap default org-comment-dwim
 
           :map doom-leader-map
           ("to" . hl-todo-occur)
