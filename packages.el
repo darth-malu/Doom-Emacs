@@ -11,21 +11,21 @@
 (package! org-fragtog)
 (package! org-roam-ui)
 (package! nov)                      ;For annotations? -org-noter
-(package! org-transclusion)
-;; (package! cdlatex)                      ;for nice latex minor mode...😀
+
+;; (package! org-transclusion)
 
 ;;; LSP / Dev
 (package! jupyter)
 ;; (package! blacken)
 ;; (package! ein)
-(package! code-cells)                   ; NOTE: use in depth - Jupyter NoteBooks replacement?
+;; (package! code-cells)                   ; NOTE: use in depth - Jupyter NoteBooks replacement?
 (package! direnv)
 (package! tmr)
 ;; (package! exec-path-from-shell) ; NOTE use doom env lol
 (package! qml-ts-mode
   :recipe (:host github :repo "xhcoding/qml-ts-mode" :files ("*.el")))
 (package! prettier-js)
-(package! astro-ts-mode)
+;; (package! astro-ts-mode)
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 
 ;; (package! spotify)

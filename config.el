@@ -41,67 +41,8 @@
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
       ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
-
-;; Added when FIXME: treesit-ready-p - void function
-(when (featurep 'treesit)
-  (setq treesit-language-source-alist
-        '((astro "https://github.com/virchau13/tree-sitter-astro")
-          (css "https://github.com/tree-sitter/tree-sitter-css")
-          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
-
-  (dolist (lang '(astro css tsx))
-    (unless (treesit-language-available-p lang)
-      (treesit-install-language-grammar lang))))
-
-(use-package! astro-ts-mode
-  :mode "\\.astro\\'"
-  :if (featurep 'treesit)
-  :hook
-  (astro-ts-mode . (lambda () (abbrev-mode) (diff-hl-mode -1) (spell-fu-mode -1)))
-  :init
-  (when (modulep! +lsp)
-    (add-hook 'astro-ts-mode-hook #'lsp! 'append))
-  :config
-  (after! lsp-mode
-    (add-to-list 'lsp-language-id-configuration '(astro-ts-mode . "astro-ts"))
-
-    (lsp-register-client
-     (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
-                      :activation-fn (lsp-activate-on "astro-ts")
-                      :server-id 'astro-ls))))
-;; (setq prettier-js-command "prettierd"
-;;       prettier-js-args '("--no-editorconfig")))
-
-;; (use-package! prettier-js
-;;   :hook
-;;   (web-mode . prettier-js-mode)
-;;   ;; (astro-ts-mode . prettier-js-mode)
-;;   (js-mode . prettier-js-mode))
-
-(after! apheleia
-  (set-formatter! 'prettier-astro
-    '("bunx" "prettier" "--parser=astro" ;
-      (apheleia-formatters-indent "--use-tabs" "--tab-width" 'astro-ts-mode-indent-offset))
-    :modes '(astro-ts-mode))
-  (add-to-list 'apheleia-mode-alist '(astro-ts-mode . prettier-astro)
-               ))
-
-(when (featurep 'treesit)
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode)))
-
-;; (use-package! lsp-tailwindcss :after lsp-mode)
-
-(use-package! lsp-tailwindcss
-  ;; :when (modulep! +lsp)
-  :after lsp-mode
-  :init
-  (setq lsp-tailwindcss-add-on-mode t)
-
-  :config
-  (add-to-list 'lsp-tailwindcss-major-modes 'astro-ts-mode))
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
 (use-package! qml-ts-mode
   :after lsp-mode

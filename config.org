@@ -240,8 +240,8 @@ nil: An incremental analysis assistant for writing in Nix.
       lsp-nix-nixd-formatting-command [ "nixfmt" ]
       lsp-nix-nixd-server-arguments '("--inlay-hints=true" "--semantic-tokens=true")
       ;; lsp-nix-nixd-nixpkgs-expr "import <nixpkgs> { }"
-      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options"
-      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name "Shibuya" (getenv "HOME"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
+      lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options"
+      lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 #+end_src
 
 A. home-manager switch --flake .#... (standalone Home Manager)
@@ -261,21 +261,21 @@ Configuration examples for both approaches are shown below.
 
 ** Astro
 *** Astro-ls
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 ;; Added when FIXME: treesit-ready-p - void function
-(when (featurep 'treesit)
+;; (when (featurep 'treesit)
   (setq treesit-language-source-alist
-        '((astro "https://github.com/virchau13/tree-sitter-astro")
-          (css "https://github.com/tree-sitter/tree-sitter-css")
-          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))
+        '((astro-ts-mode "https://github.com/virchau13/tree-sitter-astro")
+          (css-ts-mode "https://github.com/tree-sitter/tree-sitter-css")
+          (tsx-ts-mode "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+        )
 
-  (dolist (lang '(astro css tsx))
+  (dolist (lang '(astro-ts-mode css-ts-mode tsx-ts-mode))
     (unless (treesit-language-available-p lang)
       (treesit-install-language-grammar lang))))
 
 (use-package! astro-ts-mode
   :mode "\\.astro\\'"
-  :if (featurep 'treesit)
   :hook
   (astro-ts-mode . (lambda () (abbrev-mode) (diff-hl-mode -1) (spell-fu-mode -1)))
   :init
@@ -289,6 +289,7 @@ Configuration examples for both approaches are shown below.
      (make-lsp-client :new-connection (lsp-stdio-connection "astro-ls")
                       :activation-fn (lsp-activate-on "astro-ts")
                       :server-id 'astro-ls))))
+
 ;; (setq prettier-js-command "prettierd"
 ;;       prettier-js-args '("--no-editorconfig")))
 
@@ -299,8 +300,26 @@ Configuration examples for both approaches are shown below.
 ;;   (js-mode . prettier-js-mode))
 #+end_src
 
+*** Astro-Eglot
+#+begin_src elisp :tangle no
+;; (define-derived-mode astro-ts-mode web-mode "Astro"
+;;   "Major Mode for astro files 😀")
+
+(use-package! astro-ts-mode
+  :defer t
+  :hook (astro-ts-mode . eglot-ensure)
+  :mode "\\.astro\\")
+
+(after! eglot
+  (add-to-list `eglot-server-programs
+               `(astro-ts-mode . ("astro-ls" "--stdio"
+                               :initializationOptions
+                               (:typescript (:tsdk "./node_modules/typescript/lib"))))))
+
+#+end_src
+
 *** Formatting with apeleia - prettier bunx
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (after! apheleia
   (set-formatter! 'prettier-astro
     '("bunx" "prettier" "--parser=astro" ;
@@ -311,7 +330,11 @@ Configuration examples for both approaches are shown below.
 
 (when (featurep 'treesit)
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode)))
+  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.astro\\'" . astro-ts-mode)))
+
+
+(mapc #'treesit-install-language-grammar '(astro-ts-mode css-ts-mode tsx-ts-mode))
 #+end_src
 
 https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/emacs/config.org#headline-58
@@ -319,7 +342,7 @@ https://git.isincredibly.gay/srxl/dotfiles/src/branch/main/config/dot_config/ema
 [[https://github.com/withastro/prettier-plugin-astro][astro prettier]]: 
 
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 ;; (use-package! lsp-tailwindcss :after lsp-mode)
 
 (use-package! lsp-tailwindcss
