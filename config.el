@@ -62,7 +62,8 @@
  :config
  (direnv-mode))
 
-(use-package yeetube
+;; TODO: make this better bind
+(use-package! yeetube
   :init (define-prefix-command 'my/yeetube-map)
   :bind (("C-c y" . 'my/yeetube-map)
           :map my/yeetube-map

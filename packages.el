@@ -3,6 +3,7 @@
 
 ;; Fun
 (package! yeetube)
+(package! mpv)
 ;;; ORG
 (package! olivetti)
 (package! org-super-agenda)             ;TODO:
@@ -15,7 +16,7 @@
 ;; (package! org-transclusion)
 
 ;;; LSP / Dev
-(package! jupyter)
+;; (package! jupyter)
 ;; (package! blacken)
 ;; (package! ein)
 ;; (package! code-cells)                   ; NOTE: use in depth - Jupyter NoteBooks replacement?

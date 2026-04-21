@@ -402,7 +402,8 @@ Quickshell site
 #+end_src
 ** yeetube
 #+begin_src emacs-lisp :tangle yes
-(use-package yeetube
+;; TODO: make this better bind
+(use-package! yeetube
   :init (define-prefix-command 'my/yeetube-map)
   :bind (("C-c y" . 'my/yeetube-map)
           :map my/yeetube-map
