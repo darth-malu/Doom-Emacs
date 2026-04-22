@@ -94,7 +94,7 @@
                            :size 15
                            :weight 'regular)
        doom-emoji-font (font-spec :family "Noto Color Emoji")
-       doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+       doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14 :weight 'semibold))
 
 (custom-set-faces!
   '(mode-line :family "Mononoki Nerd Font" :box nil :overline nil)
@@ -205,18 +205,18 @@
   ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
   ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
 
-  :bind (:map evil-normal-state-map
+  :bind (
+         :map evil-normal-state-map
           ;;;misc
           ("M-;" . save-buffer)      
-          ;; ("M-s" . save-buffer)
-          ;; ("C-s" . save-buffer)
           ("<mouse-8>" . previous-buffer)
           ("<mouse-9>" . next-buffer)
           ("C-M-o" . consult-outline)
+          ("M-n" . avy-goto-char-2)
+          ("C-e" . evil-end-of-line) ; clash with other settings - capitalise, org-metaright
+          ("C-a" . beginning-of-line-text)
 
           ;;; EOL, BOL
-          ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-          ("M-h" . beginning-of-line-text)
           ("M-S-l" . end-of-visual-line)
           ("M-S-h" . beginning-of-visual-line)
 
@@ -225,7 +225,6 @@
           ("M-O" . +evil/insert-newline-above)
 
           ("C-'" . olivetti-mode)
-
 
           :map evil-insert-state-map
           ("M-/" . #'org-comment-dwim) 

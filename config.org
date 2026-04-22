@@ -494,7 +494,7 @@ change fonts on the fly [[file:~/org/roam/20250401030930-doom_emacs.org::*To cha
                              :size 15
                              :weight 'regular)
          doom-emoji-font (font-spec :family "Noto Color Emoji")
-         doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 15 :weight 'semibold))
+         doom-variable-pitch-font (font-spec :family "VictorMono Nerd Font" :size 14 :weight 'semibold))
 #+end_src
 
 =Useful conditionals=
@@ -661,18 +661,18 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
   ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
   ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
 
-  :bind (:map evil-normal-state-map
+  :bind (
+         :map evil-normal-state-map
           ;;;misc
           ("M-;" . save-buffer)      
-          ;; ("M-s" . save-buffer)
-          ;; ("C-s" . save-buffer)
           ("<mouse-8>" . previous-buffer)
           ("<mouse-9>" . next-buffer)
           ("C-M-o" . consult-outline)
+          ("M-n" . avy-goto-char-2)
+          ("C-e" . evil-end-of-line) ; clash with other settings - capitalise, org-metaright
+          ("C-a" . beginning-of-line-text)
 
           ;;; EOL, BOL
-          ("M-l" . end-of-line) ; clash with other settings - capitalise, org-metaright
-          ("M-h" . beginning-of-line-text)
           ("M-S-l" . end-of-visual-line)
           ("M-S-h" . beginning-of-visual-line)
 
@@ -681,7 +681,6 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
           ("M-O" . +evil/insert-newline-above)
 
           ("C-'" . olivetti-mode)
-
 
           :map evil-insert-state-map
           ("M-/" . #'org-comment-dwim) 
@@ -692,12 +691,6 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#A
           ("I" . ielm)
           ("SPC" . ace-window)))
 #+end_src
-
-+dashboard-functions:
-+ +dashboard-widget-banner
-+ +dashboard-widget-shortmenu
-
-Old function: doom-dashboard-name
 
 ** format +onsave disabled modes
 #+begin_src emacs-lisp :tangle yes
