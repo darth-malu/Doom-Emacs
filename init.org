@@ -9,7 +9,7 @@ doom! block
 
 NOTE Press =SPC h d h= - Doom's documentation. There you'll find a link to Doom's Module Index where all of our modules are listed, including what flags they support.
 
-NOTE Move your cursor over a module's name (or its flags) and press =K' (or . This works on flags as well (those symbols that start with a plus).
+NOTE Move your cursor over a module's name (or its flags) and press =K= (or . This works on flags as well (those symbols that start with a plus).
 
 Alternatively, press =gd= on a module to browse its
 
@@ -209,11 +209,11 @@ TODO: test noter, crypt, journal
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        data              ; config/data formats - csv/xml
        (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
-       ;; lua               ; one-based indices? one-based indices
+       (lua +lsp +tree-sitter)               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
-       json              ; At least it ain't XML
+       (json +lsp +tree-sitter)              ; At least it ain't XML
        (qt +lsp +tree-sitter)                ; the 'cutest' gui framework ever
-       yaml              ; JSON, but readable
+       (yaml +lsp +tree-sitter)              ; JSON, but readable
 #+end_src
 
 ox-pandoc 
@@ -292,7 +292,7 @@ org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty
 ** email
 #+begin_src emacs-lisp :tangle init.el
 :email
-       (mu4e +mbsync +org +gmail)
+       ;; (mu4e +mbsync +org +gmail)
        ;;notmuch
        ;;(wanderlust +gmail)
 
@@ -314,14 +314,14 @@ org +roam2 +brain +dragndrop +present +pandoc +pomodoro +pretty
        ;; emms
        ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
-       (rss +org)        ; emacs as an RSS reader
+       ;; (rss +org)        ; emacs as an RSS reader
 #+end_src
 
 ** config
 #+begin_src emacs-lisp :tangle init.el
 :config
        literate
-       (default +bindings +smartparens)
+       (default +bindings +gnupg +smartparens)
 #+end_src
 *** docs
 literate config -consists of a $DOOMDIR/config.org. All src blocks within are tangled $DOOMDIR/config.el, by default, when $ doom sync is executed.

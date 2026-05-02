@@ -125,7 +125,7 @@
   ;; (org-latex-compiler 'lualatex)        ;pdflatex::
   ;; (org-preview-latex-default-process 'dvisvgm) ;dvipng::
   ;; (org-super-agenda-mode t)
-  (epg-pinentry-mode 'loopback)
+  ;; (epg-pinentry-mode 'loopback)
   (tab-width 2)
   (tab-always-indent 'complete)
   (tab-first-completion nil) ;; word 'word-or-paren-or-punct

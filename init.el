@@ -107,14 +107,14 @@ direnv
        (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        data              ; config/data formats - csv/xml
        (latex +lsp +fold +cdlatex)             ; writing papers in Emacs has never been so fun
-       ;; lua               ; one-based indices? one-based indices
+       (lua +lsp +tree-sitter)               ; one-based indices? one-based indices
        emacs-lisp        ; drown in parentheses
-       json              ; At least it ain't XML
+       (json +lsp +tree-sitter)              ; At least it ain't XML
        (qt +lsp +tree-sitter)                ; the 'cutest' gui framework ever
-       yaml              ; JSON, but readable
+       (yaml +lsp +tree-sitter)              ; JSON, but readable
 
 :email
-       (mu4e +mbsync +org +gmail)
+       ;; (mu4e +mbsync +org +gmail)
        ;;notmuch
        ;;(wanderlust +gmail)
 
@@ -124,10 +124,10 @@ direnv
        ;; emms
        ;; everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
-       (rss +org)        ; emacs as an RSS reader
+       ;; (rss +org)        ; emacs as an RSS reader
 
 :config
        literate
-       (default +bindings +smartparens)
+       (default +bindings +gnupg +smartparens)
 
 )
