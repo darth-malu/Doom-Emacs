@@ -44,6 +44,12 @@
       lsp-nix-nixd-nixos-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options"
       lsp-nix-nixd-home-manager-options-expr "(builtins.getFlake (expand-file-name \"Shibuya\" (getenv \"HOME\"))).nixosConfigurations.carthage.options.home-manager.users.type.getSubOptions []"))
 
+(use-package lsp-tailwindcss
+  :after lsp-mode
+  :init
+  (setq lsp-tailwindcss-add-on-mode t)) ;nil::
+(add-hook 'before-save-hook 'lsp-tailwindcss-rustywind-before-save)
+
 (use-package! qml-ts-mode
   :after lsp-mode
   :config
@@ -81,12 +87,10 @@
 
 (set-popup-rules!
   '(("\\*Occur\\*" :select t :side bottom :actions (display-buffer-in-side-window) :ttl 5 :quit t)
-    ("\\*doom:scratch*" :quit t)
-    ("\\*info*" :quit t :side right :select t :width +popup-shrink-to-fit)
-    ("\\*ielm*" :quit t :side right :select t :width +popup-shrink-to-fit)
-    ("^\\*WoMan.*\\*" :quit t :side right :width 70)
-    ;; ("\\*ein: http.*\\*" :select t :side left :width 80)
-    ;; ("\\*ein:notebooklist.*\\*" :select t :side bottom :actions (display-buffer-in-side-window))
+    ("\\*doom:scratch\\*" :quit t)
+    ("\\*info\\*" :quit t :side right :select t :width +popup-shrink-to-fit)
+    ("\\*ielm\\*" :quit t :side right :select t :width +popup-shrink-to-fit)
+    ("^\\*WoMan.*\\*" :quit t :side right :width +popup-shrink-to-fit)
     ))
 
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font")
@@ -204,7 +208,7 @@
   (customize-set-variable 'uniquify-separator " ❄ ") ;💎 🧿💢
   ;; (customize-set-variable 'ein:jupyter-server-use-command 'server)
   ;; (customize-set-variable 'ein:jupyter-server-use-subcommand "server")
-
+  (load! "+darthBinds")
   :bind (
          :map evil-normal-state-map
           ;;;misc
@@ -269,7 +273,9 @@
          persp-set-last-persp-for-new-frames nil
          persp-reset-windows-on-nil-window-conf nil
          ;; Load workspaces automatically on startup
-         persp-auto-resume-time -1.0))
+         persp-auto-resume-time -1.0)
+         ;; persp-emacsclient-init-frame-behaviour-override #'+workspace/restore-last-session          ;+workspaces-associate-frame-fn::
+  )
 
 ;; (after! spell-fu
 ;;   (setq spell-fu-idle-delay 0.5)  ; default is 0.25
@@ -335,14 +341,17 @@
 (use-package! projectile
   :init
   (setq projectile-project-search-path '(
-                                         ;; ("~/Development" . 1)
+                                         ;; ("~/Development" . 1) ;; TODO see if you can omit import of dir itself - dirty
                                          "~/Development/SkunkWorks"
+                                         "~/.config"
                                          ;; ("~/USIU" . 1)
-                                         "~/USIU/2026"
-                                         "~/Development/Quickshell-Inspiration"
+                                         ;; "~/USIU/2026"
+                                         ;; "~/Development/Quickshell-Inspiration"
                                          ))
   :custom
   (projectile-auto-cleanup-known-projects t))
+
+
 
 (defun my-org-mode-setup ()
   (abbrev-mode)
