@@ -161,7 +161,7 @@
   (magit-view-git-manual-method 'woman)
 
   ;;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Scrolling.html
-  ;; (scroll-margin 8)
+  (scroll-margin 8)
   (scroll-conservatively 101)
 
   ;; TODO: check what the numbers mean in doom

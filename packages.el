@@ -35,5 +35,6 @@
 (package! tldr)
 (package! all-the-icons) ;TODO add desc
 (package! elcord)
+;; (package! codeium :recipe (:host github :repo "Exafunction/codeium.el"))
 ;; (package! wttrin)
 ;; (package! wttrin :recipe (:local-repo "lisp/wttrin"))
